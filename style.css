@@ -103,14 +103,14 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px 20px 0;
+    padding: 15px 20px 0; /* padding-left: 20px; устанавливает начальный отступ */
     box-sizing: border-box;
 }
 
 .left-section {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: flex-start; /* Выравнивает дочерние элементы по левому краю */
 }
 
 .company-info {
@@ -162,15 +162,15 @@ body {
     flex-shrink: 0;
 }
 
-/* Theme Toggle Container - ВАЖНО: ВОССТАНОВЛЕНОjustify-content: flex-start; и margin-left: 20px; */
+/* Theme Toggle Container - ИСПРАВЛЕНО: УДАЛЕН margin-left */
 .theme-toggle-container {
     position: relative;
     z-index: 2;
     display: flex;
     align-items: center;
-    justify-content: flex-start; /* ЭТОТ ПАРАМЕТР ВАЖЕН ДЛЯ ВЫРАВНИВАНИЯ СЛЕВА */
+    justify-content: flex-start; /* Выравнивание внутренних элементов по левому краю */
     margin-top: 5px; 
-    margin-left: 20px; /* ЭТОТ ПАРАМЕТР ВАЖЕН ДЛЯ ВЫРАВНИВАНИЯ СЛЕВА */
+    /* margin-left: 20px; */ /* ЭТОТ ОТСТУП БЫЛ ПРИЧИНОЙ СМЕЩЕНИЯ - УДАЛЕНО */
     box-sizing: border-box;
     width: auto; 
 }
