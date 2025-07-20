@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const companyLogo = document.getElementById('company-logo');
     const companyName = document.getElementById('company-name');
-    // const companyDescription = document.getElementById('company-description'); // Удалена константа описания
+    // const companyDescription = document.getElementById('company-description'); // УДАЛЕНО
     const backgroundBlur = document.querySelector('.background-blur');
     const headerContainer = document.querySelector('.header-container');
     const themeSwitch = document.getElementById('theme-switch');
@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const logoUrlInput = document.getElementById('logo-url-input');
     const companyNameInput = document.getElementById('company-name-input');
-    // const companyDescriptionInput = document.getElementById('company-description-input'); // Удалена константа для поля ввода описания
+    // const companyDescriptionInput = document.getElementById('company-description-input'); // УДАЛЕНО
     const applyCompanyChangesBtn = document.getElementById('apply-company-changes');
 
     const botLogoUrlInput = document.getElementById('bot-logo-url-input');
@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Telegram.WebApp.expand();
     }
 
-    // Функция для обновления логотипа компании и названия (без описания)
+    // Функция для обновления логотипа компании и названия (БЕЗ ОПИСАНИЯ)
     function updateCompanyInfo(logoUrl, name) {
         if (logoUrl !== null) {
             companyLogo.src = logoUrl;
@@ -32,7 +32,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (name !== null) {
             companyName.textContent = name;
         }
-        // Вся логика, связанная с companyDescription, была удалена
     }
 
     // Функция для обновления логотипа бота
@@ -42,11 +41,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Устанавливаем дефолтные значения при загрузке (без описания)
+    // Устанавливаем дефолтные значения при загрузке (БЕЗ ОПИСАНИЯ)
     updateCompanyInfo('https://via.placeholder.com/60/0000FF/FFFFFF?text=MyComp', 'Название Компании');
     updateBotLogo('https://via.placeholder.com/60/FF5733/FFFFFF?text=B');
 
-    // --- Логика скролла: теперь двигается content-area, а header-container остается неподвижным ---
+    // --- Логика скролла ---
     let lastScrollTop = 0;
     const headerTotalHeight = parseInt(getComputedStyle(headerContainer).getPropertyValue('--header-height'));
     const borderRadiusSize = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--border-radius-size'));
@@ -55,29 +54,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.addEventListener('scroll', () => {
         let currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
-
         let translateYValue = Math.min(0, Math.max(-scrollRevealHeight, currentScrollTop));
-        
         contentArea.style.transform = `translateY(${translateYValue}px)`;
-
         lastScrollTop = currentScrollTop;
     });
 
 
-    // Функция для применения темы
+    // Функция для применения темы (ВОССТАНОВЛЕНА ЛОГИКА ИЗ ВАШЕГО КОДА)
     function applyTheme(isDark) {
         if (isDark) {
             document.body.classList.add('dark-mode');
         } else {
             document.body.classList.remove('dark-mode');
         }
-        // ВОССТАНОВЛЕНО: Эти строки были в вашем исходном коде и обеспечивают обновление цвета иконок
-        // хотя сами иконки имеют transition: color 0.3s; в CSS
+        // Эти строки обеспечивают плавное изменение цвета иконок при смене темы
         sunIcon.style.color = getComputedStyle(document.body).getPropertyValue('--icon-color-light');
         moonIcon.style.color = getComputedStyle(document.body).getPropertyValue('--icon-color-dark');
     }
 
-    // Логика переключения темы (дневной/ночной)
+    // Логика переключения темы
     themeSwitch.addEventListener('change', () => {
         applyTheme(themeSwitch.checked);
         localStorage.setItem('theme', themeSwitch.checked ? 'dark' : 'light');
@@ -93,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
         applyTheme(false);
     }
 
-    // Логика для тестирования админ-функционала компании (без описания)
+    // Логика для тестирования админ-функционала компании (БЕЗ ОПИСАНИЯ)
     applyCompanyChangesBtn.addEventListener('click', () => {
         const newLogoUrl = logoUrlInput.value.trim();
         const newCompanyName = companyNameInput.value.trim();
