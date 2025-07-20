@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const companyLogo = document.getElementById('company-logo');
     const companyName = document.getElementById('company-name');
+    const companyDescription = document.getElementById('company-description'); // Новый элемент
     const backgroundBlur = document.querySelector('.background-blur');
     const headerContainer = document.querySelector('.header-container');
     const themeSwitch = document.getElementById('theme-switch');
@@ -11,12 +12,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Элементы для тестирования админ-функционала компании
     const logoUrlInput = document.getElementById('logo-url-input');
     const companyNameInput = document.getElementById('company-name-input');
+    const companyDescriptionInput = document.getElementById('company-description-input'); // Новый инпут
     const applyCompanyChangesBtn = document.getElementById('apply-company-changes');
 
     // Элементы для тестирования логотипа бота
     const botLogoUrlInput = document.getElementById('bot-logo-url-input');
     const applyBotLogoChangesBtn = document.getElementById('apply-bot-logo-changes');
-
 
     // Инициализация Telegram WebApp
     if (window.Telegram && window.Telegram.WebApp) {
@@ -24,33 +25,36 @@ document.addEventListener('DOMContentLoaded', () => {
         // Telegram.WebApp.expand();
     }
 
-    // Функция для обновления логотипа компании и фона
-    function updateCompanyInfo(logoUrl, name) {
-        if (logoUrl) {
+    // Функция для обновления логотипа компании, названия и описания
+    function updateCompanyInfo(logoUrl, name, description) {
+        if (logoUrl !== null) { // Используем null для пропуска обновления
             companyLogo.src = logoUrl;
             backgroundBlur.style.backgroundImage = `url(${logoUrl})`;
         }
-        if (name) {
+        if (name !== null) {
             companyName.textContent = name;
+        }
+        if (description !== null) {
+            companyDescription.textContent = description;
+            companyDescription.style.display = description ? 'block' : 'none'; // Показываем только если есть текст
         }
     }
 
-    // Функция для обновления логотипа бота (разработчик меняет)
+    // Функция для обновления логотипа бота
     function updateBotLogo(logoUrl) {
         if (logoUrl) {
             botLogo.src = logoUrl;
         }
     }
 
-    // Устанавливаем дефолтные значения при загрузке (можно изменить)
-    // Эти значения будут видны при первом запуске, пока ты их не изменишь через поля ввода
-    updateCompanyInfo('https://via.placeholder.com/100/0000FF/FFFFFF?text=MyComp', 'Название Компании');
-    updateBotLogo('https://via.placeholder.com/50/FF5733/FFFFFF?text=B');
+    // Устанавливаем дефолтные значения при загрузке
+    updateCompanyInfo('https://via.placeholder.com/60/0000FF/FFFFFF?text=MyComp', 'Название Компании', 'Мотивационные слова здесь');
+    updateBotLogo('https://via.placeholder.com/60/FF5733/FFFFFF?text=B');
 
 
     // Логика скролла для скрытия хедера
     let lastScrollTop = 0;
-    const headerInitialHeight = 120; // Фиксированная начальная высота хедера
+    const headerInitialHeight = 120;
     const headerThreshold = 50;
 
     window.addEventListener('scroll', () => {
@@ -70,14 +74,13 @@ document.addEventListener('DOMContentLoaded', () => {
     function applyTheme(isDark) {
         if (isDark) {
             document.body.classList.add('dark-mode');
-            // Обновляем цвета иконок в зависимости от режима
-            sunIcon.style.color = 'var(--icon-color-light)';
-            moonIcon.style.color = 'var(--icon-color-dark)';
         } else {
             document.body.classList.remove('dark-mode');
-            sunIcon.style.color = 'var(--icon-color-light)';
-            moonIcon.style.color = 'var(--icon-color-dark)';
         }
+        // Обновляем цвета иконок в зависимости от режима (CSS-переменные сделают это автоматически)
+        // Но чтобы убедиться, что они обновляются сразу после смены темы
+        sunIcon.style.color = getComputedStyle(document.body).getPropertyValue('--icon-color-light');
+        moonIcon.style.color = getComputedStyle(document.body).getPropertyValue('--icon-color-dark');
     }
 
     // Логика переключения темы (дневной/ночной)
@@ -100,17 +103,18 @@ document.addEventListener('DOMContentLoaded', () => {
     applyCompanyChangesBtn.addEventListener('click', () => {
         const newLogoUrl = logoUrlInput.value.trim();
         const newCompanyName = companyNameInput.value.trim();
+        const newCompanyDescription = companyDescriptionInput.value.trim();
 
-        if (newLogoUrl) {
-            updateCompanyInfo(newLogoUrl, null);
-        }
-        if (newCompanyName) {
-            updateCompanyInfo(null, newCompanyName);
-        }
-        if (newLogoUrl || newCompanyName) {
+        updateCompanyInfo(
+            newLogoUrl || null,
+            newCompanyName || null,
+            newCompanyDescription || null
+        );
+
+        if (newLogoUrl || newCompanyName || newCompanyDescription) {
             alert('Информация компании обновлена!');
         } else {
-            alert('Пожалуйста, введите URL фото или название компании.');
+            alert('Пожалуйста, введите данные для обновления информации о компании.');
         }
     });
 

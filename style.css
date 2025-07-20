@@ -10,8 +10,9 @@
     --slider-bg: #ccc;
     --slider-handle: white;
     --slider-checked-bg: #2196F3;
-    --icon-color-light: #FFD700; /* Золотой для солнца */
-    --icon-color-dark: #A9A9A9; /* Серый для луны в светлом режиме */
+    --icon-color-light: #FFD700;
+    --icon-color-dark: #A9A9A9;
+    --description-text-color: #666; /* Цвет для описания компании */
 }
 
 body.dark-mode {
@@ -26,8 +27,9 @@ body.dark-mode {
     --slider-bg: #555;
     --slider-handle: #ccc;
     --slider-checked-bg: #9C27B0;
-    --icon-color-light: #A9A9A9; /* Серый для солнца в темном режиме */
-    --icon-color-dark: #ADD8E6; /* Светло-голубой для луны */
+    --icon-color-light: #A9A9A9;
+    --icon-color-dark: #ADD8E6;
+    --description-text-color: #bbb; /* Цвет для описания компании в темном режиме */
 }
 
 body {
@@ -45,7 +47,7 @@ body {
 .header-container {
     position: relative;
     width: 100%;
-    height: 120px; /* Сохраняем высоту */
+    height: 120px; /* Оставим 120px, чтобы было достаточно места */
     overflow: hidden;
     background-color: var(--header-bg);
     box-shadow: 0 2px 4px var(--shadow-color);
@@ -55,17 +57,17 @@ body {
     justify-content: flex-start;
 }
 
-/* Background Blur - Возвращаем предыдущий эффект */
+/* Background Blur */
 .background-blur {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
-    height: 100%; /* Занимает всю высоту контейнера */
+    height: 100%;
     background-size: cover;
     background-position: center;
     filter: blur(15px); /* Умеренное размытие */
-    opacity: 0.7; /* Небольшая прозрачность */
+    opacity: 0.7;
     transition: filter 0.3s, opacity 0.3s;
 }
 
@@ -74,15 +76,22 @@ body {
     z-index: 1;
     width: 100%;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 20px 0; /* Отступы: сверху, по бокам, снизу */
+    flex-direction: column; /* Теперь контент хедера тоже в колонку */
+    align-items: center; /* Центрируем по горизонтали */
+    padding: 15px 20px 0;
     box-sizing: border-box;
+}
+
+.company-info-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start; /* Выравнивание по верху, чтобы текст не сильно смещался */
 }
 
 .company-info {
     display: flex;
-    align-items: center;
+    align-items: center; /* Выравнивание элементов по центру */
     gap: 15px;
     color: var(--header-text-color);
 }
@@ -94,6 +103,7 @@ body {
     object-fit: cover;
     border: 2px solid var(--header-text-color);
     box-shadow: 0 0 6px var(--shadow-color);
+    flex-shrink: 0; /* Не сжимать логотип */
 }
 
 #company-name {
@@ -106,36 +116,49 @@ body {
     max-width: 150px;
 }
 
-/* Bot Logo - Крупнее и без рамок */
+.company-description {
+    margin: 2px 0 0; /* Небольшой отступ сверху */
+    font-size: 0.8em; /* Мелкий шрифт */
+    color: var(--description-text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px; /* Ограничение ширины */
+}
+
+/* Bot Logo - Теперь по размеру как фото фирмы */
 .bot-logo {
-    width: 50px; /* Увеличиваем размер */
-    height: 50px;
-    object-fit: contain;
+    width: 60px; /* Размер как у лого компании */
+    height: 60px;
+    object-fit: contain; /* Для PNG с прозрачным фоном */
     margin-left: auto;
     border-radius: 0;
     border: none;
     box-shadow: none;
+    flex-shrink: 0; /* Не сжимать логотип */
 }
 
-/* Theme Toggle Container */
+/* Theme Toggle Container - Выравнивание по центру фото компании */
 .theme-toggle-container {
     position: relative;
     z-index: 2;
     width: 100%;
     display: flex;
     align-items: center;
-    justify-content: flex-start; /* Выравнивание по левому краю */
-    padding: 5px 20px; /* Уменьшаем вертикальный отступ */
+    justify-content: center; /* Центрируем по горизонтали */
+    margin-top: 10px; /* Отступ от верхних элементов */
     box-sizing: border-box;
-    margin-top: auto; /* Прижимаем к низу хедера */
+    /* Точное позиционирование ползунка по центру логотипа компании */
+    /* Нужно рассчитать исходя из размеров и отступов */
+    /* Более точно: выравниваем по центру wrapper-а, а не только по company-info */
 }
 
 /* Стили для иконок солнца и луны */
 .theme-icon {
-    font-size: 1em; /* Уменьшаем размер иконок */
-    margin: 0 3px; /* Меньше отступы от ползунка */
+    font-size: 0.9em; /* Ещё меньше иконки */
+    margin: 0 2px; /* Ещё меньше отступы */
     transition: color 0.3s;
-    line-height: 1; /* Для лучшего выравнивания */
+    line-height: 1;
 }
 
 .sun-icon {
@@ -146,13 +169,13 @@ body {
     color: var(--icon-color-dark);
 }
 
-/* Стили для ползунка (слайдера) - Меньше в несколько раз */
+/* Стили для ползунка (слайдера) - Ещё меньше */
 .switch {
     position: relative;
     display: inline-block;
-    width: 35px; /* Значительно меньше ширина */
-    height: 20px; /* Значительно меньше высота */
-    margin: 0 5px; /* Отступы от иконок */
+    width: 30px; /* Ещё меньше ширина */
+    height: 17px; /* Ещё меньше высота */
+    margin: 0 4px; /* Меньше отступы от иконок */
 }
 
 .switch input {
@@ -176,10 +199,10 @@ body {
 .slider:before {
     position: absolute;
     content: "";
-    height: 14px; /* Меньше размер ручки */
-    width: 14px;
-    left: 3px; /* Меньше отступ */
-    bottom: 3px; /* Меньше отступ */
+    height: 12px; /* Меньше размер ручки */
+    width: 12px;
+    left: 3px;
+    bottom: 2.5px; /* Корректируем для центровки */
     background-color: var(--slider-handle);
     -webkit-transition: .4s;
     transition: .4s;
@@ -194,19 +217,20 @@ input:focus + .slider {
 }
 
 input:checked + .slider:before {
-    -webkit-transform: translateX(15px); /* Меньше смещение */
-    -ms-transform: translateX(15px);
-    transform: translateX(15px);
+    -webkit-transform: translateX(13px); /* Корректируем смещение */
+    -ms-transform: translateX(13px);
+    transform: translateX(13px);
 }
 
 /* Rounded sliders */
 .slider.round {
-    border-radius: 20px; /* Соответствует новой высоте */
+    border-radius: 17px; /* Соответствует новой высоте */
 }
 
 .slider.round:before {
     border-radius: 50%;
 }
+
 
 .content-area {
     padding: 20px;
@@ -219,13 +243,14 @@ input:checked + .slider:before {
     flex-direction: column;
     gap: 10px;
     align-items: center;
-    border: 1px dashed var(--border-color); /* Для визуального разделения блоков */
+    border: 1px dashed var(--border-color);
     padding: 15px;
     border-radius: 10px;
-    margin-bottom: 20px; /* Отступ между блоками */
+    margin-bottom: 20px;
 }
 
-.admin-test-controls input[type="text"] {
+.admin-test-controls input[type="text"],
+.admin-test-controls textarea {
     width: 80%;
     max-width: 300px;
     padding: 10px;
@@ -234,6 +259,8 @@ input:checked + .slider:before {
     background-color: var(--header-bg);
     color: var(--text-color);
     box-sizing: border-box;
+    resize: vertical; /* Разрешаем изменение размера textarea по вертикали */
+    min-height: 40px;
 }
 
 .admin-test-controls button {
