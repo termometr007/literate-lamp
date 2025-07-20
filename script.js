@@ -6,8 +6,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const headerContainer = document.querySelector('.header-container');
     const themeSwitch = document.getElementById('theme-switch');
     const botLogo = document.getElementById('bot-logo');
-    const sunIcon = document.querySelector('.sun-icon');
-    const moonIcon = document.querySelector('.moon-icon');
+    const sunIcon = document.querySelector('.theme-icon.sun-icon');
+    const moonIcon = document.querySelector('.theme-icon.moon-icon');
+    const contentArea = document.querySelector('.content-area'); // Для коррекции padding-top
 
     const logoUrlInput = document.getElementById('logo-url-input');
     const companyNameInput = document.getElementById('company-name-input');
@@ -35,36 +36,33 @@ document.addEventListener('DOMContentLoaded', () => {
             companyDescription.textContent = description;
             companyDescription.style.display = description ? 'block' : 'none';
 
-            // Логика для анимации "бегущей строки"
-            // Временно добавляем текст в невидимый элемент для измерения его полной ширины
-            const tempSpan = document.createElement('span');
-            tempSpan.style.whiteSpace = 'nowrap';
-            tempSpan.style.position = 'absolute';
-            tempSpan.style.left = '-9999px'; // Убираем с экрана
-            tempSpan.textContent = description;
-            document.body.appendChild(tempSpan);
-            const textWidth = tempSpan.offsetWidth;
-            document.body.removeChild(tempSpan);
+            // --- Логика для анимации "бегущей строки" (исправлено) ---
+            companyDescription.style.animation = 'none'; // Сброс анимации перед измерением
+            companyDescription.classList.remove('animate-scroll');
 
-            // Получаем фактическую ширину контейнера, в который помещается текст (company-description)
-            // Важно: .company-description должен иметь fixed/max-width для корректного расчета
-            const containerWidth = companyDescription.offsetWidth; 
+            // Временно устанавливаем ширину контейнера для измерения текста
+            const originalMaxWidth = companyDescription.style.maxWidth;
+            companyDescription.style.maxWidth = 'none'; // Снимаем ограничение для измерения полной ширины
+            const textWidth = companyDescription.scrollWidth; // Полная ширина текста
+            companyDescription.style.maxWidth = originalMaxWidth; // Возвращаем оригинальное ограничение
 
+            const containerWidth = companyDescription.offsetWidth; // Фактическая видимая ширина контейнера
+
+            // Если текст длиннее видимого контейнера, запускаем анимацию
             if (textWidth > containerWidth) {
-                // Если текст длиннее контейнера, запускаем анимацию
-                const scrollSpeed = 40; // px/sec
-                const scrollDistance = textWidth - containerWidth + 20; // + небольшой отступ
+                const scrollSpeed = 25; // px/sec, можно регулировать скорость
+                // Прокручиваем текст на всю его ширину + ширина контейнера,
+                // чтобы создать плавное повторение после полного исчезновения
+                const scrollDistance = textWidth + 10; // Дополнительный отступ между повторениями
                 const scrollDuration = scrollDistance / scrollSpeed;
 
                 companyDescription.style.setProperty('--scroll-duration', `${scrollDuration}s`);
-                companyDescription.style.setProperty('--container-width', `${containerWidth}px`);
-                companyDescription.style.setProperty('--scroll-offset', `${scrollDistance}px`); // Расстояние, на которое текст должен прокрутиться
+                companyDescription.style.setProperty('--scroll-distance-px', `-${scrollDistance}px`); // Расстояние для анимации
 
                 companyDescription.classList.add('animate-scroll');
             } else {
-                // Если текст помещается, убираем анимацию
                 companyDescription.classList.remove('animate-scroll');
-                companyDescription.style.animation = 'none';
+                companyDescription.style.animation = 'none'; // Гарантируем отсутствие анимации
             }
         }
     }
@@ -77,34 +75,60 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Устанавливаем дефолтные значения при загрузке
-    updateCompanyInfo('https://via.placeholder.com/60/0000FF/FFFFFF?text=MyComp', 'Название Компании', 'Это довольно длинное мотивационное описание, которое должно прокручиваться полностью, не обрываясь, чтобы пользователи могли прочитать весь текст без проблем.');
+    updateCompanyInfo('https://via.placeholder.com/60/0000FF/FFFFFF?text=MyComp', 'Название Компании', 'Это довольно длинное мотивационное описание, которое должно прокручиваться полностью, не обрываясь, чтобы пользователи могли прочитать весь текст без проблем, и даже очень-очень длинный текст будет виден целиком!');
     updateBotLogo('https://via.placeholder.com/60/FF5733/FFFFFF?text=B');
 
-    // Логика скролла для скрытия/показа хедера
+    // --- Логика скролла для скрытия/показа хедера с эффектом "прилипания" (исправлено) ---
     let lastScrollTop = 0;
-    const headerInitialHeight = 120; // Изначальная высота хедера
-    const headerHiddenHeight = 0; // Высота хедера в скрытом состоянии
-    const scrollThreshold = 30; // Порог скролла для активации скрытия/показа
+    let currentScrollTop = 0;
+    const headerInitialHeight = parseInt(getComputedStyle(headerContainer).getPropertyValue('--header-height'));
+    const scrollSensitivity = 0.5; // Насколько сильно панель "следует" за пальцем (0.1 - слабо, 1.0 - сильно)
+    let headerOffset = 0; // Текущее смещение хедера по Y
+
+    // Для предотвращения резких скачков
+    let isScrolling = false;
+    let scrollTimeout;
 
     window.addEventListener('scroll', () => {
-        let currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        isScrolling = true;
 
-        // Если скроллим вверх
-        if (currentScrollTop < lastScrollTop && currentScrollTop < (document.body.scrollHeight - window.innerHeight - scrollThreshold)) {
-            // Показываем хедер, если скроллим вверх и не в самом низу страницы
-            headerContainer.style.height = `${headerInitialHeight}px`;
-            headerContainer.style.opacity = '1';
+        clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(() => {
+            isScrolling = false;
+            // Когда пользователь отпустил палец, "доводим" панель до конца
+            if (headerOffset < -headerInitialHeight / 2) { // Если скрыта более чем наполовину
+                headerOffset = -headerInitialHeight;
+            } else {
+                headerOffset = 0;
+            }
+            headerContainer.style.transition = 'transform var(--header-transition-duration) ease-out';
+            headerContainer.style.transform = `translateY(${headerOffset}px)`;
+            // Обновляем padding-top для content-area
+            contentArea.style.paddingTop = `${headerInitialHeight + headerOffset}px`;
+
+        }, 150); // Небольшая задержка после остановки скролла
+
+        const scrollDelta = currentScrollTop - lastScrollTop;
+
+        // Если скроллим вверх (показываем панель)
+        if (scrollDelta < 0) {
+            headerOffset = Math.min(0, headerOffset - scrollDelta * scrollSensitivity);
         }
-        // Если скроллим вниз
-        else if (currentScrollTop > lastScrollTop && currentScrollTop > scrollThreshold) {
-            // Скрываем хедер, если скроллим вниз и превысили порог
-            headerContainer.style.height = `${headerHiddenHeight}px`;
-            headerContainer.style.opacity = '0';
+        // Если скроллим вниз (скрываем панель)
+        else if (scrollDelta > 0) {
+            headerOffset = Math.max(-headerInitialHeight, headerOffset - scrollDelta * scrollSensitivity);
         }
+
+        // Применяем transform, но без transition во время активного скролла
+        headerContainer.style.transition = 'none';
+        headerContainer.style.transform = `translateY(${headerOffset}px)`;
+        // Обновляем padding-top для content-area
+        contentArea.style.paddingTop = `${headerInitialHeight + headerOffset}px`;
+
 
         lastScrollTop = currentScrollTop;
-    });
-
+    }, { passive: true }); // Использование passive: true для лучшей производительности скролла
 
     // Функция для применения темы
     function applyTheme(isDark) {
@@ -147,8 +171,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (newLogoUrl || newCompanyName || newCompanyDescription) {
             // После обновления, пересчитываем анимацию текста, если она нужна
-            // Вызываем updateCompanyInfo еще раз, чтобы триггернуть пересчет
-            // (передаем текущие значения, чтобы не сбросить их)
             updateCompanyInfo(companyLogo.src, companyName.textContent, companyDescription.textContent);
             alert('Информация компании обновлена!');
         } else {
