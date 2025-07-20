@@ -17,6 +17,7 @@
     /* Новые переменные для анимации панели */
     --header-height: 120px; /* Изначальная высота панели */
     --header-transition-duration: 0.3s; /* Для плавной анимации */
+    --border-radius-size: 15px; /* Размер закругления */
 }
 
 body.dark-mode {
@@ -39,7 +40,6 @@ body.dark-mode {
 body {
     font-family: 'Roboto', sans-serif;
     margin: 0;
-    /* padding: 0; Уберем это, padding-top будет на body */
     background-color: var(--background-color);
     color: var(--text-color);
     transition: background-color 0.3s, color 0.3s;
@@ -62,7 +62,7 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    z-index: 10; /* Увеличим z-index, чтобы быть уверенным, что она внизу, но не закрывается полностью */
+    z-index: 10; /* Нижний слой */
     will-change: transform; /* Оптимизация для анимации */
 }
 
@@ -71,15 +71,16 @@ body {
     position: relative; /* Чтобы z-index работал */
     z-index: 20; /* Верхний слой - выше хедера */
     padding: 20px;
-    /* padding-top: calc(var(--header-height) + 20px); Убрано, так как body уже имеет padding-top */
     text-align: center;
     background-color: var(--background-color); /* Фон для страницы */
-    border-top-left-radius: 15px; /* Закругленные края */
-    border-top-right-radius: 15px;
-    /* margin-top: calc(var(--header-height) * -1); УБИРАЕМ это, это могло быть причиной */
-    transition: background-color 0.3s, color 0.3s; /* Убираем margin-top из transition */
+    border-top-left-radius: var(--border-radius-size); /* Закругленные края */
+    border-top-right-radius: var(--border-radius-size);
+    /* Добавляем небольшой отрицательный margin-top, чтобы она наезжала на хедер */
+    margin-top: calc(var(--border-radius-size) * -1); /* Наезжаем на хедер на высоту радиуса */
+    padding-top: calc(20px + var(--border-radius-size)); /* Компенсируем padding-top для контента */
+    box-shadow: 0 -2px 5px rgba(0,0,0,0.1); /* Небольшая тень, чтобы подчеркнуть наложение */
+    transition: background-color 0.3s, color 0.3s, margin-top var(--header-transition-duration) ease-out; /* Анимируем margin-top */
 }
-
 
 /* Background Blur */
 .background-blur {
@@ -156,6 +157,7 @@ body {
     position: relative; /* Для позиционирования текста при анимации */
     padding-right: 5px;
     text-indent: 0; /* Убедимся, что нет лишних отступов */
+    line-height: 1.2; /* Для корректного расчета высоты строки */
 }
 
 /* Анимация "бегущей строки" */
@@ -308,7 +310,7 @@ input:checked + .slider:before {
     background-color: var(--button-bg);
     color: var(--button-text);
     border: none;
-    border-radius: 8-px;
+    border-radius: 8px;
     transition: background-color 0.3s, transform 0.2s;
 }
 
