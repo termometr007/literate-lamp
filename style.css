@@ -18,6 +18,7 @@
     --header-height: 120px; /* Изначальная высота панели */
     --header-transition-duration: 0.3s; /* Для плавной анимации */
     --border-radius-size: 15px; /* Размер закругления */
+    --text-scroll-pause-duration: 3s; /* Длительность паузы в начале анимации текста */
 }
 
 body.dark-mode {
@@ -42,7 +43,8 @@ body {
     margin: 0;
     background-color: var(--background-color);
     color: var(--text-color);
-    transition: background-color 0.3s, color 0.3s;
+    /* Удаляем transition для body, чтобы смена темы была мгновенной */
+    /* transition: background-color 0.3s, color 0.3s; */ 
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     padding-top: var(--header-height); /* Отступ сверху для контента */
@@ -59,7 +61,8 @@ body {
     overflow: hidden; 
     background-color: var(--header-bg);
     box-shadow: 0 2px 4px var(--shadow-color);
-    transition: background-color 0.3s, box-shadow 0.3s; 
+    /* Удаляем transition для background-color и box-shadow */
+    /* transition: background-color 0.3s, box-shadow 0.3s; */
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
@@ -78,7 +81,8 @@ body {
     margin-top: calc(var(--border-radius-size) * -1); 
     padding-top: calc(20px + var(--border-radius-size)); 
     box-shadow: 0 -2px 5px rgba(0,0,0,0.1); 
-    transition: background-color 0.3s, color 0.3s, transform var(--header-transition-duration) ease-out; 
+    /* Удаляем transition для background-color и color, оставляем только для transform */
+    transition: transform var(--header-transition-duration) ease-out; 
     will-change: transform; 
 }
 
@@ -108,7 +112,8 @@ body {
     background-position: center;
     filter: blur(15px);
     opacity: 0.7;
-    transition: filter 0.3s, opacity 0.3s;
+    /* Удаляем transition для filter и opacity */
+    /* transition: filter 0.3s, opacity 0.3s; */
 }
 
 .header-content {
@@ -132,7 +137,8 @@ body {
     display: flex;
     align-items: center;
     gap: 15px;
-    color: var(--header-text-color);
+    /* Удаляем transition для color */
+    /* color: var(--header-text-color); */
 }
 
 .round-logo {
@@ -151,7 +157,6 @@ body {
     justify-content: center;
     flex-grow: 1;
     overflow: hidden; /* Важно для скрытия части текста */
-    /* max-width: 180px; Убрано, теперь JS будет это определять */
 }
 
 #company-name {
@@ -159,21 +164,22 @@ body {
     font-size: 1.3em;
     font-weight: bold;
     white-space: nowrap;
-    overflow: hidden; /* Должно быть на родительском элементе .text-info */
-    /* max-width: 180px; Убрано */
+    overflow: hidden; 
 }
 
 .company-description {
     margin: 2px 0 0;
     font-size: 0.8em;
-    color: var(--description-text-color);
+    color: var(--description-text-color); /* Сохраняем цвет текста */
     white-space: nowrap; /* Гарантируем, что текст не переносится */
     display: inline-block; /* Важно для измерения ширины текста */
     position: relative; 
     line-height: 1.2; 
     will-change: transform; 
+    
     /* Анимация будет применяться JS, но ее свойства тут */
-    animation: scroll-text var(--scroll-duration) linear infinite;
+    /* Добавляем паузу в начале анимации */
+    animation: scroll-text var(--scroll-duration) linear var(--text-scroll-pause-duration) infinite;
     animation-play-state: paused; /* Изначально пауза, пока JS не активирует */
 }
 
@@ -212,7 +218,8 @@ body {
 .theme-icon {
     font-size: 0.9em;
     margin: 0 2px;
-    transition: color 0.3s;
+    /* Удаляем transition для color */
+    /* transition: color 0.3s; */
     line-height: 1;
 }
 
@@ -248,8 +255,9 @@ body {
     right: 0;
     bottom: 0;
     background-color: var(--slider-bg);
-    -webkit-transition: .4s;
-    transition: .4s;
+    /* Удаляем transition для slider */
+    /* -webkit-transition: .4s;
+    transition: .4s; */
 }
 
 .slider:before {
@@ -260,8 +268,9 @@ body {
     left: 2px;
     bottom: 2px;
     background-color: var(--slider-handle);
-    -webkit-transition: .4s;
-    transition: .4s;
+    /* Удаляем transition для slider:before */
+    /* -webkit-transition: .4s;
+    transition: .4s; */
 }
 
 input:checked + .slider {

@@ -7,12 +7,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const themeSwitch = document.getElementById('theme-switch');
     const botLogo = document.getElementById('bot-logo');
     const sunIcon = document.querySelector('.theme-icon.sun-icon');
-    const moonIcon = document.querySelector('.moon-icon'); // Уточнил селектор
+    const moonIcon = document.querySelector('.moon-icon');
     const contentArea = document.querySelector('.content-area');
 
     const logoUrlInput = document.getElementById('logo-url-input');
     const companyNameInput = document.getElementById('company-name-input');
-    const companyDescriptionInput = document.getElementById('company-description-input');
+    const companyDescriptionInput = document.getElementById('company-description-input'); 
     const applyCompanyChangesBtn = document.getElementById('apply-company-changes');
 
     const botLogoUrlInput = document.getElementById('bot-logo-url-input');
@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (window.Telegram && window.Telegram.WebApp) {
         window.Telegram.WebApp.ready();
-        // window.Telegram.WebApp.expand(); // Это может вызвать проблемы на некоторых устройствах, закомментируем пока
+        // window.Telegram.WebApp.expand();
     }
 
     // Функция для обновления логотипа компании, названия и описания
@@ -37,13 +37,12 @@ document.addEventListener('DOMContentLoaded', () => {
             companyDescription.style.display = description ? 'inline-block' : 'none';
 
             // --- Логика для анимации "бегущей строки" ---
-            // Сброс всех анимаций и классов, чтобы гарантировать чистый старт
+            // Сбрасываем анимацию полностью
             companyDescription.style.animation = 'none';
             companyDescription.classList.remove('animate-scroll');
-            companyDescription.style.transform = ''; // Сброс любого transform
-            
+            companyDescription.style.transform = 'translateX(0)'; // Гарантируем начальную позицию
+
             // Принудительная перерисовка DOM
-            // Это очень важный шаг, который заставляет браузер "забыть" предыдущее состояние анимации
             void companyDescription.offsetWidth; 
 
             // Используем requestAnimationFrame для гарантии, что измерения будут после рефлоу
@@ -54,7 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const tempSpan = document.createElement('span');
                 tempSpan.style.whiteSpace = 'nowrap';
                 tempSpan.style.position = 'absolute';
-                tempSpan.style.visibility = 'hidden'; // Скрываем, чтобы не моргало
+                tempSpan.style.visibility = 'hidden'; 
                 tempSpan.style.fontSize = getComputedStyle(companyDescription).fontSize;
                 tempSpan.style.fontFamily = getComputedStyle(companyDescription).fontFamily;
                 tempSpan.textContent = description;
@@ -62,27 +61,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 const textWidth = tempSpan.offsetWidth;
                 document.body.removeChild(tempSpan);
 
-                // Добавим отладочные сообщения
-                // console.log('Text Width:', textWidth, 'Container Width:', containerWidth);
-
                 if (textWidth > containerWidth) {
-                    const scrollSpeed = 20; // px/sec, немного медленнее для лучшей читаемости
-                    // Прокрутка на всю ширину текста, плюс небольшой отступ, чтобы был виден "конец"
-                    const scrollDistance = textWidth + 10; 
+                    const scrollSpeed = 20; // px/sec
+                    // Прокрутка на всю ширину текста
+                    const scrollDistance = textWidth; 
                     const scrollDuration = scrollDistance / scrollSpeed;
 
                     companyDescription.style.setProperty('--scroll-duration', `${scrollDuration}s`);
                     companyDescription.style.setProperty('--scroll-distance-px', `-${scrollDistance}px`);
                     
-                    // console.log('Setting animation. Duration:', scrollDuration, 'Distance:', scrollDistance);
+                    // Устанавливаем animation-delay для паузы в начале
+                    const pauseDuration = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--text-scroll-pause-duration'));
+                    companyDescription.style.animation = `scroll-text var(--scroll-duration) linear var(--text-scroll-pause-duration) infinite`;
                     companyDescription.classList.add('animate-scroll');
-                    companyDescription.style.animationPlayState = 'running'; // Убедимся, что анимация запущена
+                    companyDescription.style.animationPlayState = 'running'; 
                 } else {
                     companyDescription.classList.remove('animate-scroll');
-                    companyDescription.style.animation = 'none'; // Убедимся, что анимация остановлена
-                    companyDescription.style.transform = 'translateX(0)'; // Возвращаем на место
-                    companyDescription.style.animationPlayState = 'paused'; // Пауза
-                    // console.log('Text fits. No animation needed.');
+                    companyDescription.style.animation = 'none'; 
+                    companyDescription.style.transform = 'translateX(0)'; 
+                    companyDescription.style.animationPlayState = 'paused'; 
                 }
             });
         }
@@ -109,14 +106,15 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('scroll', () => {
         let currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
-        // Определяем, насколько высоко должен подняться content-area
-        // 0px при currentScrollTop = 0
-        // -maxTranslateY при currentScrollTop >= maxTranslateY
         let translateYValue = -Math.min(currentScrollTop, maxTranslateY);
         
         contentArea.style.transform = `translateY(${translateYValue}px)`;
 
         lastScrollTop = currentScrollTop;
+
+        if (currentScrollTop === 0) {
+            contentArea.style.transform = `translateY(0px)`;
+        }
     });
 
 
@@ -127,8 +125,9 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             document.body.classList.remove('dark-mode');
         }
-        sunIcon.style.color = getComputedStyle(document.body).getPropertyValue('--icon-color-light');
-        moonIcon.style.color = getComputedStyle(document.body).getPropertyValue('--icon-color-dark');
+        // Иконки теперь управляются CSS через var() и не имеют transition напрямую
+        // sunIcon.style.color = getComputedStyle(document.body).getPropertyValue('--icon-color-light');
+        // moonIcon.style.color = getComputedStyle(document.body).getPropertyValue('--icon-color-dark');
     }
 
     // Логика переключения темы (дневной/ночной)
