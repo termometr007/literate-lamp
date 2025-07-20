@@ -12,7 +12,7 @@
     --slider-checked-bg: #2196F3;
     --icon-color-light: #FFD700;
     --icon-color-dark: #A9A9A9;
-    --description-text-color: #666;
+    /* --description-text-color: #666; */ /* Удалено, так как описание больше не нужно */
 
     /* Новые переменные для анимации панели */
     --header-height: 120px; /* Изначальная высота панели */
@@ -34,7 +34,7 @@ body.dark-mode {
     --slider-checked-bg: #9C27B0;
     --icon-color-light: #A9A9A9;
     --icon-color-dark: #ADD8E6;
-    --description-text-color: #bbb;
+    /* --description-text-color: #bbb; */ /* Удалено, так как описание больше не нужно */
 }
 
 body {
@@ -42,7 +42,7 @@ body {
     margin: 0;
     background-color: var(--background-color);
     color: var(--text-color);
-    transition: background-color 0.3s, color 0.3s;
+    /* transition: background-color 0.3s, color 0.3s; */ /* Удалено для резкой смены темы */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     padding-top: var(--header-height); /* Отступ сверху для контента */
@@ -58,8 +58,7 @@ body {
     overflow: hidden; 
     background-color: var(--header-bg);
     box-shadow: 0 2px 4px var(--shadow-color);
-    /* Убираем transform из transition, т.к. панель не должна двигаться */
-    transition: background-color 0.3s, box-shadow 0.3s; 
+    /* transition: background-color 0.3s, box-shadow 0.3s; */ /* Удалено для резкой смены темы */
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
@@ -79,8 +78,8 @@ body {
     margin-top: calc(var(--border-radius-size) * -1); /* Наезжаем на хедер на высоту радиуса */
     padding-top: calc(20px + var(--border-radius-size)); /* Компенсируем padding-top для контента */
     box-shadow: 0 -2px 5px rgba(0,0,0,0.1); /* Небольшая тень, чтобы подчеркнуть наложение */
-    /* Теперь content-area будет анимироваться по transformY */
-    transition: background-color 0.3s, color 0.3s, transform var(--header-transition-duration) ease-out;
+    /* transition: background-color 0.3s, color 0.3s, transform var(--header-transition-duration) ease-out; */ /* Удалено background-color и color для резкой смены темы */
+    transition: transform var(--header-transition-duration) ease-out; /* Оставлено для анимации скролла */
     will-change: transform; /* Оптимизация для анимации */
 }
 
@@ -95,7 +94,7 @@ body {
     background-position: center;
     filter: blur(15px);
     opacity: 0.7;
-    transition: filter 0.3s, opacity 0.3s;
+    /* transition: filter 0.3s, opacity 0.3s; */ /* Удалено для резкой смены темы */
 }
 
 .header-content {
@@ -120,6 +119,7 @@ body {
     align-items: center;
     gap: 15px;
     color: var(--header-text-color);
+    /* transition: color 0.3s; */ /* Удалено для резкой смены темы */
 }
 
 .round-logo {
@@ -149,29 +149,29 @@ body {
     max-width: 180px;
 }
 
-.company-description {
+/* Полностью удаляем блок .company-description и @keyframes scroll-text, так как описание больше не нужно */
+/* .company-description {
     margin: 2px 0 0;
     font-size: 0.8em;
     color: var(--description-text-color);
-    white-space: nowrap; /* Важно для анимации */
-    overflow: hidden; /* Важно для анимации */
-    max-width: 180px; /* Задаем максимальную ширину контейнера */
-    position: relative; /* Для позиционирования текста при анимации */
+    white-space: nowrap;
+    overflow: hidden;
+    max-width: 180px;
+    position: relative;
     padding-right: 5px;
-    text-indent: 0; /* Убедимся, что нет лишних отступов */
-    line-height: 1.2; /* Для корректного расчета высоты строки */
-}
+    text-indent: 0;
+    line-height: 1.2;
+} */
 
-/* Анимация "бегущей строки" */
-.company-description.animate-scroll {
+/* .company-description.animate-scroll {
     animation: scroll-text var(--scroll-duration) linear infinite;
     animation-play-state: running;
-}
+} */
 
-@keyframes scroll-text {
+/* @keyframes scroll-text {
     0% { transform: translateX(0); }
-    100% { transform: translateX(var(--scroll-distance-px)); } /* Прокрутка на вычисленное расстояние */
-}
+    100% { transform: translateX(var(--scroll-distance-px)); }
+} */
 
 
 /* Bot Logo */
@@ -203,7 +203,7 @@ body {
 .theme-icon {
     font-size: 0.9em;
     margin: 0 2px;
-    transition: color 0.3s;
+    /* transition: color 0.3s; */ /* Удалено для резкой смены темы */
     line-height: 1;
 }
 
@@ -239,8 +239,8 @@ body {
     right: 0;
     bottom: 0;
     background-color: var(--slider-bg);
-    -webkit-transition: .4s;
-    transition: .4s;
+    /* -webkit-transition: .4s; */ /* Удалено для резкой смены темы */
+    /* transition: .4s; */ /* Удалено для резкой смены темы */
 }
 
 .slider:before {
@@ -251,8 +251,8 @@ body {
     left: 2px;
     bottom: 2px;
     background-color: var(--slider-handle);
-    -webkit-transition: .4s;
-    transition: .4s;
+    /* -webkit-transition: .4s; */ /* Удалено для резкой смены темы */
+    /* transition: .4s; */ /* Удалено для резкой смены темы */
 }
 
 input:checked + .slider {
