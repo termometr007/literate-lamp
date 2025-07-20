@@ -7,6 +7,9 @@
     --button-text: #fff;
     --border-color: #ddd;
     --shadow-color: rgba(0, 0, 0, 0.1);
+    --slider-bg: #ccc;
+    --slider-handle: white;
+    --slider-checked-bg: #2196F3;
 }
 
 body.dark-mode {
@@ -14,14 +17,17 @@ body.dark-mode {
     --background-color: #1a1a1a;
     --header-bg: #2d2d2d;
     --header-text-color: #f0f2f5;
-    --button-bg: #6a0dad; /* Фиолетовый оттенок */
+    --button-bg: #6a0dad;
     --button-text: #fff;
     --border-color: #444;
     --shadow-color: rgba(0, 0, 0, 0.3);
+    --slider-bg: #555;
+    --slider-handle: #ccc;
+    --slider-checked-bg: #9C27B0; /* Более темный фиолетовый */
 }
 
 body {
-    font-family: 'Roboto', sans-serif; /* Или любой другой современный шрифт */
+    font-family: 'Roboto', sans-serif;
     margin: 0;
     padding: 0;
     background-color: var(--background-color);
@@ -32,14 +38,27 @@ body {
 .header-container {
     position: relative;
     width: 100%;
-    height: 150px; /* Начальная высота */
+    height: 180px; /* Увеличим высоту для размещения ползунка */
     overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     background-color: var(--header-bg);
     box-shadow: 0 2px 4px var(--shadow-color);
-    transition: height 0.3s ease-out, background-color 0.3s;
+    transition: height 0.3s ease-out, opacity 0.3s, background-color 0.3s;
+    display: flex;
+    flex-direction: column; /* Элементы будут располагаться сверху вниз */
+    align-items: center;
+    justify-content: flex-start; /* Выравнивание по верху */
+    padding-top: 20px; /* Отступ сверху */
+}
+
+.header-content {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    display: flex;
+    justify-content: space-between; /* Распределить элементы по краям */
+    align-items: center;
+    padding: 0 20px; /* Отступы по бокам */
+    box-sizing: border-box; /* Учитываем padding в ширине */
 }
 
 .background-blur {
@@ -50,18 +69,15 @@ body {
     height: 100%;
     background-size: cover;
     background-position: center;
-    filter: blur(10px); /* Начальное размытие */
-    opacity: 0.7; /* Небольшая прозрачность для лучшего эффекта */
+    filter: blur(10px);
+    opacity: 0.7;
     transition: filter 0.3s, opacity 0.3s;
 }
 
 .company-info {
-    position: relative; /* Чтобы быть поверх размытого фона */
-    z-index: 1;
-    display: flex;
-    flex-direction: column;
+    display: flex; /* Для размещения лого и названия в ряд */
     align-items: center;
-    gap: 10px;
+    gap: 15px; /* Промежуток между лого и названием */
     color: var(--header-text-color);
 }
 
@@ -70,7 +86,7 @@ body {
     height: 80px;
     border-radius: 50%;
     object-fit: cover;
-    border: 3px solid var(--header-text-color); /* Небольшая рамка вокруг лого */
+    border: 3px solid var(--header-text-color);
     box-shadow: 0 0 8px var(--shadow-color);
 }
 
@@ -78,14 +94,115 @@ body {
     margin: 0;
     font-size: 1.5em;
     font-weight: bold;
+    white-space: nowrap; /* Предотвращает перенос строки */
+    overflow: hidden; /* Скрывает то, что не помещается */
+    text-overflow: ellipsis; /* Добавляет многоточие */
+    max-width: 150px; /* Ограничиваем ширину для длинных названий */
 }
+
+.bot-logo {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-left: auto; /* Отталкивает к правому краю */
+    box-shadow: 0 0 5px var(--shadow-color);
+}
+
+.theme-toggle-container {
+    position: relative; /* Относительно header-container */
+    z-index: 2; /* Выше фона и основного контента хедера */
+    margin-top: 15px; /* Отступ от company-info */
+    /* Можно использовать absolute positioning если нужно более точное размещение */
+    /* top: 110px; */
+    /* right: 20px; */
+}
+
+/* Стили для ползунка (слайдера) */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--slider-bg);
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: var(--slider-handle);
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+input:checked + .slider {
+    background-color: var(--slider-checked-bg);
+}
+
+input:focus + .slider {
+    box-shadow: 0 0 1px var(--slider-checked-bg);
+}
+
+input:checked + .slider:before {
+    -webkit-transform: translateX(26px);
+    -ms-transform: translateX(26px);
+    transform: translateX(26px);
+}
+
+/* Rounded sliders */
+.slider.round {
+    border-radius: 34px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
 
 .content-area {
     padding: 20px;
     text-align: center;
 }
 
-#toggle-theme-btn {
+.admin-test-controls {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+}
+
+.admin-test-controls input[type="text"] {
+    width: 80%;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: var(--header-bg); /* Используем цвет фона хедера для полей */
+    color: var(--text-color);
+}
+
+.admin-test-controls button {
     padding: 10px 20px;
     font-size: 1em;
     cursor: pointer;
@@ -96,6 +213,6 @@ body {
     transition: background-color 0.3s, transform 0.2s;
 }
 
-#toggle-theme-btn:hover {
+.admin-test-controls button:hover {
     transform: translateY(-2px);
 }

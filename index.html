@@ -10,14 +10,29 @@
 <body>
     <div class="header-container">
         <div class="background-blur"></div>
-        <div class="company-info">
-            <img id="company-logo" src="https://via.placeholder.com/100/0000FF/FFFFFF?text=Logo" alt="Company Logo" class="round-logo">
-            <h1 id="company-name">Название Компании</h1>
+        <div class="header-content">
+            <div class="company-info">
+                <img id="company-logo" src="https://via.placeholder.com/100/0000FF/FFFFFF?text=Logo" alt="Company Logo" class="round-logo">
+                <h1 id="company-name">Название Компании</h1>
+            </div>
+            <img id="bot-logo" src="https://via.placeholder.com/40/FF5733/FFFFFF?text=B" alt="Bot Logo" class="bot-logo">
+        </div>
+        <div class="theme-toggle-container">
+            <label class="switch">
+                <input type="checkbox" id="theme-switch">
+                <span class="slider round"></span>
+            </label>
         </div>
     </div>
     <div class="content-area">
-        <p>Здесь будет основной функционал.</p>
-        <button id="toggle-theme-btn">Переключить тему</button>
+        <h2>Основной функционал будет здесь</h2>
+        <p>Для тестирования админского функционала (только для разработчика):</p>
+        <div class="admin-test-controls">
+            <input type="text" id="logo-url-input" placeholder="URL фото компании (например, из imgbb.com)">
+            <input type="text" id="company-name-input" placeholder="Название компании">
+            <button id="apply-admin-changes">Применить изменения</button>
+        </div>
+        <p>Свайпните вниз, чтобы скрыть верхнюю панель.</p>
     </div>
 
     <script src="script.js"></script>
