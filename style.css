@@ -10,14 +10,14 @@
     --slider-bg: #ccc;
     --slider-handle: white;
     --slider-checked-bg: #2196F3;
-    --icon-color-light: #FFD700; /* Восстановлен цвет иконки солнца */
-    --icon-color-dark: #A9A9A9; /* Восстановлен цвет иконки луны */
-    /* --description-text-color: #666; */ /* Удалено, так как описание больше не нужно */
+    --icon-color-light: #FFD700;
+    --icon-color-dark: #A9A9A9;
+    /* --description-text-color: #666; */ /* Удалено */
 
     /* Новые переменные для анимации панели */
-    --header-height: 120px; /* Изначальная высота панели */
-    --header-transition-duration: 0.3s; /* Для плавной анимации */
-    --border-radius-size: 15px; /* Размер закругления */
+    --header-height: 120px;
+    --header-transition-duration: 0.3s;
+    --border-radius-size: 15px;
 }
 
 body.dark-mode {
@@ -32,9 +32,9 @@ body.dark-mode {
     --slider-bg: #555;
     --slider-handle: #ccc;
     --slider-checked-bg: #9C27B0;
-    --icon-color-light: #A9A9A9; /* Восстановлен цвет иконки солнца в темной теме */
-    --icon-color-dark: #ADD8E6; /* Восстановлен цвет иконки луны в темной теме */
-    /* --description-text-color: #bbb; */ /* Удалено, так как описание больше не нужно */
+    --icon-color-light: #A9A9A9;
+    --icon-color-dark: #ADD8E6;
+    /* --description-text-color: #bbb; */ /* Удалено */
 }
 
 body {
@@ -42,15 +42,15 @@ body {
     margin: 0;
     background-color: var(--background-color);
     color: var(--text-color);
-    /* transition: background-color 0.3s, color 0.3s; */ /* Удалено для резкой смены темы */
+    /* Удалены переходы для резкой смены темы */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    padding-top: var(--header-height); /* Отступ сверху для контента */
+    padding-top: var(--header-height);
 }
 
 /* Header Container */
 .header-container {
-    position: fixed; /* Панель фиксирована вверху */
+    position: fixed;
     top: 0;
     left: 0;
     width: 100%;
@@ -58,28 +58,28 @@ body {
     overflow: hidden; 
     background-color: var(--header-bg);
     box-shadow: 0 2px 4px var(--shadow-color);
-    /* transition: background-color 0.3s, box-shadow 0.3s; */ /* Удалено для резкой смены темы */
+    /* Удалены переходы для резкой смены темы */
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    z-index: 10; /* Нижний слой */
+    z-index: 10;
 }
 
 /* Основная область контента */
 .content-area {
-    position: relative; /* Чтобы z-index работал */
-    z-index: 20; /* Верхний слой - выше хедера */
+    position: relative;
+    z-index: 20;
     padding: 20px;
     text-align: center;
-    background-color: var(--background-color); /* Фон для страницы */
-    border-top-left-radius: var(--border-radius-size); /* Закругленные края */
+    background-color: var(--background-color);
+    border-top-left-radius: var(--border-radius-size);
     border-top-right-radius: var(--border-radius-size);
-    margin-top: calc(var(--border-radius-size) * -1); /* Наезжаем на хедер на высоту радиуса */
-    padding-top: calc(20px + var(--border-radius-size)); /* Компенсируем padding-top для контента */
-    box-shadow: 0 -2px 5px rgba(0,0,0,0.1); /* Небольшая тень, чтобы подчеркнуть наложение */
-    /* transition: background-color 0.3s, color 0.3s, transform var(--header-transition-duration) ease-out; */ /* Удалено background-color и color для резкой смены темы */
+    margin-top: calc(var(--border-radius-size) * -1);
+    padding-top: calc(20px + var(--border-radius-size));
+    box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+    /* Удалены переходы background-color и color для резкой смены темы */
     transition: transform var(--header-transition-duration) ease-out; /* Оставлено для анимации скролла */
-    will-change: transform; /* Оптимизация для анимации */
+    will-change: transform;
 }
 
 /* Background Blur */
@@ -93,7 +93,7 @@ body {
     background-position: center;
     filter: blur(15px);
     opacity: 0.7;
-    /* transition: filter 0.3s, opacity 0.3s; */ /* Удалено для резкой смены темы */
+    /* Удалены переходы для резкой смены темы */
 }
 
 .header-content {
@@ -118,7 +118,7 @@ body {
     align-items: center;
     gap: 15px;
     color: var(--header-text-color);
-    /* transition: color 0.3s; */ /* Удалено для резкой смены темы */
+    /* Удалены переходы для резкой смены темы */
 }
 
 .round-logo {
@@ -145,32 +145,10 @@ body {
     font-weight: bold;
     white-space: nowrap;
     overflow: hidden;
-    max-width: 180px; /* Сохраняем max-width для названия компании */
+    max-width: 180px;
 }
 
-/* Полностью удаляем блок .company-description и @keyframes scroll-text, так как описание больше не нужно */
-/* .company-description {
-    margin: 2px 0 0;
-    font-size: 0.8em;
-    color: var(--description-text-color);
-    white-space: nowrap;
-    overflow: hidden;
-    max-width: 180px;
-    position: relative;
-    padding-right: 5px;
-    text-indent: 0;
-    line-height: 1.2;
-} */
-
-/* .company-description.animate-scroll {
-    animation: scroll-text var(--scroll-duration) linear infinite;
-    animation-play-state: running;
-} */
-
-/* @keyframes scroll-text {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(var(--scroll-distance-px)); }
-} */
+/* Описание компании и его анимация полностью удалены */
 
 
 /* Bot Logo */
@@ -184,36 +162,36 @@ body {
     flex-shrink: 0;
 }
 
-/* Theme Toggle Container - Восстановлено расположение */
+/* Theme Toggle Container - ВОССТАНОВЛЕНО КАК В ОРИГИНАЛЕ */
 .theme-toggle-container {
     position: relative;
     z-index: 2;
     display: flex;
     align-items: center;
-    justify-content: flex-start; 
-    margin-top: 5px; 
-    margin-left: 20px; 
+    justify-content: flex-start; /* ВАЖНО: ВОССТАНОВЛЕНО */
+    margin-top: 5px; /* ВАЖНО: ВОССТАНОВЛЕНО */
+    margin-left: 20px; /* ВАЖНО: ВОССТАНОВЛЕНО */
     box-sizing: border-box;
-    width: auto; 
+    width: auto;
 }
 
-/* Стили для иконок солнца и луны */
+/* Стили для иконок солнца и луны - ВОССТАНОВЛЕНЫ КАК В ОРИГИНАЛЕ */
 .theme-icon {
     font-size: 0.9em;
     margin: 0 2px;
-    /* transition: color 0.3s; */ /* Удалено для резкой смены темы */
+    transition: color 0.3s; /* ВАЖНО: ВОССТАНОВЛЕНО (для плавного изменения цвета иконок) */
     line-height: 1;
 }
 
 .sun-icon {
-    color: var(--icon-color-light); /* Теперь цвет берется из CSS-переменной */
+    color: var(--icon-color-light);
 }
 
 .moon-icon {
-    color: var(--icon-color-dark); /* Теперь цвет берется из CSS-переменной */
+    color: var(--icon-color-dark);
 }
 
-/* Стили для ползунка (слайдера) - Восстановлены */
+/* Стили для ползунка (слайдера) - ВОССТАНОВЛЕНЫ КАК В ОРИГИНАЛЕ */
 .switch {
     position: relative;
     display: inline-block;
@@ -237,8 +215,8 @@ body {
     right: 0;
     bottom: 0;
     background-color: var(--slider-bg);
-    /* -webkit-transition: .4s; */ /* Удалено для резкой смены темы */
-    /* transition: .4s; */ /* Удалено для резкой смены темы */
+    -webkit-transition: .4s; /* ВАЖНО: ВОССТАНОВЛЕНО */
+    transition: .4s; /* ВАЖНО: ВОССТАНОВЛЕНО */
 }
 
 .slider:before {
@@ -249,8 +227,8 @@ body {
     left: 2px;
     bottom: 2px;
     background-color: var(--slider-handle);
-    /* -webkit-transition: .4s; */ /* Удалено для резкой смены темы */
-    /* transition: .4s; */ /* Удалено для резкой смены темы */
+    -webkit-transition: .4s; /* ВАЖНО: ВОССТАНОВЛЕНО */
+    transition: .4s; /* ВАЖНО: ВОССТАНОВЛЕНО */
 }
 
 input:checked + .slider {

@@ -71,8 +71,10 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             document.body.classList.remove('dark-mode');
         }
-        // Эти строки больше не нужны, т.к. цвет иконок управляется CSS-переменными без transition,
-        // но сами иконки и ползунок сохранены и стилизуются через CSS
+        // ВОССТАНОВЛЕНО: Эти строки были в вашем исходном коде и обеспечивают обновление цвета иконок
+        // хотя сами иконки имеют transition: color 0.3s; в CSS
+        sunIcon.style.color = getComputedStyle(document.body).getPropertyValue('--icon-color-light');
+        moonIcon.style.color = getComputedStyle(document.body).getPropertyValue('--icon-color-dark');
     }
 
     // Логика переключения темы (дневной/ночной)
