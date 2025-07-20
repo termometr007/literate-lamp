@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const themeSwitch = document.getElementById('theme-switch');
     const botLogo = document.getElementById('bot-logo');
     const sunIcon = document.querySelector('.theme-icon.sun-icon');
-    const moonIcon = document.querySelector('.moon-icon');
+    const moonIcon = document.querySelector('.moon-icon'); 
     const contentArea = document.querySelector('.content-area');
 
     const logoUrlInput = document.getElementById('logo-url-input');
@@ -34,54 +34,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (description !== null) {
             companyDescription.textContent = description;
-            companyDescription.style.display = description ? 'inline-block' : 'none';
-
-            // --- Логика для анимации "бегущей строки" ---
-            // Сбрасываем анимацию полностью
-            companyDescription.style.animation = 'none';
-            companyDescription.classList.remove('animate-scroll');
-            companyDescription.style.transform = 'translateX(0)'; // Гарантируем начальную позицию
-
-            // Принудительная перерисовка DOM
-            void companyDescription.offsetWidth; 
-
-            // Используем requestAnimationFrame для гарантии, что измерения будут после рефлоу
-            requestAnimationFrame(() => {
-                const textInfoContainer = companyDescription.closest('.text-info');
-                const containerWidth = textInfoContainer ? textInfoContainer.offsetWidth : companyDescription.offsetWidth;
-
-                const tempSpan = document.createElement('span');
-                tempSpan.style.whiteSpace = 'nowrap';
-                tempSpan.style.position = 'absolute';
-                tempSpan.style.visibility = 'hidden'; 
-                tempSpan.style.fontSize = getComputedStyle(companyDescription).fontSize;
-                tempSpan.style.fontFamily = getComputedStyle(companyDescription).fontFamily;
-                tempSpan.textContent = description;
-                document.body.appendChild(tempSpan);
-                const textWidth = tempSpan.offsetWidth;
-                document.body.removeChild(tempSpan);
-
-                if (textWidth > containerWidth) {
-                    const scrollSpeed = 20; // px/sec
-                    // Прокрутка на всю ширину текста
-                    const scrollDistance = textWidth; 
-                    const scrollDuration = scrollDistance / scrollSpeed;
-
-                    companyDescription.style.setProperty('--scroll-duration', `${scrollDuration}s`);
-                    companyDescription.style.setProperty('--scroll-distance-px', `-${scrollDistance}px`);
-                    
-                    // Устанавливаем animation-delay для паузы в начале
-                    const pauseDuration = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--text-scroll-pause-duration'));
-                    companyDescription.style.animation = `scroll-text var(--scroll-duration) linear var(--text-scroll-pause-duration) infinite`;
-                    companyDescription.classList.add('animate-scroll');
-                    companyDescription.style.animationPlayState = 'running'; 
-                } else {
-                    companyDescription.classList.remove('animate-scroll');
-                    companyDescription.style.animation = 'none'; 
-                    companyDescription.style.transform = 'translateX(0)'; 
-                    companyDescription.style.animationPlayState = 'paused'; 
-                }
-            });
+            // Убедимся, что текст виден и может переноситься
+            companyDescription.style.display = 'block'; // Или 'inline-block' в зависимости от разметки
+            companyDescription.style.whiteSpace = 'normal'; // Разрешаем перенос строк
+            companyDescription.style.overflow = 'visible'; // Убираем скрытие
+            companyDescription.style.animation = 'none'; // Отключаем любую анимацию
+            companyDescription.style.transform = 'translateX(0)'; // Отключаем смещение
         }
     }
 
@@ -93,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Устанавливаем дефолтные значения при загрузке
-    updateCompanyInfo('https://via.placeholder.com/60/0000FF/FFFFFF?text=MyComp', 'Название Компании', 'Это очень-очень длинное мотивационное описание, которое должно прокручиваться полностью, без обрезания, чтобы пользователи могли прочитать весь текст без проблем, и даже очень-очень длинный текст будет виден целиком от начала до конца!');
+    updateCompanyInfo('https://via.placeholder.com/60/0000FF/FFFFFF?text=MyComp', 'Название Компании', 'Это очень-очень длинное мотивационное описание, которое должно теперь полностью помещаться, переносясь на новую строку, чтобы пользователи могли прочитать весь текст без проблем, и даже очень-очень длинный текст будет виден целиком от начала до конца!');
     updateBotLogo('https://via.placeholder.com/60/FF5733/FFFFFF?text=B');
 
     // --- Логика скролла: content-area двигается, header-container остается неподвижным ---
@@ -125,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             document.body.classList.remove('dark-mode');
         }
-        // Иконки теперь управляются CSS через var() и не имеют transition напрямую
+        // Эти строки теперь не нужны, так как переходы управляются CSS 'transition'
         // sunIcon.style.color = getComputedStyle(document.body).getPropertyValue('--icon-color-light');
         // moonIcon.style.color = getComputedStyle(document.body).getPropertyValue('--icon-color-dark');
     }

@@ -18,7 +18,6 @@
     --header-height: 120px; /* Изначальная высота панели */
     --header-transition-duration: 0.3s; /* Для плавной анимации */
     --border-radius-size: 15px; /* Размер закругления */
-    --text-scroll-pause-duration: 3s; /* Длительность паузы в начале анимации текста */
 }
 
 body.dark-mode {
@@ -43,8 +42,7 @@ body {
     margin: 0;
     background-color: var(--background-color);
     color: var(--text-color);
-    /* Удаляем transition для body, чтобы смена темы была мгновенной */
-    /* transition: background-color 0.3s, color 0.3s; */ 
+    transition: background-color 0.3s, color 0.3s; /* Возвращаем плавный переход для темы */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     padding-top: var(--header-height); /* Отступ сверху для контента */
@@ -61,8 +59,7 @@ body {
     overflow: hidden; 
     background-color: var(--header-bg);
     box-shadow: 0 2px 4px var(--shadow-color);
-    /* Удаляем transition для background-color и box-shadow */
-    /* transition: background-color 0.3s, box-shadow 0.3s; */
+    transition: background-color 0.3s, box-shadow 0.3s; /* Возвращаем плавный переход для фона и тени */
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
@@ -81,8 +78,7 @@ body {
     margin-top: calc(var(--border-radius-size) * -1); 
     padding-top: calc(20px + var(--border-radius-size)); 
     box-shadow: 0 -2px 5px rgba(0,0,0,0.1); 
-    /* Удаляем transition для background-color и color, оставляем только для transform */
-    transition: transform var(--header-transition-duration) ease-out; 
+    transition: background-color 0.3s, color 0.3s, transform var(--header-transition-duration) ease-out; /* Возвращаем плавный переход для фона и цвета, оставляем для transform */
     will-change: transform; 
 }
 
@@ -112,8 +108,7 @@ body {
     background-position: center;
     filter: blur(15px);
     opacity: 0.7;
-    /* Удаляем transition для filter и opacity */
-    /* transition: filter 0.3s, opacity 0.3s; */
+    transition: filter 0.3s, opacity 0.3s; /* Возвращаем плавный переход */
 }
 
 .header-content {
@@ -137,8 +132,8 @@ body {
     display: flex;
     align-items: center;
     gap: 15px;
-    /* Удаляем transition для color */
-    /* color: var(--header-text-color); */
+    color: var(--header-text-color); /* Сохраняем цвет текста */
+    transition: color 0.3s; /* Возвращаем плавный переход */
 }
 
 .round-logo {
@@ -156,34 +151,43 @@ body {
     flex-direction: column;
     justify-content: center;
     flex-grow: 1;
-    overflow: hidden; /* Важно для скрытия части текста */
+    overflow: hidden; /* Важно для скрытия части текста, если не помещается по высоте */
+    /* Убрал max-width, чтобы текст мог занимать больше места по ширине */
 }
 
 #company-name {
     margin: 0;
     font-size: 1.3em;
     font-weight: bold;
-    white-space: nowrap;
+    white-space: nowrap; /* Название компании не переносится */
     overflow: hidden; 
+    /* max-width: 180px; Убрано, чтобы текст мог занимать больше места */
 }
 
 .company-description {
     margin: 2px 0 0;
     font-size: 0.8em;
-    color: var(--description-text-color); /* Сохраняем цвет текста */
-    white-space: nowrap; /* Гарантируем, что текст не переносится */
-    display: inline-block; /* Важно для измерения ширины текста */
-    position: relative; 
-    line-height: 1.2; 
-    will-change: transform; 
+    color: var(--description-text-color);
+    /* Ключевые изменения для текста описания */
+    white-space: normal; /* Разрешаем перенос строк */
+    overflow: visible; /* Убираем скрытие overflow, чтобы текст был виден полностью */
+    text-overflow: clip; /* Гарантируем, что текст не обрезается многоточием */
+    max-height: none; /* Убираем ограничение по высоте, если оно было */
+    animation: none; /* Гарантируем отсутствие анимации */
+    animation-play-state: paused; /* Гарантируем паузу */
+    transform: translateX(0); /* Гарантируем отсутствие смещения */
     
-    /* Анимация будет применяться JS, но ее свойства тут */
-    /* Добавляем паузу в начале анимации */
-    animation: scroll-text var(--scroll-duration) linear var(--text-scroll-pause-duration) infinite;
-    animation-play-state: paused; /* Изначально пауза, пока JS не активирует */
+    /* Если нужно ограничить по количеству строк и добавить многоточие, можно так: */
+    /* display: -webkit-box;
+    -webkit-line-clamp: 3; /* Максимум 3 строки */
+    /* -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis; */
+    
+    /* Если нужно всегда показывать весь текст без ограничений, то оставляем как есть */
 }
 
-/* Анимация "бегущей строки" */
+/* Анимация "бегущей строки" - оставляем ее определение, но не применяем */
 @keyframes scroll-text {
     0% { transform: translateX(0); }
     100% { transform: translateX(var(--scroll-distance-px)); } 
@@ -218,8 +222,7 @@ body {
 .theme-icon {
     font-size: 0.9em;
     margin: 0 2px;
-    /* Удаляем transition для color */
-    /* transition: color 0.3s; */
+    transition: color 0.3s; /* Возвращаем плавный переход */
     line-height: 1;
 }
 
@@ -255,9 +258,8 @@ body {
     right: 0;
     bottom: 0;
     background-color: var(--slider-bg);
-    /* Удаляем transition для slider */
-    /* -webkit-transition: .4s;
-    transition: .4s; */
+    -webkit-transition: .4s; /* Возвращаем плавный переход */
+    transition: .4s; /* Возвращаем плавный переход */
 }
 
 .slider:before {
@@ -268,9 +270,8 @@ body {
     left: 2px;
     bottom: 2px;
     background-color: var(--slider-handle);
-    /* Удаляем transition для slider:before */
-    /* -webkit-transition: .4s;
-    transition: .4s; */
+    -webkit-transition: .4s; /* Возвращаем плавный переход */
+    transition: .4s; /* Возвращаем плавный переход */
 }
 
 input:checked + .slider {
