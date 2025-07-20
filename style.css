@@ -10,7 +10,6 @@
     --slider-bg: #ccc;
     --slider-handle: white;
     --slider-checked-bg: #2196F3;
-    /* ВОССТАНОВЛЕНО: Цвета иконок как в вашем исходном коде */
     --icon-color-light: #FFD700; 
     --icon-color-dark: #A9A9A9;
     /* --description-text-color: #666; */ /* УДАЛЕНО */
@@ -33,7 +32,6 @@ body.dark-mode {
     --slider-bg: #555;
     --slider-handle: #ccc;
     --slider-checked-bg: #9C27B0;
-    /* ВОССТАНОВЛЕНО: Цвета иконок как в вашем исходном коде */
     --icon-color-light: #A9A9A9;
     --icon-color-dark: #ADD8E6;
     /* --description-text-color: #bbb; */ /* УДАЛЕНО */
@@ -164,15 +162,15 @@ body {
     flex-shrink: 0;
 }
 
-/* Theme Toggle Container */
+/* Theme Toggle Container - ИСПРАВЛЕНО: ВОССТАНОВЛЕНОjustify-content: flex-start; и margin-left: 20px; */
 .theme-toggle-container {
     position: relative;
     z-index: 2;
     display: flex;
     align-items: center;
-    justify-content: flex-start; 
+    justify-content: flex-start; /* ВАЖНО: ВОССТАНОВЛЕНО ДЛЯ ВЫРАВНИВАНИЯ СЛЕВА */
     margin-top: 5px; 
-    margin-left: 20px; 
+    margin-left: 20px; /* ВАЖНО: ВОССТАНОВЛЕНО ДЛЯ ВЫРАВНИВАНИЯ СЛЕВА */
     box-sizing: border-box;
     width: auto; 
 }
@@ -181,7 +179,7 @@ body {
 .theme-icon {
     font-size: 0.9em;
     margin: 0 2px;
-    transition: color 0.3s; /* ВОССТАНОВЛЕНО: для плавного изменения цвета иконок */
+    transition: color 0.3s;
     line-height: 1;
 }
 
@@ -217,8 +215,8 @@ body {
     right: 0;
     bottom: 0;
     background-color: var(--slider-bg);
-    -webkit-transition: .4s; /* ВОССТАНОВЛЕНО */
-    transition: .4s; /* ВОССТАНОВЛЕНО */
+    -webkit-transition: .4s;
+    transition: .4s;
 }
 
 .slider:before {
@@ -229,8 +227,8 @@ body {
     left: 2px;
     bottom: 2px;
     background-color: var(--slider-handle);
-    -webkit-transition: .4s; /* ВОССТАНОВЛЕНО */
-    transition: .4s; /* ВОССТАНОВЛЕНО */
+    -webkit-transition: .4s;
+    transition: .4s;
 }
 
 input:checked + .slider {
