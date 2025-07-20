@@ -47,13 +47,13 @@ body {
 .header-container {
     position: relative;
     width: 100%;
-    height: 120px;
-    overflow: hidden;
+    height: 120px; /* Изначальная высота */
+    overflow: hidden; /* Скрывает контент, когда высота уменьшается */
     background-color: var(--header-bg);
     box-shadow: 0 2px 4px var(--shadow-color);
     transition: height 0.3s ease-out, opacity 0.3s, background-color 0.3s, box-shadow 0.3s;
     display: flex;
-    flex-direction: column;
+    flex-direction: column; /* Элементы будут располагаться сверху вниз */
     justify-content: flex-start;
 }
 
@@ -76,8 +76,8 @@ body {
     z-index: 1;
     width: 100%;
     display: flex;
-    justify-content: space-between; /* Распределяет left-section и bot-logo */
-    align-items: center; /* Выравнивает их по центру */
+    justify-content: space-between;
+    align-items: center; /* Выравнивает left-section и bot-logo по центру */
     padding: 15px 20px 0; /* Отступы: сверху, по бокам, снизу */
     box-sizing: border-box;
 }
@@ -86,7 +86,7 @@ body {
     display: flex;
     flex-direction: column;
     align-items: flex-start; /* Элементы внутри будут выровнены по левому краю */
-    gap: 10px; /* Пространство между блоком компании и ползунком */
+    gap: 5px; /* Уменьшим зазор между блоком компании и ползунком, чтобы ползунок был ближе к лого */
 }
 
 .company-info {
@@ -109,9 +109,9 @@ body {
 .text-info {
     display: flex;
     flex-direction: column;
-    justify-content: center; /* Центрируем текст по вертикали */
-    flex-grow: 1; /* Позволяем занимать доступное пространство */
-    overflow: hidden; /* Важно для анимации бегущей строки */
+    justify-content: center;
+    flex-grow: 1;
+    overflow: hidden;
 }
 
 #company-name {
@@ -120,32 +120,33 @@ body {
     font-weight: bold;
     white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 180px; /* Увеличим для названия, если нужно */
+    /* text-overflow: ellipsis; /* Убираем троеточие */
+    max-width: 180px;
 }
 
 .company-description {
     margin: 2px 0 0;
     font-size: 0.8em;
     color: var(--description-text-color);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis; /* Покажем многоточие по умолчанию */
-    max-width: 180px; /* Ограничение ширины для описания */
-    animation: none; /* Сбрасываем анимацию по умолчанию */
+    white-space: nowrap; /* Важно для анимации */
+    overflow: hidden; /* Важно для анимации */
+    max-width: 180px; /* Задаем максимальную ширину контейнера */
+    position: relative; /* Для позиционирования текста при анимации */
+    /* text-overflow: ellipsis; /* Убираем троеточие */
+    padding-right: 5px; /* Небольшой отступ, чтобы текст не прилипал к краю */
 }
 
-/* Анимация "бегущей строки" для длинного описания */
+/* Анимация "бегущей строки" */
 .company-description.animate-scroll {
     animation: scroll-text var(--scroll-duration) linear infinite;
-    animation-play-state: running; /* Запускаем анимацию */
+    animation-play-state: running;
 }
 
 @keyframes scroll-text {
     0% { transform: translateX(0); }
-    100% { transform: translateX(calc(-100% - var(--scroll-offset))); } /* Смещение текста */
+    /* Вычисляем 100% смещение: ширина текста - ширина контейнера + небольшой отступ */
+    100% { transform: translateX(calc(-100% + var(--container-width) - var(--scroll-offset))); }
 }
-
 
 /* Bot Logo */
 .bot-logo {
@@ -158,36 +159,37 @@ body {
     flex-shrink: 0;
 }
 
-/* Theme Toggle Container - Выравнивание по центру аватара фирмы */
+/* Theme Toggle Container - Под аватаром, выровнен по центру относительно нее */
 .theme-toggle-container {
-    position: absolute; /* Позиционируем абсолютно */
-    left: 20px; /* Выравниваем по левому краю */
-    /* top: 50%; */ /* Центрируем по вертикали относительно родителя */
-    transform: translateY(-50%); /* Компенсируем собственную высоту */
-    
-    /* Дополнительная настройка для выравнивания по центру лого компании */
-    /* company-logo имеет 60px высоту. Центр на 30px. */
-    /* header-content padding-top 15px. Значит центр лого 15 + 30 = 45px от верха header-content. */
-    /* Высота .switch 17px. Центр 8.5px. */
-    /* Нужно чтобы верх .theme-toggle-container был на 45 - 8.5 = 36.5px от верха header-content */
-    top: 45px; /* Примерное положение, чтобы выровнять по центру лого */
-    
+    position: relative; /* Относительно родителя .header-container */
     z-index: 2;
+    width: 100%; /* Занимает всю ширину */
     display: flex;
     align-items: center;
-    justify-content: flex-start;
+    /* justify-content: flex-start; /* По умолчанию слева */
+    padding: 0 20px; /* Отступы по бокам */
     box-sizing: border-box;
-    pointer-events: auto; /* Убеждаемся, что можно взаимодействовать */
-    width: auto; /* Ширина по контенту */
-    background-color: transparent; /* Делаем фон прозрачным */
+    margin-top: 10px; /* Отступ от нижнего края company-info */
+    
+    /* Дополнительные стили для центрирования ползунка под логотипом */
+    justify-content: flex-start; /* Выравнивание по левому краю */
+    /* Используем margin-left для смещения контейнера ползунка */
+    /* Ширина .company-info = 60px (лого) + 15px (gap) + 180px (текст max-width) = 255px */
+    /* Ширина .switch + icons = 25px + 2*3px (gap) + 2*0.9em (icon size) = ~40px */
+    /* Центр лого 60/2 = 30px от левого края лого. */
+    /* Центр ползунка 25/2 = 12.5px. */
+    /* Нужно чтобы левый край ползунка был на (30 - 12.5) = 17.5px от левого края лого. */
+    /* Поскольку ползунок находится в theme-toggle-container, который начинается с 20px padding-left, */
+    /* его left-margin должен быть = 17.5 - (20 - 3 (icon margin)) = 17.5 - 17 = 0.5px. Это слишком сложно. */
+    /* Проще позиционировать по центру company-info */
+    
+    /* Новый подход: делаем контейнер ползунка достаточно широким,
+       чтобы он занимал пространство под логотипом и названием,
+       и центрируем его содержимое. */
+    width: 255px; /* Ширина под лого и текстом компании */
+    margin-left: 20px; /* Отступ слева, как у company-info */
+    justify-content: center; /* Центрируем содержимое внутри этого контейнера */
 }
-
-/* Перекрываем стили для theme-toggle-container когда header-container скрыт */
-.header-container[style*="height: 0px"] .theme-toggle-container {
-    opacity: 0;
-    transition: opacity 0.3s ease-out;
-}
-
 
 /* Стили для иконок солнца и луны */
 .theme-icon {
@@ -205,14 +207,14 @@ body {
     color: var(--icon-color-dark);
 }
 
-/* Стили для ползунка (слайдера) - Еще меньше */
+/* Стили для ползунка (слайдера) */
 .switch {
     position: relative;
     display: inline-block;
-    width: 25px; /* Ещё меньше ширина */
-    height: 14px; /* Ещё меньше высота */
-    margin: 0 3px; /* Отступы от иконок */
-    flex-shrink: 0; /* Не сжимать */
+    width: 25px;
+    height: 14px;
+    margin: 0 3px;
+    flex-shrink: 0;
 }
 
 .switch input {
@@ -236,7 +238,7 @@ body {
 .slider:before {
     position: absolute;
     content: "";
-    height: 10px; /* Меньше размер ручки */
+    height: 10px;
     width: 10px;
     left: 2px;
     bottom: 2px;
@@ -254,14 +256,14 @@ input:focus + .slider {
 }
 
 input:checked + .slider:before {
-    -webkit-transform: translateX(11px); /* Корректируем смещение */
+    -webkit-transform: translateX(11px);
     -ms-transform: translateX(11px);
     transform: translateX(11px);
 }
 
 /* Rounded sliders */
 .slider.round {
-    border-radius: 14px; /* Соответствует новой высоте */
+    border-radius: 14px;
 }
 
 .slider.round:before {
