@@ -12,7 +12,7 @@
     --slider-checked-bg: #2196F3;
     --icon-color-light: #FFD700;
     --icon-color-dark: #A9A9A9;
-    --description-text-color: #666; /* Цвет для описания компании */
+    --description-text-color: #666;
 }
 
 body.dark-mode {
@@ -29,7 +29,7 @@ body.dark-mode {
     --slider-checked-bg: #9C27B0;
     --icon-color-light: #A9A9A9;
     --icon-color-dark: #ADD8E6;
-    --description-text-color: #bbb; /* Цвет для описания компании в темном режиме */
+    --description-text-color: #bbb;
 }
 
 body {
@@ -47,7 +47,7 @@ body {
 .header-container {
     position: relative;
     width: 100%;
-    height: 120px; /* Оставим 120px, чтобы было достаточно места */
+    height: 120px;
     overflow: hidden;
     background-color: var(--header-bg);
     box-shadow: 0 2px 4px var(--shadow-color);
@@ -66,7 +66,7 @@ body {
     height: 100%;
     background-size: cover;
     background-position: center;
-    filter: blur(15px); /* Умеренное размытие */
+    filter: blur(15px);
     opacity: 0.7;
     transition: filter 0.3s, opacity 0.3s;
 }
@@ -76,22 +76,22 @@ body {
     z-index: 1;
     width: 100%;
     display: flex;
-    flex-direction: column; /* Теперь контент хедера тоже в колонку */
-    align-items: center; /* Центрируем по горизонтали */
-    padding: 15px 20px 0;
+    justify-content: space-between; /* Распределяет left-section и bot-logo */
+    align-items: center; /* Выравнивает их по центру */
+    padding: 15px 20px 0; /* Отступы: сверху, по бокам, снизу */
     box-sizing: border-box;
 }
 
-.company-info-wrapper {
-    width: 100%;
+.left-section {
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start; /* Выравнивание по верху, чтобы текст не сильно смещался */
+    flex-direction: column;
+    align-items: flex-start; /* Элементы внутри будут выровнены по левому краю */
+    gap: 10px; /* Пространство между блоком компании и ползунком */
 }
 
 .company-info {
     display: flex;
-    align-items: center; /* Выравнивание элементов по центру */
+    align-items: center;
     gap: 15px;
     color: var(--header-text-color);
 }
@@ -103,7 +103,15 @@ body {
     object-fit: cover;
     border: 2px solid var(--header-text-color);
     box-shadow: 0 0 6px var(--shadow-color);
-    flex-shrink: 0; /* Не сжимать логотип */
+    flex-shrink: 0;
+}
+
+.text-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Центрируем текст по вертикали */
+    flex-grow: 1; /* Позволяем занимать доступное пространство */
+    overflow: hidden; /* Важно для анимации бегущей строки */
 }
 
 #company-name {
@@ -113,50 +121,78 @@ body {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 150px;
+    max-width: 180px; /* Увеличим для названия, если нужно */
 }
 
 .company-description {
-    margin: 2px 0 0; /* Небольшой отступ сверху */
-    font-size: 0.8em; /* Мелкий шрифт */
+    margin: 2px 0 0;
+    font-size: 0.8em;
     color: var(--description-text-color);
     white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 150px; /* Ограничение ширины */
+    text-overflow: ellipsis; /* Покажем многоточие по умолчанию */
+    max-width: 180px; /* Ограничение ширины для описания */
+    animation: none; /* Сбрасываем анимацию по умолчанию */
 }
 
-/* Bot Logo - Теперь по размеру как фото фирмы */
+/* Анимация "бегущей строки" для длинного описания */
+.company-description.animate-scroll {
+    animation: scroll-text var(--scroll-duration) linear infinite;
+    animation-play-state: running; /* Запускаем анимацию */
+}
+
+@keyframes scroll-text {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(calc(-100% - var(--scroll-offset))); } /* Смещение текста */
+}
+
+
+/* Bot Logo */
 .bot-logo {
-    width: 60px; /* Размер как у лого компании */
+    width: 60px;
     height: 60px;
-    object-fit: contain; /* Для PNG с прозрачным фоном */
-    margin-left: auto;
+    object-fit: contain;
     border-radius: 0;
     border: none;
     box-shadow: none;
-    flex-shrink: 0; /* Не сжимать логотип */
+    flex-shrink: 0;
 }
 
-/* Theme Toggle Container - Выравнивание по центру фото компании */
+/* Theme Toggle Container - Выравнивание по центру аватара фирмы */
 .theme-toggle-container {
-    position: relative;
+    position: absolute; /* Позиционируем абсолютно */
+    left: 20px; /* Выравниваем по левому краю */
+    /* top: 50%; */ /* Центрируем по вертикали относительно родителя */
+    transform: translateY(-50%); /* Компенсируем собственную высоту */
+    
+    /* Дополнительная настройка для выравнивания по центру лого компании */
+    /* company-logo имеет 60px высоту. Центр на 30px. */
+    /* header-content padding-top 15px. Значит центр лого 15 + 30 = 45px от верха header-content. */
+    /* Высота .switch 17px. Центр 8.5px. */
+    /* Нужно чтобы верх .theme-toggle-container был на 45 - 8.5 = 36.5px от верха header-content */
+    top: 45px; /* Примерное положение, чтобы выровнять по центру лого */
+    
     z-index: 2;
-    width: 100%;
     display: flex;
     align-items: center;
-    justify-content: center; /* Центрируем по горизонтали */
-    margin-top: 10px; /* Отступ от верхних элементов */
+    justify-content: flex-start;
     box-sizing: border-box;
-    /* Точное позиционирование ползунка по центру логотипа компании */
-    /* Нужно рассчитать исходя из размеров и отступов */
-    /* Более точно: выравниваем по центру wrapper-а, а не только по company-info */
+    pointer-events: auto; /* Убеждаемся, что можно взаимодействовать */
+    width: auto; /* Ширина по контенту */
+    background-color: transparent; /* Делаем фон прозрачным */
 }
+
+/* Перекрываем стили для theme-toggle-container когда header-container скрыт */
+.header-container[style*="height: 0px"] .theme-toggle-container {
+    opacity: 0;
+    transition: opacity 0.3s ease-out;
+}
+
 
 /* Стили для иконок солнца и луны */
 .theme-icon {
-    font-size: 0.9em; /* Ещё меньше иконки */
-    margin: 0 2px; /* Ещё меньше отступы */
+    font-size: 0.9em;
+    margin: 0 2px;
     transition: color 0.3s;
     line-height: 1;
 }
@@ -169,13 +205,14 @@ body {
     color: var(--icon-color-dark);
 }
 
-/* Стили для ползунка (слайдера) - Ещё меньше */
+/* Стили для ползунка (слайдера) - Еще меньше */
 .switch {
     position: relative;
     display: inline-block;
-    width: 30px; /* Ещё меньше ширина */
-    height: 17px; /* Ещё меньше высота */
-    margin: 0 4px; /* Меньше отступы от иконок */
+    width: 25px; /* Ещё меньше ширина */
+    height: 14px; /* Ещё меньше высота */
+    margin: 0 3px; /* Отступы от иконок */
+    flex-shrink: 0; /* Не сжимать */
 }
 
 .switch input {
@@ -199,10 +236,10 @@ body {
 .slider:before {
     position: absolute;
     content: "";
-    height: 12px; /* Меньше размер ручки */
-    width: 12px;
-    left: 3px;
-    bottom: 2.5px; /* Корректируем для центровки */
+    height: 10px; /* Меньше размер ручки */
+    width: 10px;
+    left: 2px;
+    bottom: 2px;
     background-color: var(--slider-handle);
     -webkit-transition: .4s;
     transition: .4s;
@@ -217,14 +254,14 @@ input:focus + .slider {
 }
 
 input:checked + .slider:before {
-    -webkit-transform: translateX(13px); /* Корректируем смещение */
-    -ms-transform: translateX(13px);
-    transform: translateX(13px);
+    -webkit-transform: translateX(11px); /* Корректируем смещение */
+    -ms-transform: translateX(11px);
+    transform: translateX(11px);
 }
 
 /* Rounded sliders */
 .slider.round {
-    border-radius: 17px; /* Соответствует новой высоте */
+    border-radius: 14px; /* Соответствует новой высоте */
 }
 
 .slider.round:before {
@@ -259,7 +296,7 @@ input:checked + .slider:before {
     background-color: var(--header-bg);
     color: var(--text-color);
     box-sizing: border-box;
-    resize: vertical; /* Разрешаем изменение размера textarea по вертикали */
+    resize: vertical;
     min-height: 40px;
 }
 

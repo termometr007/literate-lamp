@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const companyLogo = document.getElementById('company-logo');
     const companyName = document.getElementById('company-name');
-    const companyDescription = document.getElementById('company-description'); // Новый элемент
+    const companyDescription = document.getElementById('company-description');
     const backgroundBlur = document.querySelector('.background-blur');
     const headerContainer = document.querySelector('.header-container');
     const themeSwitch = document.getElementById('theme-switch');
@@ -9,17 +9,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const sunIcon = document.querySelector('.sun-icon');
     const moonIcon = document.querySelector('.moon-icon');
 
-    // Элементы для тестирования админ-функционала компании
     const logoUrlInput = document.getElementById('logo-url-input');
     const companyNameInput = document.getElementById('company-name-input');
-    const companyDescriptionInput = document.getElementById('company-description-input'); // Новый инпут
+    const companyDescriptionInput = document.getElementById('company-description-input');
     const applyCompanyChangesBtn = document.getElementById('apply-company-changes');
 
-    // Элементы для тестирования логотипа бота
     const botLogoUrlInput = document.getElementById('bot-logo-url-input');
     const applyBotLogoChangesBtn = document.getElementById('apply-bot-logo-changes');
 
-    // Инициализация Telegram WebApp
     if (window.Telegram && window.Telegram.WebApp) {
         window.Telegram.WebApp.ready();
         // Telegram.WebApp.expand();
@@ -27,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Функция для обновления логотипа компании, названия и описания
     function updateCompanyInfo(logoUrl, name, description) {
-        if (logoUrl !== null) { // Используем null для пропуска обновления
+        if (logoUrl !== null) {
             companyLogo.src = logoUrl;
             backgroundBlur.style.backgroundImage = `url(${logoUrl})`;
         }
@@ -36,7 +33,29 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (description !== null) {
             companyDescription.textContent = description;
-            companyDescription.style.display = description ? 'block' : 'none'; // Показываем только если есть текст
+            companyDescription.style.display = description ? 'block' : 'none';
+
+            // Проверяем, нужна ли анимация
+            const tempDiv = document.createElement('span');
+            tempDiv.style.whiteSpace = 'nowrap';
+            tempDiv.style.visibility = 'hidden';
+            tempDiv.style.position = 'absolute';
+            tempDiv.textContent = description;
+            document.body.appendChild(tempDiv);
+            const textWidth = tempDiv.offsetWidth;
+            document.body.removeChild(tempDiv);
+
+            const containerWidth = companyDescription.offsetWidth; // Ширина контейнера для текста
+
+            if (textWidth > containerWidth) {
+                const scrollDuration = textWidth / 40; // Скорость анимации (40px/sec)
+                companyDescription.style.setProperty('--scroll-duration', `${scrollDuration}s`);
+                companyDescription.style.setProperty('--scroll-offset', `${containerWidth}px`); // Смещение для возврата
+                companyDescription.classList.add('animate-scroll');
+            } else {
+                companyDescription.classList.remove('animate-scroll');
+                companyDescription.style.animation = 'none'; // Останавливаем анимацию
+            }
         }
     }
 
@@ -48,22 +67,23 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Устанавливаем дефолтные значения при загрузке
-    updateCompanyInfo('https://via.placeholder.com/60/0000FF/FFFFFF?text=MyComp', 'Название Компании', 'Мотивационные слова здесь');
+    updateCompanyInfo('https://via.placeholder.com/60/0000FF/FFFFFF?text=MyComp', 'Название Компании', 'Это длинное мотивационное описание, которое должно прокручиваться для полного прочтения, если оно не помещается на одной строке.');
     updateBotLogo('https://via.placeholder.com/60/FF5733/FFFFFF?text=B');
-
 
     // Логика скролла для скрытия хедера
     let lastScrollTop = 0;
-    const headerInitialHeight = 120;
+    const headerInitialHeight = 120; // Фиксированная начальная высота хедера
     const headerThreshold = 50;
 
     window.addEventListener('scroll', () => {
         let st = window.pageYOffset || document.documentElement.scrollTop;
 
         if (st > lastScrollTop && st > headerThreshold) {
+            // Скроллим вниз и превысили порог
             headerContainer.style.height = '0px';
             headerContainer.style.opacity = '0';
         } else if (st < lastScrollTop || st <= headerThreshold) {
+            // Скроллим вверх или в самом верху
             headerContainer.style.height = `${headerInitialHeight}px`;
             headerContainer.style.opacity = '1';
         }
@@ -77,8 +97,6 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             document.body.classList.remove('dark-mode');
         }
-        // Обновляем цвета иконок в зависимости от режима (CSS-переменные сделают это автоматически)
-        // Но чтобы убедиться, что они обновляются сразу после смены темы
         sunIcon.style.color = getComputedStyle(document.body).getPropertyValue('--icon-color-light');
         moonIcon.style.color = getComputedStyle(document.body).getPropertyValue('--icon-color-dark');
     }
