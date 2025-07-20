@@ -3,15 +3,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const companyName = document.getElementById('company-name');
     const companyDescription = document.getElementById('company-description');
     const backgroundBlur = document.querySelector('.background-blur');
-    const headerContainer = document.querySelector('.header-container');
+    const headerContainer = document.querySelector('.header-container'); // Теперь эта панель статична
     const themeSwitch = document.getElementById('theme-switch');
     const botLogo = document.getElementById('bot-logo');
     const sunIcon = document.querySelector('.theme-icon.sun-icon');
     const moonIcon = document.querySelector('.theme-icon.moon-icon');
+    const contentArea = document.querySelector('.content-area'); // Теперь эта панель будет двигаться
 
     const logoUrlInput = document.getElementById('logo-url-input');
     const companyNameInput = document.getElementById('company-name-input');
-    const companyDescriptionInput = document.getElementById('company-description-input');
+    const companyDescriptionInput = document.getElementById('company-description-input'); // Это было неверно
     const applyCompanyChangesBtn = document.getElementById('apply-company-changes');
 
     const botLogoUrlInput = document.getElementById('bot-logo-url-input');
@@ -39,8 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
             companyDescription.style.animation = 'none'; // Сброс анимации перед измерением
             companyDescription.classList.remove('animate-scroll');
             
-            // Важно: перерисовать DOM, чтобы получить актуальные размеры после сброса анимации
-            // Force reflow
+            // Принудительная перерисовка DOM
             void companyDescription.offsetWidth; 
 
             // Создаем временный элемент для измерения полной ширины текста
@@ -57,26 +57,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const containerWidth = companyDescription.offsetWidth; // Фактическая видимая ширина контейнера
             
-            // Для отладки:
-            // console.log('Text Width:', textWidth);
-            // console.log('Container Width:', containerWidth);
-
             if (textWidth > containerWidth) {
                 const scrollSpeed = 25; // px/sec, можно регулировать скорость
-                const scrollDistance = textWidth + 20; // Дополнительный отступ в 20px
+                const scrollDistance = textWidth + 20; // Дополнительный отступ в 20px (чтобы текст полностью исчезал)
                 const scrollDuration = scrollDistance / scrollSpeed;
 
                 companyDescription.style.setProperty('--scroll-duration', `${scrollDuration}s`);
                 companyDescription.style.setProperty('--scroll-distance-px', `-${scrollDistance}px`);
 
                 companyDescription.classList.add('animate-scroll');
-                // Для отладки:
-                // console.log('Animation added. Duration:', scrollDuration, 'Distance:', scrollDistance);
             } else {
                 companyDescription.classList.remove('animate-scroll');
                 companyDescription.style.animation = 'none'; // Гарантируем отсутствие анимации
-                // For debugging:
-                // console.log('Text fits, no animation needed.');
             }
         }
     }
@@ -92,21 +84,27 @@ document.addEventListener('DOMContentLoaded', () => {
     updateCompanyInfo('https://via.placeholder.com/60/0000FF/FFFFFF?text=MyComp', 'Название Компании', 'Это очень-очень длинное мотивационное описание, которое должно прокручиваться полностью, без обрезания, чтобы пользователи могли прочитать весь текст без проблем, и даже очень-очень длинный текст будет виден целиком от начала до конца!');
     updateBotLogo('https://via.placeholder.com/60/FF5733/FFFFFF?text=B');
 
-    // --- Логика скролла для скрытия/показа хедера ---
+    // --- Логика скролла: теперь двигается content-area, а header-container остается неподвижным ---
     let lastScrollTop = 0;
-    const headerInitialHeight = parseInt(getComputedStyle(headerContainer).getPropertyValue('--header-height'));
-    const scrollThreshold = 10; // Порог скролла для активации скрытия/показа
+    const headerTotalHeight = parseInt(getComputedStyle(headerContainer).getPropertyValue('--header-height')); // Высота хедера
+    const borderRadiusSize = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--border-radius-size')); // Размер радиуса
+    
+    // Фактическое расстояние, на которое content-area может подняться над хедером
+    // Это будет (headerTotalHeight - borderRadiusSize)
+    const scrollRevealHeight = headerTotalHeight - borderRadiusSize;
 
     window.addEventListener('scroll', () => {
         let currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
-        if (currentScrollTop < lastScrollTop || currentScrollTop <= scrollThreshold) {
-            headerContainer.style.transform = `translateY(0px)`;
-        }
-        else if (currentScrollTop > lastScrollTop && currentScrollTop > scrollThreshold) {
-            headerContainer.style.transform = `translateY(-${headerInitialHeight}px)`;
-        }
+        // Определяем желаемое смещение content-area
+        // При скролле вниз, contentArea.transformY будет уходить в отрицательное значение,
+        // поднимая content-area вверх и скрывая хедер.
+        // Максимальное отрицательное значение -scrollRevealHeight (т.е. на высоту хедера минус радиус)
+        let translateYValue = Math.min(0, Math.max(-scrollRevealHeight, currentScrollTop));
         
+        // Применяем transform к contentArea, а не к headerContainer
+        contentArea.style.transform = `translateY(${translateYValue}px)`;
+
         lastScrollTop = currentScrollTop;
     });
 
@@ -142,7 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
     applyCompanyChangesBtn.addEventListener('click', () => {
         const newLogoUrl = logoUrlInput.value.trim();
         const newCompanyName = companyNameInput.value.trim();
-        const newCompanyDescription = companyDescriptionInput.getElementById('company-description-input').value.trim(); // Получаем значение из текстового поля
+        const newCompanyDescription = companyDescriptionInput.value.trim(); // Правильное обращение к value
 
         updateCompanyInfo(
             newLogoUrl || null,
@@ -150,11 +148,15 @@ document.addEventListener('DOMContentLoaded', () => {
             newCompanyDescription || null
         );
 
-        // После обновления, пересчитываем анимацию текста, если она нужна
-        // Вызываем updateCompanyInfo еще раз, чтобы триггернуть пересчет
-        // (передаем текущие значения, чтобы не сбросить их)
-        updateCompanyInfo(companyLogo.src, companyName.textContent, companyDescription.textContent);
-        alert('Информация компании обновлена!');
+        if (newLogoUrl || newCompanyName || newCompanyDescription) {
+            // После обновления, пересчитываем анимацию текста, если она нужна
+            // Вызываем updateCompanyInfo еще раз, чтобы триггернуть пересчет
+            // (передаем текущие значения, чтобы не сбросить их)
+            updateCompanyInfo(companyLogo.src, companyName.textContent, companyDescription.textContent);
+            alert('Информация компании обновлена!');
+        } else {
+            alert('Пожалуйста, введите данные для обновления информации о компании.');
+        }
     });
 
     // Логика для тестирования логотипа бота

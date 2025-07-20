@@ -55,15 +55,15 @@ body {
     left: 0;
     width: 100%;
     height: var(--header-height);
-    overflow: hidden; /* Скрывает контент, когда панель "уезжает" вверх */
+    overflow: hidden; 
     background-color: var(--header-bg);
     box-shadow: 0 2px 4px var(--shadow-color);
-    transition: transform var(--header-transition-duration) ease-out, background-color 0.3s, box-shadow 0.3s; /* Анимируем transform */
+    /* Убираем transform из transition, т.к. панель не должна двигаться */
+    transition: background-color 0.3s, box-shadow 0.3s; 
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     z-index: 10; /* Нижний слой */
-    will-change: transform; /* Оптимизация для анимации */
 }
 
 /* Основная область контента */
@@ -79,7 +79,9 @@ body {
     margin-top: calc(var(--border-radius-size) * -1); /* Наезжаем на хедер на высоту радиуса */
     padding-top: calc(20px + var(--border-radius-size)); /* Компенсируем padding-top для контента */
     box-shadow: 0 -2px 5px rgba(0,0,0,0.1); /* Небольшая тень, чтобы подчеркнуть наложение */
-    transition: background-color 0.3s, color 0.3s, margin-top var(--header-transition-duration) ease-out; /* Анимируем margin-top */
+    /* Теперь content-area будет анимироваться по transformY */
+    transition: background-color 0.3s, color 0.3s, transform var(--header-transition-duration) ease-out;
+    will-change: transform; /* Оптимизация для анимации */
 }
 
 /* Background Blur */
