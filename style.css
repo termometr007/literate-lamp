@@ -12,7 +12,6 @@
     --slider-checked-bg: #2196F3;
     --icon-color-light: #FFD700; 
     --icon-color-dark: #A9A9A9;
-    /* --description-text-color: #666; */ /* УДАЛЕНО */
 
     /* Новые переменные для анимации панели */
     --header-height: 120px;
@@ -20,8 +19,16 @@
     --border-radius-size: 15px;
 
     /* Цвета для обводки текста */
-    --text-stroke-color-light: #fff; /* Обводка для светлой темы */
-    --text-stroke-color-dark: #333; /* Обводка для темной темы */
+    --text-stroke-color-light: #fff;
+    --text-stroke-color-dark: #333;
+
+    /* НОВЫЕ ПЕРЕМЕННЫЕ ДЛЯ НИЖНЕЙ НАВИГАЦИИ */
+    --bottom-nav-height: 60px;
+    --bottom-nav-bg: #fff;
+    --bottom-nav-text-color: #666;
+    --bottom-nav-icon-color: #666;
+    --bottom-nav-active-color: #007bff; /* Цвет активной кнопки */
+    --bottom-nav-shadow: rgba(0, 0, 0, 0.15);
 }
 
 body.dark-mode {
@@ -38,11 +45,17 @@ body.dark-mode {
     --slider-checked-bg: #9C27B0;
     --icon-color-light: #A9A9A9;
     --icon-color-dark: #ADD8E6;
-    /* --description-text-color: #bbb; */ /* УДАЛЕНО */
 
     /* Цвета для обводки текста в темной теме */
     --text-stroke-color-light: #333;
     --text-stroke-color-dark: #fff;
+
+    /* НОВЫЕ ПЕРЕМЕННЫЕ ДЛЯ НИЖНЕЙ НАВИГАЦИИ В ТЕМНОЙ ТЕМЕ */
+    --bottom-nav-bg: #2d2d2d;
+    --bottom-nav-text-color: #bbb;
+    --bottom-nav-icon-color: #bbb;
+    --bottom-nav-active-color: #9C27B0;
+    --bottom-nav-shadow: rgba(0, 0, 0, 0.5);
 }
 
 body {
@@ -54,6 +67,7 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     padding-top: var(--header-height);
+    padding-bottom: var(--bottom-nav-height); /* Отступ снизу для нижней панели */
 }
 
 /* Header Container */
@@ -110,21 +124,20 @@ body {
     width: 100%;
     display: flex;
     justify-content: space-between;
-    /* align-items: center; */ /* УДАЛЯЕМ center, чтобы выравнивать по верху */
-    align-items: flex-start; /* ВАЖНО: Выравниваем элементы по верхнему краю */
-    padding: 15px 20px 0; /* padding-top: 15px; устанавливает начальный отступ от верхнего края хедера */
+    align-items: flex-start; /* Выравниваем элементы по верхнему краю */
+    padding: 15px 20px 0; 
     box-sizing: border-box;
 }
 
 .left-section {
     display: flex;
     flex-direction: column;
-    align-items: flex-start; /* Выравнивает дочерние элементы по левому краю */
+    align-items: flex-start;
 }
 
 .company-info {
     display: flex;
-    align-items: center; /* Сохраняем выравнивание внутри company-info */
+    align-items: center;
     gap: 15px;
     color: var(--header-text-color);
     /* transition: color 0.3s; */ /* УДАЛЕНО для резкой смены темы */
@@ -155,19 +168,18 @@ body {
     white-space: nowrap;
     overflow: hidden;
     max-width: 180px;
-    /* НОВАЯ ОБВОДКА ТЕКСТА */
     text-shadow: 
         -1px -1px 0 var(--text-stroke-color-light),  
          1px -1px 0 var(--text-stroke-color-light),
         -1px  1px 0 var(--text-stroke-color-light),
          1px  1px 0 var(--text-stroke-color-light);
-    transition: text-shadow 0.3s ease; /* Плавное изменение обводки при смене темы */
+    transition: text-shadow 0.3s ease;
 }
 
 /* Описание компании и его анимация полностью удалены */
 
 
-/* Bot Logo - ИСПРАВЛЕНО: УДАЛЯЕМ ОТРИЦАТЕЛЬНЫЙ МАРГИН, так как выравниваем по верхнему краю */
+/* Bot Logo - ИСПРАВЛЕНО: УСТАНОВЛЕНЫ РАЗМЕРЫ И УДАЛЕНЫ НЕКОРРЕКТНЫЕ СТИЛИ */
 .bot-logo {
     width: 60px; /* Установлен размер как у аватарки фирмы */
     height: 60px; /* Установлен размер как у аватарки фирмы */
@@ -176,7 +188,7 @@ body {
     border: none;
     box-shadow: none;
     flex-shrink: 0;
-    /* margin-top: -10px; */ /* УДАЛЯЕМ этот отступ, так как выравниваем по верхнему краю */
+    /* margin-top: -10px; */ /* УДАЛЕНО: теперь выравнивание достигается через flexbox */
 }
 
 /* Theme Toggle Container */
@@ -185,8 +197,9 @@ body {
     z-index: 2;
     display: flex;
     align-items: center;
-    justify-content: flex-start; /* Выравнивание внутренних элементов по левому краю */
+    justify-content: flex-start; 
     margin-top: 5px; 
+    /* margin-left: 20px; */ 
     box-sizing: border-box;
     width: auto; 
 }
@@ -310,4 +323,58 @@ input:checked + .slider:before {
 
 .admin-test-controls button:hover {
     transform: translateY(-2px);
+}
+
+/* НОВАЯ НИЖНЯЯ ПАНЕЛЬ НАВИГАЦИИ */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: var(--bottom-nav-height);
+    background-color: var(--bottom-nav-bg);
+    box-shadow: 0 -2px 8px var(--bottom-nav-shadow);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    border-top-left-radius: var(--border-radius-size);
+    border-top-right-radius: var(--border-radius-size);
+    padding-bottom: env(safe-area-inset-bottom); /* Для iPhone X и подобных */
+    box-sizing: border-box;
+    z-index: 100; /* Чтобы быть поверх всего */
+}
+
+.nav-button {
+    background: none;
+    border: none;
+    color: var(--bottom-nav-text-color);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-size: 0.75em;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 8px 0;
+    flex: 1; /* Распределяем пространство равномерно */
+    transition: color 0.2s ease-in-out;
+    -webkit-tap-highlight-color: transparent; /* Убираем синюю подсветку при тапе на мобильных */
+}
+
+.nav-button:hover,
+.nav-button.active {
+    color: var(--bottom-nav-active-color);
+}
+
+.nav-icon {
+    width: 24px;
+    height: 24px;
+    stroke: var(--bottom-nav-icon-color);
+    transition: stroke 0.2s ease-in-out;
+}
+
+.nav-button:hover .nav-icon,
+.nav-button.active .nav-icon {
+    stroke: var(--bottom-nav-active-color);
 }
