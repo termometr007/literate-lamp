@@ -39,12 +39,13 @@ body.dark-mode {
 body {
     font-family: 'Roboto', sans-serif;
     margin: 0;
-    padding: 0;
+    /* padding: 0; Уберем это, padding-top будет на body */
     background-color: var(--background-color);
     color: var(--text-color);
     transition: background-color 0.3s, color 0.3s;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    padding-top: var(--header-height); /* Отступ сверху для контента */
 }
 
 /* Header Container */
@@ -61,23 +62,24 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    z-index: 1; /* Нижний слой */
+    z-index: 10; /* Увеличим z-index, чтобы быть уверенным, что она внизу, но не закрывается полностью */
     will-change: transform; /* Оптимизация для анимации */
 }
 
 /* Основная область контента */
 .content-area {
     position: relative; /* Чтобы z-index работал */
-    z-index: 2; /* Верхний слой */
+    z-index: 20; /* Верхний слой - выше хедера */
     padding: 20px;
-    padding-top: calc(var(--header-height) + 20px); /* Отступ сверху, чтобы не перекрывать хедер */
+    /* padding-top: calc(var(--header-height) + 20px); Убрано, так как body уже имеет padding-top */
     text-align: center;
     background-color: var(--background-color); /* Фон для страницы */
     border-top-left-radius: 15px; /* Закругленные края */
     border-top-right-radius: 15px;
-    margin-top: calc(var(--header-height) * -1); /* Поднимаем content-area, чтобы она начиналась сразу под хедером */
-    transition: background-color 0.3s, color 0.3s, margin-top var(--header-transition-duration) ease-out;
+    /* margin-top: calc(var(--header-height) * -1); УБИРАЕМ это, это могло быть причиной */
+    transition: background-color 0.3s, color 0.3s; /* Убираем margin-top из transition */
 }
+
 
 /* Background Blur */
 .background-blur {
@@ -306,7 +308,7 @@ input:checked + .slider:before {
     background-color: var(--button-bg);
     color: var(--button-text);
     border: none;
-    border-radius: 8px;
+    border-radius: 8-px;
     transition: background-color 0.3s, transform 0.2s;
 }
 
