@@ -162,15 +162,15 @@ body {
     flex-shrink: 0;
 }
 
-/* Theme Toggle Container - ИСПРАВЛЕНО: ВОССТАНОВЛЕНОjustify-content: flex-start; и margin-left: 20px; */
+/* Theme Toggle Container - ВАЖНО: ВОССТАНОВЛЕНОjustify-content: flex-start; и margin-left: 20px; */
 .theme-toggle-container {
     position: relative;
     z-index: 2;
     display: flex;
     align-items: center;
-    justify-content: flex-start; /* ВАЖНО: ВОССТАНОВЛЕНО ДЛЯ ВЫРАВНИВАНИЯ СЛЕВА */
+    justify-content: flex-start; /* ЭТОТ ПАРАМЕТР ВАЖЕН ДЛЯ ВЫРАВНИВАНИЯ СЛЕВА */
     margin-top: 5px; 
-    margin-left: 20px; /* ВАЖНО: ВОССТАНОВЛЕНО ДЛЯ ВЫРАВНИВАНИЯ СЛЕВА */
+    margin-left: 20px; /* ЭТОТ ПАРАМЕТР ВАЖЕН ДЛЯ ВЫРАВНИВАНИЯ СЛЕВА */
     box-sizing: border-box;
     width: auto; 
 }
