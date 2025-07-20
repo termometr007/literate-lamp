@@ -12,7 +12,7 @@
     --slider-checked-bg: #2196F3;
     --icon-color-light: #FFD700;
     --icon-color-dark: #A9A9A9;
-    --description-text-color: #666;
+    /* --description-text-color: #666; */ /* Удалено, так как описание убрано */
 
     /* Новые переменные для анимации панели */
     --header-height: 120px; /* Изначальная высота панели */
@@ -34,7 +34,7 @@ body.dark-mode {
     --slider-checked-bg: #9C27B0;
     --icon-color-light: #A9A9A9;
     --icon-color-dark: #ADD8E6;
-    --description-text-color: #bbb;
+    /* --description-text-color: #bbb; */ /* Удалено, так как описание убрано */
 }
 
 body {
@@ -42,7 +42,7 @@ body {
     margin: 0;
     background-color: var(--background-color);
     color: var(--text-color);
-    transition: background-color 0.3s, color 0.3s; /* Возвращаем плавный переход для темы */
+    /* transition: background-color 0.3s, color 0.3s; */ /* Удалено для мгновенной смены темы */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     padding-top: var(--header-height); /* Отступ сверху для контента */
@@ -59,7 +59,7 @@ body {
     overflow: hidden; 
     background-color: var(--header-bg);
     box-shadow: 0 2px 4px var(--shadow-color);
-    transition: background-color 0.3s, box-shadow 0.3s; /* Возвращаем плавный переход для фона и тени */
+    /* transition: background-color 0.3s, box-shadow 0.3s; */ /* Удалено для мгновенной смены темы */
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
@@ -78,7 +78,8 @@ body {
     margin-top: calc(var(--border-radius-size) * -1); 
     padding-top: calc(20px + var(--border-radius-size)); 
     box-shadow: 0 -2px 5px rgba(0,0,0,0.1); 
-    transition: background-color 0.3s, color 0.3s, transform var(--header-transition-duration) ease-out; /* Возвращаем плавный переход для фона и цвета, оставляем для transform */
+    /* transition: background-color 0.3s, color 0.3s, transform var(--header-transition-duration) ease-out; */ /* Удалено background-color и color для мгновенной смены темы */
+    transition: transform var(--header-transition-duration) ease-out; /* Оставлено для анимации скролла */
     will-change: transform; 
 }
 
@@ -108,7 +109,7 @@ body {
     background-position: center;
     filter: blur(15px);
     opacity: 0.7;
-    transition: filter 0.3s, opacity 0.3s; /* Возвращаем плавный переход */
+    /* transition: filter 0.3s, opacity 0.3s; */ /* Удалено для мгновенной смены темы */
 }
 
 .header-content {
@@ -132,8 +133,8 @@ body {
     display: flex;
     align-items: center;
     gap: 15px;
-    color: var(--header-text-color); /* Сохраняем цвет текста */
-    transition: color 0.3s; /* Возвращаем плавный переход */
+    color: var(--header-text-color);
+    /* transition: color 0.3s; */ /* Удалено для мгновенной смены темы */
 }
 
 .round-logo {
@@ -151,47 +152,34 @@ body {
     flex-direction: column;
     justify-content: center;
     flex-grow: 1;
-    overflow: hidden; /* Важно для скрытия части текста, если не помещается по высоте */
-    /* Убрал max-width, чтобы текст мог занимать больше места по ширине */
+    overflow: hidden; /* Важно для скрытия части текста */
 }
 
 #company-name {
     margin: 0;
     font-size: 1.3em;
     font-weight: bold;
-    white-space: nowrap; /* Название компании не переносится */
-    overflow: hidden; 
-    /* max-width: 180px; Убрано, чтобы текст мог занимать больше места */
-}
-
-.company-description {
-    margin: 2px 0 0;
-    font-size: 0.8em;
-    color: var(--description-text-color);
-    /* Ключевые изменения для текста описания */
-    white-space: normal; /* Разрешаем перенос строк */
-    overflow: visible; /* Убираем скрытие overflow, чтобы текст был виден полностью */
-    text-overflow: clip; /* Гарантируем, что текст не обрезается многоточием */
-    max-height: none; /* Убираем ограничение по высоте, если оно было */
-    animation: none; /* Гарантируем отсутствие анимации */
-    animation-play-state: paused; /* Гарантируем паузу */
-    transform: translateX(0); /* Гарантируем отсутствие смещения */
-    
-    /* Если нужно ограничить по количеству строк и добавить многоточие, можно так: */
-    /* display: -webkit-box;
-    -webkit-line-clamp: 3; /* Максимум 3 строки */
-    /* -webkit-box-orient: vertical;
+    white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis; */
-    
-    /* Если нужно всегда показывать весь текст без ограничений, то оставляем как есть */
 }
 
-/* Анимация "бегущей строки" - оставляем ее определение, но не применяем */
-@keyframes scroll-text {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(var(--scroll-distance-px)); } 
-}
+/* .company-description { */ /* Полностью удален блок стилей для описания */
+/* margin: 2px 0 0; */
+/* font-size: 0.8em; */
+/* color: var(--description-text-color); */
+/* white-space: nowrap; */
+/* display: inline-block; */
+/* position: relative; */
+/* line-height: 1.2; */
+/* will-change: transform; */
+/* animation: scroll-text var(--scroll-duration) linear infinite; */
+/* animation-play-state: paused; */
+/* } */
+
+/* @keyframes scroll-text { */ /* Удален блок @keyframes, так как он больше не используется */
+/* 0% { transform: translateX(0); } */
+/* 100% { transform: translateX(var(--scroll-distance-px)); } */
+/* } */
 
 
 /* Bot Logo */
@@ -222,7 +210,7 @@ body {
 .theme-icon {
     font-size: 0.9em;
     margin: 0 2px;
-    transition: color 0.3s; /* Возвращаем плавный переход */
+    /* transition: color 0.3s; */ /* Удалено для мгновенной смены темы */
     line-height: 1;
 }
 
@@ -258,8 +246,8 @@ body {
     right: 0;
     bottom: 0;
     background-color: var(--slider-bg);
-    -webkit-transition: .4s; /* Возвращаем плавный переход */
-    transition: .4s; /* Возвращаем плавный переход */
+    /* -webkit-transition: .4s; */ /* Удалено для мгновенной смены темы */
+    /* transition: .4s; */ /* Удалено для мгновенной смены темы */
 }
 
 .slider:before {
@@ -270,8 +258,8 @@ body {
     left: 2px;
     bottom: 2px;
     background-color: var(--slider-handle);
-    -webkit-transition: .4s; /* Возвращаем плавный переход */
-    transition: .4s; /* Возвращаем плавный переход */
+    /* -webkit-transition: .4s; */ /* Удалено для мгновенной смены темы */
+    /* transition: .4s; */ /* Удалено для мгновенной смены темы */
 }
 
 input:checked + .slider {

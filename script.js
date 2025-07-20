@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const companyLogo = document.getElementById('company-logo');
     const companyName = document.getElementById('company-name');
-    const companyDescription = document.getElementById('company-description');
+    // const companyDescription = document.getElementById('company-description'); // Удалена константа
     const backgroundBlur = document.querySelector('.background-blur');
     const headerContainer = document.querySelector('.header-container');
     const themeSwitch = document.getElementById('theme-switch');
@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const logoUrlInput = document.getElementById('logo-url-input');
     const companyNameInput = document.getElementById('company-name-input');
-    const companyDescriptionInput = document.getElementById('company-description-input'); 
+    // const companyDescriptionInput = document.getElementById('company-description-input'); // Удалена константа
     const applyCompanyChangesBtn = document.getElementById('apply-company-changes');
 
     const botLogoUrlInput = document.getElementById('bot-logo-url-input');
@@ -23,8 +23,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // window.Telegram.WebApp.expand();
     }
 
-    // Функция для обновления логотипа компании, названия и описания
-    function updateCompanyInfo(logoUrl, name, description) {
+    // Функция для обновления логотипа компании и названия
+    function updateCompanyInfo(logoUrl, name) { // Удален параметр description
         if (logoUrl !== null) {
             companyLogo.src = logoUrl;
             backgroundBlur.style.backgroundImage = `url(${logoUrl})`;
@@ -32,15 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (name !== null) {
             companyName.textContent = name;
         }
-        if (description !== null) {
-            companyDescription.textContent = description;
-            // Убедимся, что текст виден и может переноситься
-            companyDescription.style.display = 'block'; // Или 'inline-block' в зависимости от разметки
-            companyDescription.style.whiteSpace = 'normal'; // Разрешаем перенос строк
-            companyDescription.style.overflow = 'visible'; // Убираем скрытие
-            companyDescription.style.animation = 'none'; // Отключаем любую анимацию
-            companyDescription.style.transform = 'translateX(0)'; // Отключаем смещение
-        }
+        // Удалена вся логика, связанная с companyDescription
     }
 
     // Функция для обновления логотипа бота
@@ -51,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Устанавливаем дефолтные значения при загрузке
-    updateCompanyInfo('https://via.placeholder.com/60/0000FF/FFFFFF?text=MyComp', 'Название Компании', 'Это очень-очень длинное мотивационное описание, которое должно теперь полностью помещаться, переносясь на новую строку, чтобы пользователи могли прочитать весь текст без проблем, и даже очень-очень длинный текст будет виден целиком от начала до конца!');
+    updateCompanyInfo('https://via.placeholder.com/60/0000FF/FFFFFF?text=MyComp', 'Название Компании'); // Удалено описание из вызова
     updateBotLogo('https://via.placeholder.com/60/FF5733/FFFFFF?text=B');
 
     // --- Логика скролла: content-area двигается, header-container остается неподвижным ---
@@ -64,15 +56,14 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('scroll', () => {
         let currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
+        // Определяем, насколько высоко должен подняться content-area
+        // 0px при currentScrollTop = 0
+        // -maxTranslateY при currentScrollTop >= maxTranslateY
         let translateYValue = -Math.min(currentScrollTop, maxTranslateY);
         
         contentArea.style.transform = `translateY(${translateYValue}px)`;
 
         lastScrollTop = currentScrollTop;
-
-        if (currentScrollTop === 0) {
-            contentArea.style.transform = `translateY(0px)`;
-        }
     });
 
 
@@ -83,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             document.body.classList.remove('dark-mode');
         }
-        // Эти строки теперь не нужны, так как переходы управляются CSS 'transition'
+        // Удалены строки, которые устанавливали цвет иконок через JS, теперь это управляется CSS-переменными напрямую
         // sunIcon.style.color = getComputedStyle(document.body).getPropertyValue('--icon-color-light');
         // moonIcon.style.color = getComputedStyle(document.body).getPropertyValue('--icon-color-dark');
     }
@@ -108,12 +99,12 @@ document.addEventListener('DOMContentLoaded', () => {
     applyCompanyChangesBtn.addEventListener('click', () => {
         const newLogoUrl = logoUrlInput.value.trim();
         const newCompanyName = companyNameInput.value.trim();
-        const newCompanyDescription = companyDescriptionInput.value.trim();
+        // const newCompanyDescription = companyDescriptionInput.value.trim(); // Удалена константа
 
         updateCompanyInfo(
             newLogoUrl || null,
-            newCompanyName || null,
-            newCompanyDescription || null
+            newCompanyName || null
+            // newCompanyDescription || null // Удалено описание из вызова
         );
 
         alert('Информация компании обновлена!');
