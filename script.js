@@ -40,20 +40,25 @@ document.addEventListener('DOMContentLoaded', () => {
             companyDescription.style.animation = 'none'; // Сброс анимации перед измерением
             companyDescription.classList.remove('animate-scroll');
 
-            // Временно устанавливаем ширину контейнера для измерения текста
-            const originalMaxWidth = companyDescription.style.maxWidth;
-            companyDescription.style.maxWidth = 'none'; // Снимаем ограничение для измерения полной ширины
-            const textWidth = companyDescription.scrollWidth; // Полная ширина текста
-            companyDescription.style.maxWidth = originalMaxWidth; // Возвращаем оригинальное ограничение
+            // Создаем временный элемент для измерения полной ширины текста
+            const tempSpan = document.createElement('span');
+            tempSpan.style.whiteSpace = 'nowrap';
+            tempSpan.style.position = 'absolute';
+            tempSpan.style.left = '-9999px'; // Убираем с экрана
+            tempSpan.style.fontSize = getComputedStyle(companyDescription).fontSize; // Важно для точного измерения
+            tempSpan.style.fontFamily = getComputedStyle(companyDescription).fontFamily;
+            tempSpan.textContent = description;
+            document.body.appendChild(tempSpan);
+            const textWidth = tempSpan.offsetWidth; // Полная ширина текста
+            document.body.removeChild(tempSpan);
 
             const containerWidth = companyDescription.offsetWidth; // Фактическая видимая ширина контейнера
 
             // Если текст длиннее видимого контейнера, запускаем анимацию
             if (textWidth > containerWidth) {
                 const scrollSpeed = 25; // px/sec, можно регулировать скорость
-                // Прокручиваем текст на всю его ширину + ширина контейнера,
-                // чтобы создать плавное повторение после полного исчезновения
-                const scrollDistance = textWidth + 10; // Дополнительный отступ между повторениями
+                // Прокручиваем текст на всю его ширину + небольшой отступ, чтобы был зазор между повторениями
+                const scrollDistance = textWidth + 20; // Дополнительный отступ в 20px
                 const scrollDuration = scrollDistance / scrollSpeed;
 
                 companyDescription.style.setProperty('--scroll-duration', `${scrollDuration}s`);
@@ -75,60 +80,40 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Устанавливаем дефолтные значения при загрузке
-    updateCompanyInfo('https://via.placeholder.com/60/0000FF/FFFFFF?text=MyComp', 'Название Компании', 'Это довольно длинное мотивационное описание, которое должно прокручиваться полностью, не обрываясь, чтобы пользователи могли прочитать весь текст без проблем, и даже очень-очень длинный текст будет виден целиком!');
+    updateCompanyInfo('https://via.placeholder.com/60/0000FF/FFFFFF?text=MyComp', 'Название Компании', 'Это очень-очень длинное мотивационное описание, которое должно прокручиваться полностью, без обрезания, чтобы пользователи могли прочитать весь текст без проблем, и даже очень-очень длинный текст будет виден целиком от начала до конца!');
     updateBotLogo('https://via.placeholder.com/60/FF5733/FFFFFF?text=B');
 
-    // --- Логика скролла для скрытия/показа хедера с эффектом "прилипания" (исправлено) ---
+    // --- Логика скролла для скрытия/показа хедера (исправлено на простое плавное) ---
     let lastScrollTop = 0;
-    let currentScrollTop = 0;
     const headerInitialHeight = parseInt(getComputedStyle(headerContainer).getPropertyValue('--header-height'));
-    const scrollSensitivity = 0.5; // Насколько сильно панель "следует" за пальцем (0.1 - слабо, 1.0 - сильно)
-    let headerOffset = 0; // Текущее смещение хедера по Y
-
-    // Для предотвращения резких скачков
-    let isScrolling = false;
-    let scrollTimeout;
+    const scrollThreshold = 30; // Порог скролла для активации скрытия/показа
 
     window.addEventListener('scroll', () => {
-        currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        isScrolling = true;
+        let currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
-        clearTimeout(scrollTimeout);
-        scrollTimeout = setTimeout(() => {
-            isScrolling = false;
-            // Когда пользователь отпустил палец, "доводим" панель до конца
-            if (headerOffset < -headerInitialHeight / 2) { // Если скрыта более чем наполовину
-                headerOffset = -headerInitialHeight;
-            } else {
-                headerOffset = 0;
-            }
-            headerContainer.style.transition = 'transform var(--header-transition-duration) ease-out';
-            headerContainer.style.transform = `translateY(${headerOffset}px)`;
-            // Обновляем padding-top для content-area
-            contentArea.style.paddingTop = `${headerInitialHeight + headerOffset}px`;
-
-        }, 150); // Небольшая задержка после остановки скролла
-
-        const scrollDelta = currentScrollTop - lastScrollTop;
-
-        // Если скроллим вверх (показываем панель)
-        if (scrollDelta < 0) {
-            headerOffset = Math.min(0, headerOffset - scrollDelta * scrollSensitivity);
+        // Если скроллим вверх (currentScrollTop < lastScrollTop)
+        // и не находимся в самом верху страницы (currentScrollTop > 0)
+        if (currentScrollTop < lastScrollTop && currentScrollTop > 0) {
+            // Показываем хедер (смещаем вниз)
+            headerContainer.style.transform = `translateY(0px)`;
+            contentArea.style.marginTop = `calc(var(--header-height) * -1)`; // content-area остается под хедером
         }
-        // Если скроллим вниз (скрываем панель)
-        else if (scrollDelta > 0) {
-            headerOffset = Math.max(-headerInitialHeight, headerOffset - scrollDelta * scrollSensitivity);
+        // Если скроллим вниз (currentScrollTop > lastScrollTop)
+        // и превысили порог скролла
+        else if (currentScrollTop > lastScrollTop && currentScrollTop > scrollThreshold) {
+            // Скрываем хедер (смещаем вверх за пределы экрана)
+            headerContainer.style.transform = `translateY(-${headerInitialHeight}px)`;
+            contentArea.style.marginTop = `-20px`; // content-area смещается вверх, чтобы быть видимой
         }
-
-        // Применяем transform, но без transition во время активного скролла
-        headerContainer.style.transition = 'none';
-        headerContainer.style.transform = `translateY(${headerOffset}px)`;
-        // Обновляем padding-top для content-area
-        contentArea.style.paddingTop = `${headerInitialHeight + headerOffset}px`;
-
+        // Если скроллим в самый верх страницы
+        if (currentScrollTop <= 0) {
+            headerContainer.style.transform = `translateY(0px)`;
+            contentArea.style.marginTop = `calc(var(--header-height) * -1)`;
+        }
 
         lastScrollTop = currentScrollTop;
-    }, { passive: true }); // Использование passive: true для лучшей производительности скролла
+    });
+
 
     // Функция для применения темы
     function applyTheme(isDark) {

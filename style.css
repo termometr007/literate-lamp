@@ -16,7 +16,7 @@
 
     /* Новые переменные для анимации панели */
     --header-height: 120px; /* Изначальная высота панели */
-    --header-transition-duration: 0.2s; /* Для плавной анимации при отпускании */
+    --header-transition-duration: 0.3s; /* Для плавной анимации */
 }
 
 body.dark-mode {
@@ -49,26 +49,34 @@ body {
 
 /* Header Container */
 .header-container {
-    position: fixed; /* Изменяем на fixed для parallax-эффекта */
+    position: fixed; /* Панель фиксирована вверху */
     top: 0;
     left: 0;
     width: 100%;
-    height: var(--header-height); /* Используем CSS переменную */
-    overflow: hidden;
+    height: var(--header-height);
+    overflow: hidden; /* Скрывает контент, когда панель "уезжает" вверх */
     background-color: var(--header-bg);
     box-shadow: 0 2px 4px var(--shadow-color);
     transition: transform var(--header-transition-duration) ease-out, background-color 0.3s, box-shadow 0.3s; /* Анимируем transform */
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    z-index: 100; /* Чтобы хедер был поверх всего контента */
+    z-index: 1; /* Нижний слой */
     will-change: transform; /* Оптимизация для анимации */
 }
 
-/* Для отступа основного контента, чтобы он не перекрывался хедером */
-body > .content-area {
-    padding-top: var(--header-height);
-    transition: padding-top var(--header-transition-duration) ease-out;
+/* Основная область контента */
+.content-area {
+    position: relative; /* Чтобы z-index работал */
+    z-index: 2; /* Верхний слой */
+    padding: 20px;
+    padding-top: calc(var(--header-height) + 20px); /* Отступ сверху, чтобы не перекрывать хедер */
+    text-align: center;
+    background-color: var(--background-color); /* Фон для страницы */
+    border-top-left-radius: 15px; /* Закругленные края */
+    border-top-right-radius: 15px;
+    margin-top: calc(var(--header-height) * -1); /* Поднимаем content-area, чтобы она начиналась сразу под хедером */
+    transition: background-color 0.3s, color 0.3s, margin-top var(--header-transition-duration) ease-out;
 }
 
 /* Background Blur */
@@ -100,7 +108,6 @@ body > .content-area {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    /*gap: 5px; /* Убираем, чтобы контролировать отступ ползунка вручную */
 }
 
 .company-info {
@@ -156,9 +163,6 @@ body > .content-area {
 }
 
 @keyframes scroll-text {
-    /* 0% transform: translateX(0); */
-    /* 100% transform: translateX(calc(-100% + var(--container-width) - var(--scroll-offset))); */
-    /* Новое определение для полного прокручивания */
     0% { transform: translateX(0); }
     100% { transform: translateX(var(--scroll-distance-px)); } /* Прокрутка на вычисленное расстояние */
 }
@@ -175,20 +179,18 @@ body > .content-area {
     flex-shrink: 0;
 }
 
-/* Theme Toggle Container - Под аватаром, выровнен по центру относительно нее */
+/* Theme Toggle Container - Максимально влево, под аватаром */
 .theme-toggle-container {
-    position: relative; /* Теперь относительное позиционирование */
+    position: relative;
     z-index: 2;
     display: flex;
     align-items: center;
-    justify-content: center; /* Центрируем содержимое */
+    justify-content: flex-start; /* Максимально влево */
     
-    /* Отступы для позиционирования под аватаром */
-    margin-top: 5px; /* Небольшой отступ от company-info */
-    /* company-info width = 60px (logo) + 15px (gap) + 180px (text-info max-width) = 255px */
-    width: 255px; /* Задаем ширину, чтобы центрировать ползунок относительно этой ширины */
+    margin-top: 5px; /* Отступ от company-info */
     margin-left: 20px; /* Отступ слева, как у company-info */
     box-sizing: border-box;
+    width: auto; /* Ширина по контенту */
 }
 
 /* Стили для иконок солнца и луны */
@@ -270,11 +272,6 @@ input:checked + .slider:before {
     border-radius: 50%;
 }
 
-
-.content-area {
-    padding: 20px;
-    text-align: center;
-}
 
 .admin-test-controls {
     margin-top: 20px;
