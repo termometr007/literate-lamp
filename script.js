@@ -8,9 +8,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const sunIcon = document.querySelector('.sun-icon');
     const moonIcon = document.querySelector('.moon-icon');
 
+    // Элементы для тестирования админ-функционала компании
     const logoUrlInput = document.getElementById('logo-url-input');
     const companyNameInput = document.getElementById('company-name-input');
-    const applyAdminChangesBtn = document.getElementById('apply-admin-changes');
+    const applyCompanyChangesBtn = document.getElementById('apply-company-changes');
+
+    // Элементы для тестирования логотипа бота
+    const botLogoUrlInput = document.getElementById('bot-logo-url-input');
+    const applyBotLogoChangesBtn = document.getElementById('apply-bot-logo-changes');
+
 
     // Инициализация Telegram WebApp
     if (window.Telegram && window.Telegram.WebApp) {
@@ -37,13 +43,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Устанавливаем дефолтные значения при загрузке (можно изменить)
-    updateCompanyInfo('https://via.placeholder.com/100/0000FF/FFFFFF?text=Logo', 'Название Компании');
-    updateBotLogo('https://via.placeholder.com/40/FF5733/FFFFFF?text=B');
+    // Эти значения будут видны при первом запуске, пока ты их не изменишь через поля ввода
+    updateCompanyInfo('https://via.placeholder.com/100/0000FF/FFFFFF?text=MyComp', 'Название Компании');
+    updateBotLogo('https://via.placeholder.com/50/FF5733/FFFFFF?text=B');
 
 
     // Логика скролла для скрытия хедера
     let lastScrollTop = 0;
-    const headerInitialHeight = 120; // Установим фиксированную начальную высоту для скрытия/показа
+    const headerInitialHeight = 120; // Фиксированная начальная высота хедера
     const headerThreshold = 50;
 
     window.addEventListener('scroll', () => {
@@ -52,11 +59,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (st > lastScrollTop && st > headerThreshold) {
             headerContainer.style.height = '0px';
             headerContainer.style.opacity = '0';
-            headerContainer.style.paddingTop = '0px';
         } else if (st < lastScrollTop || st <= headerThreshold) {
             headerContainer.style.height = `${headerInitialHeight}px`;
             headerContainer.style.opacity = '1';
-            headerContainer.style.paddingTop = '0px'; // Отступ теперь внутри header-content
         }
         lastScrollTop = st <= 0 ? 0 : st;
     });
@@ -65,12 +70,13 @@ document.addEventListener('DOMContentLoaded', () => {
     function applyTheme(isDark) {
         if (isDark) {
             document.body.classList.add('dark-mode');
-            sunIcon.style.color = 'var(--icon-color-light)'; // Цвет солнца в темном режиме
-            moonIcon.style.color = 'var(--icon-color-dark)'; // Цвет луны в темном режиме
+            // Обновляем цвета иконок в зависимости от режима
+            sunIcon.style.color = 'var(--icon-color-light)';
+            moonIcon.style.color = 'var(--icon-color-dark)';
         } else {
             document.body.classList.remove('dark-mode');
-            sunIcon.style.color = 'var(--icon-color-light)'; // Цвет солнца в светлом режиме
-            moonIcon.style.color = 'var(--icon-color-dark)'; // Цвет луны в светлом режиме
+            sunIcon.style.color = 'var(--icon-color-light)';
+            moonIcon.style.color = 'var(--icon-color-dark)';
         }
     }
 
@@ -87,11 +93,11 @@ document.addEventListener('DOMContentLoaded', () => {
         applyTheme(true);
     } else {
         themeSwitch.checked = false;
-        applyTheme(false); // Убедимся, что светлая тема применена, если не сохранена темная
+        applyTheme(false);
     }
 
-    // Логика для тестирования админ-функционала
-    applyAdminChangesBtn.addEventListener('click', () => {
+    // Логика для тестирования админ-функционала компании
+    applyCompanyChangesBtn.addEventListener('click', () => {
         const newLogoUrl = logoUrlInput.value.trim();
         const newCompanyName = companyNameInput.value.trim();
 
@@ -108,7 +114,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Для изменения логотипа бота (для разработчика)
-    // Можешь добавить кнопку или поле ввода для этого, или менять вручную здесь:
-    // updateBotLogo('https://your-custom-bot-logo.png');
+    // Логика для тестирования логотипа бота
+    applyBotLogoChangesBtn.addEventListener('click', () => {
+        const newBotLogoUrl = botLogoUrlInput.value.trim();
+        if (newBotLogoUrl) {
+            updateBotLogo(newBotLogoUrl);
+            alert('Логотип бота обновлен!');
+        } else {
+            alert('Пожалуйста, введите URL логотипа бота.');
+        }
+    });
 });

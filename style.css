@@ -37,15 +37,15 @@ body {
     background-color: var(--background-color);
     color: var(--text-color);
     transition: background-color 0.3s, color 0.3s;
-    -webkit-font-smoothing: antialiased; /* Сглаживание шрифтов */
-    -moz-osx-font-smoothing: grayscale; /* Сглаживание шрифтов */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 /* Header Container */
 .header-container {
     position: relative;
     width: 100%;
-    height: 120px; /* Уменьшаем высоту */
+    height: 120px; /* Сохраняем высоту */
     overflow: hidden;
     background-color: var(--header-bg);
     box-shadow: 0 2px 4px var(--shadow-color);
@@ -55,17 +55,17 @@ body {
     justify-content: flex-start;
 }
 
-/* Background Blur - Эффект Ambilight */
+/* Background Blur - Возвращаем предыдущий эффект */
 .background-blur {
     position: absolute;
-    top: -20px; /* Смещаем немного, чтобы размытые края выходили за границы */
-    left: -20px;
-    width: calc(100% + 40px); /* Увеличиваем размер */
-    height: calc(100% + 40px);
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%; /* Занимает всю высоту контейнера */
     background-size: cover;
     background-position: center;
-    filter: blur(25px) saturate(1.5) brightness(1.1); /* Сильное размытие, насыщение, яркость */
-    opacity: 0.6; /* Небольшая прозрачность */
+    filter: blur(15px); /* Умеренное размытие */
+    opacity: 0.7; /* Небольшая прозрачность */
     transition: filter 0.3s, opacity 0.3s;
 }
 
@@ -88,7 +88,7 @@ body {
 }
 
 .round-logo {
-    width: 60px; /* Уменьшаем размер лого компании */
+    width: 60px;
     height: 60px;
     border-radius: 50%;
     object-fit: cover;
@@ -98,43 +98,44 @@ body {
 
 #company-name {
     margin: 0;
-    font-size: 1.3em; /* Немного уменьшаем шрифт */
+    font-size: 1.3em;
     font-weight: bold;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 150px; /* Сохраняем ограничение ширины */
+    max-width: 150px;
 }
 
-/* Bot Logo - Квадратный и без рамок */
+/* Bot Logo - Крупнее и без рамок */
 .bot-logo {
-    width: 35px; /* Немного уменьшаем */
-    height: 35px;
-    object-fit: contain; /* Сохраняет пропорции, но может оставлять поля */
-    /* object-fit: cover; /* Если нужно обрезать, но заполнить */
+    width: 50px; /* Увеличиваем размер */
+    height: 50px;
+    object-fit: contain;
     margin-left: auto;
-    border-radius: 0; /* Делаем квадратным */
-    border: none; /* Убираем рамку */
-    box-shadow: none; /* Убираем тень, если не нужна */
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
 }
 
 /* Theme Toggle Container */
 .theme-toggle-container {
     position: relative;
     z-index: 2;
-    width: 100%; /* Занимает всю ширину */
+    width: 100%;
     display: flex;
     align-items: center;
     justify-content: flex-start; /* Выравнивание по левому краю */
-    padding: 10px 20px; /* Отступы */
+    padding: 5px 20px; /* Уменьшаем вертикальный отступ */
     box-sizing: border-box;
+    margin-top: auto; /* Прижимаем к низу хедера */
 }
 
 /* Стили для иконок солнца и луны */
 .theme-icon {
-    font-size: 1.2em;
-    margin: 0 5px;
+    font-size: 1em; /* Уменьшаем размер иконок */
+    margin: 0 3px; /* Меньше отступы от ползунка */
     transition: color 0.3s;
+    line-height: 1; /* Для лучшего выравнивания */
 }
 
 .sun-icon {
@@ -145,14 +146,13 @@ body {
     color: var(--icon-color-dark);
 }
 
-
-/* Стили для ползунка (слайдера) */
+/* Стили для ползунка (слайдера) - Меньше в несколько раз */
 .switch {
     position: relative;
     display: inline-block;
-    width: 45px; /* Меньше ширина */
-    height: 25px; /* Меньше высота */
-    margin: 0 10px; /* Отступы от иконок */
+    width: 35px; /* Значительно меньше ширина */
+    height: 20px; /* Значительно меньше высота */
+    margin: 0 5px; /* Отступы от иконок */
 }
 
 .switch input {
@@ -176,10 +176,10 @@ body {
 .slider:before {
     position: absolute;
     content: "";
-    height: 17px; /* Меньше размер ручки */
-    width: 17px;
-    left: 4px;
-    bottom: 4px;
+    height: 14px; /* Меньше размер ручки */
+    width: 14px;
+    left: 3px; /* Меньше отступ */
+    bottom: 3px; /* Меньше отступ */
     background-color: var(--slider-handle);
     -webkit-transition: .4s;
     transition: .4s;
@@ -194,20 +194,19 @@ input:focus + .slider {
 }
 
 input:checked + .slider:before {
-    -webkit-transform: translateX(20px); /* Меньше смещение */
-    -ms-transform: translateX(20px);
-    transform: translateX(20px);
+    -webkit-transform: translateX(15px); /* Меньше смещение */
+    -ms-transform: translateX(15px);
+    transform: translateX(15px);
 }
 
 /* Rounded sliders */
 .slider.round {
-    border-radius: 25px; /* Соответствует новой высоте */
+    border-radius: 20px; /* Соответствует новой высоте */
 }
 
 .slider.round:before {
     border-radius: 50%;
 }
-
 
 .content-area {
     padding: 20px;
@@ -220,17 +219,21 @@ input:checked + .slider:before {
     flex-direction: column;
     gap: 10px;
     align-items: center;
+    border: 1px dashed var(--border-color); /* Для визуального разделения блоков */
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px; /* Отступ между блоками */
 }
 
 .admin-test-controls input[type="text"] {
     width: 80%;
-    max-width: 300px; /* Ограничиваем ширину на больших экранах */
+    max-width: 300px;
     padding: 10px;
     border: 1px solid var(--border-color);
     border-radius: 8px;
     background-color: var(--header-bg);
     color: var(--text-color);
-    box-sizing: border-box; /* Важно для адаптивности */
+    box-sizing: border-box;
 }
 
 .admin-test-controls button {
