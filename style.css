@@ -46,11 +46,12 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     padding-top: var(--header-height); /* Отступ сверху для контента */
+    min-height: 150vh; /* Добавлено для удобства тестирования скролла */
 }
 
-/* Header Container */
+/* Header Container - Фиксирован, не двигается */
 .header-container {
-    position: fixed; /* Панель фиксирована вверху */
+    position: fixed; 
     top: 0;
     left: 0;
     width: 100%;
@@ -58,7 +59,6 @@ body {
     overflow: hidden; 
     background-color: var(--header-bg);
     box-shadow: 0 2px 4px var(--shadow-color);
-    /* Убираем transform из transition, т.к. панель не должна двигаться */
     transition: background-color 0.3s, box-shadow 0.3s; 
     display: flex;
     flex-direction: column;
@@ -66,23 +66,36 @@ body {
     z-index: 10; /* Нижний слой */
 }
 
-/* Основная область контента */
+/* Основная область контента - Движется и накрывает хедер */
 .content-area {
-    position: relative; /* Чтобы z-index работал */
+    position: relative; 
     z-index: 20; /* Верхний слой - выше хедера */
     padding: 20px;
     text-align: center;
-    background-color: var(--background-color); /* Фон для страницы */
-    border-top-left-radius: var(--border-radius-size); /* Закругленные края */
+    background-color: var(--background-color); 
+    border-top-left-radius: var(--border-radius-size); 
     border-top-right-radius: var(--border-radius-size);
-    /* Добавляем небольшой отрицательный margin-top, чтобы она наезжала на хедер */
-    margin-top: calc(var(--border-radius-size) * -1); /* Наезжаем на хедер на высоту радиуса */
-    padding-top: calc(20px + var(--border-radius-size)); /* Компенсируем padding-top для контента */
-    box-shadow: 0 -2px 5px rgba(0,0,0,0.1); /* Небольшая тень, чтобы подчеркнуть наложение */
-    /* Теперь content-area будет анимироваться по transformY */
-    transition: background-color 0.3s, color 0.3s, transform var(--header-transition-duration) ease-out;
-    will-change: transform; /* Оптимизация для анимации */
+    margin-top: calc(var(--border-radius-size) * -1); 
+    padding-top: calc(20px + var(--border-radius-size)); 
+    box-shadow: 0 -2px 5px rgba(0,0,0,0.1); 
+    transition: background-color 0.3s, color 0.3s, transform var(--header-transition-duration) ease-out; 
+    will-change: transform; 
 }
+
+/* Псевдоэлемент для скрытия острых углов хедера */
+.content-area::before {
+    content: '';
+    position: absolute;
+    top: calc(var(--border-radius-size) * -1); 
+    left: 0;
+    right: 0;
+    height: var(--border-radius-size); 
+    background-color: inherit; 
+    border-top-left-radius: var(--border-radius-size);
+    border-top-right-radius: var(--border-radius-size);
+    z-index: -1; 
+}
+
 
 /* Background Blur */
 .background-blur {
@@ -137,7 +150,8 @@ body {
     flex-direction: column;
     justify-content: center;
     flex-grow: 1;
-    overflow: hidden;
+    overflow: hidden; /* Важно для скрытия части текста */
+    /* max-width: 180px; Убрано, теперь JS будет это определять */
 }
 
 #company-name {
@@ -145,32 +159,28 @@ body {
     font-size: 1.3em;
     font-weight: bold;
     white-space: nowrap;
-    overflow: hidden;
-    max-width: 180px;
+    overflow: hidden; /* Должно быть на родительском элементе .text-info */
+    /* max-width: 180px; Убрано */
 }
 
 .company-description {
     margin: 2px 0 0;
     font-size: 0.8em;
     color: var(--description-text-color);
-    white-space: nowrap; /* Важно для анимации */
-    overflow: hidden; /* Важно для анимации */
-    max-width: 180px; /* Задаем максимальную ширину контейнера */
-    position: relative; /* Для позиционирования текста при анимации */
-    padding-right: 5px;
-    text-indent: 0; /* Убедимся, что нет лишних отступов */
-    line-height: 1.2; /* Для корректного расчета высоты строки */
+    white-space: nowrap; /* Гарантируем, что текст не переносится */
+    display: inline-block; /* Важно для измерения ширины текста */
+    position: relative; 
+    line-height: 1.2; 
+    will-change: transform; 
+    /* Анимация будет применяться JS, но ее свойства тут */
+    animation: scroll-text var(--scroll-duration) linear infinite;
+    animation-play-state: paused; /* Изначально пауза, пока JS не активирует */
 }
 
 /* Анимация "бегущей строки" */
-.company-description.animate-scroll {
-    animation: scroll-text var(--scroll-duration) linear infinite;
-    animation-play-state: running;
-}
-
 @keyframes scroll-text {
     0% { transform: translateX(0); }
-    100% { transform: translateX(var(--scroll-distance-px)); } /* Прокрутка на вычисленное расстояние */
+    100% { transform: translateX(var(--scroll-distance-px)); } 
 }
 
 
@@ -185,18 +195,17 @@ body {
     flex-shrink: 0;
 }
 
-/* Theme Toggle Container - Максимально влево, под аватаром */
+/* Theme Toggle Container */
 .theme-toggle-container {
     position: relative;
     z-index: 2;
     display: flex;
     align-items: center;
-    justify-content: flex-start; /* Максимально влево */
-    
-    margin-top: 5px; /* Отступ от company-info */
-    margin-left: 20px; /* Отступ слева, как у company-info */
+    justify-content: flex-start; 
+    margin-top: 5px; 
+    margin-left: 20px; 
     box-sizing: border-box;
-    width: auto; /* Ширина по контенту */
+    width: auto; 
 }
 
 /* Стили для иконок солнца и луны */

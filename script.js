@@ -3,16 +3,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const companyName = document.getElementById('company-name');
     const companyDescription = document.getElementById('company-description');
     const backgroundBlur = document.querySelector('.background-blur');
-    const headerContainer = document.querySelector('.header-container'); // Теперь эта панель статична
+    const headerContainer = document.querySelector('.header-container');
     const themeSwitch = document.getElementById('theme-switch');
     const botLogo = document.getElementById('bot-logo');
     const sunIcon = document.querySelector('.theme-icon.sun-icon');
-    const moonIcon = document.querySelector('.theme-icon.moon-icon');
-    const contentArea = document.querySelector('.content-area'); // Теперь эта панель будет двигаться
+    const moonIcon = document.querySelector('.moon-icon'); // Уточнил селектор
+    const contentArea = document.querySelector('.content-area');
 
     const logoUrlInput = document.getElementById('logo-url-input');
     const companyNameInput = document.getElementById('company-name-input');
-    const companyDescriptionInput = document.getElementById('company-description-input'); // Это было неверно
+    const companyDescriptionInput = document.getElementById('company-description-input');
     const applyCompanyChangesBtn = document.getElementById('apply-company-changes');
 
     const botLogoUrlInput = document.getElementById('bot-logo-url-input');
@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (window.Telegram && window.Telegram.WebApp) {
         window.Telegram.WebApp.ready();
-        // Telegram.WebApp.expand();
+        // window.Telegram.WebApp.expand(); // Это может вызвать проблемы на некоторых устройствах, закомментируем пока
     }
 
     // Функция для обновления логотипа компании, названия и описания
@@ -34,42 +34,57 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (description !== null) {
             companyDescription.textContent = description;
-            companyDescription.style.display = description ? 'block' : 'none';
+            companyDescription.style.display = description ? 'inline-block' : 'none';
 
             // --- Логика для анимации "бегущей строки" ---
-            companyDescription.style.animation = 'none'; // Сброс анимации перед измерением
+            // Сброс всех анимаций и классов, чтобы гарантировать чистый старт
+            companyDescription.style.animation = 'none';
             companyDescription.classList.remove('animate-scroll');
+            companyDescription.style.transform = ''; // Сброс любого transform
             
             // Принудительная перерисовка DOM
+            // Это очень важный шаг, который заставляет браузер "забыть" предыдущее состояние анимации
             void companyDescription.offsetWidth; 
 
-            // Создаем временный элемент для измерения полной ширины текста
-            const tempSpan = document.createElement('span');
-            tempSpan.style.whiteSpace = 'nowrap';
-            tempSpan.style.position = 'absolute';
-            tempSpan.style.left = '-9999px';
-            tempSpan.style.fontSize = getComputedStyle(companyDescription).fontSize;
-            tempSpan.style.fontFamily = getComputedStyle(companyDescription).fontFamily;
-            tempSpan.textContent = description;
-            document.body.appendChild(tempSpan);
-            const textWidth = tempSpan.offsetWidth; // Полная ширина текста
-            document.body.removeChild(tempSpan);
+            // Используем requestAnimationFrame для гарантии, что измерения будут после рефлоу
+            requestAnimationFrame(() => {
+                const textInfoContainer = companyDescription.closest('.text-info');
+                const containerWidth = textInfoContainer ? textInfoContainer.offsetWidth : companyDescription.offsetWidth;
 
-            const containerWidth = companyDescription.offsetWidth; // Фактическая видимая ширина контейнера
-            
-            if (textWidth > containerWidth) {
-                const scrollSpeed = 25; // px/sec, можно регулировать скорость
-                const scrollDistance = textWidth + 20; // Дополнительный отступ в 20px (чтобы текст полностью исчезал)
-                const scrollDuration = scrollDistance / scrollSpeed;
+                const tempSpan = document.createElement('span');
+                tempSpan.style.whiteSpace = 'nowrap';
+                tempSpan.style.position = 'absolute';
+                tempSpan.style.visibility = 'hidden'; // Скрываем, чтобы не моргало
+                tempSpan.style.fontSize = getComputedStyle(companyDescription).fontSize;
+                tempSpan.style.fontFamily = getComputedStyle(companyDescription).fontFamily;
+                tempSpan.textContent = description;
+                document.body.appendChild(tempSpan);
+                const textWidth = tempSpan.offsetWidth;
+                document.body.removeChild(tempSpan);
 
-                companyDescription.style.setProperty('--scroll-duration', `${scrollDuration}s`);
-                companyDescription.style.setProperty('--scroll-distance-px', `-${scrollDistance}px`);
+                // Добавим отладочные сообщения
+                // console.log('Text Width:', textWidth, 'Container Width:', containerWidth);
 
-                companyDescription.classList.add('animate-scroll');
-            } else {
-                companyDescription.classList.remove('animate-scroll');
-                companyDescription.style.animation = 'none'; // Гарантируем отсутствие анимации
-            }
+                if (textWidth > containerWidth) {
+                    const scrollSpeed = 20; // px/sec, немного медленнее для лучшей читаемости
+                    // Прокрутка на всю ширину текста, плюс небольшой отступ, чтобы был виден "конец"
+                    const scrollDistance = textWidth + 10; 
+                    const scrollDuration = scrollDistance / scrollSpeed;
+
+                    companyDescription.style.setProperty('--scroll-duration', `${scrollDuration}s`);
+                    companyDescription.style.setProperty('--scroll-distance-px', `-${scrollDistance}px`);
+                    
+                    // console.log('Setting animation. Duration:', scrollDuration, 'Distance:', scrollDistance);
+                    companyDescription.classList.add('animate-scroll');
+                    companyDescription.style.animationPlayState = 'running'; // Убедимся, что анимация запущена
+                } else {
+                    companyDescription.classList.remove('animate-scroll');
+                    companyDescription.style.animation = 'none'; // Убедимся, что анимация остановлена
+                    companyDescription.style.transform = 'translateX(0)'; // Возвращаем на место
+                    companyDescription.style.animationPlayState = 'paused'; // Пауза
+                    // console.log('Text fits. No animation needed.');
+                }
+            });
         }
     }
 
@@ -84,25 +99,21 @@ document.addEventListener('DOMContentLoaded', () => {
     updateCompanyInfo('https://via.placeholder.com/60/0000FF/FFFFFF?text=MyComp', 'Название Компании', 'Это очень-очень длинное мотивационное описание, которое должно прокручиваться полностью, без обрезания, чтобы пользователи могли прочитать весь текст без проблем, и даже очень-очень длинный текст будет виден целиком от начала до конца!');
     updateBotLogo('https://via.placeholder.com/60/FF5733/FFFFFF?text=B');
 
-    // --- Логика скролла: теперь двигается content-area, а header-container остается неподвижным ---
+    // --- Логика скролла: content-area двигается, header-container остается неподвижным ---
     let lastScrollTop = 0;
-    const headerTotalHeight = parseInt(getComputedStyle(headerContainer).getPropertyValue('--header-height')); // Высота хедера
-    const borderRadiusSize = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--border-radius-size')); // Размер радиуса
+    const headerTotalHeight = parseInt(getComputedStyle(headerContainer).getPropertyValue('--header-height'));
+    const borderRadiusSize = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--border-radius-size'));
     
-    // Фактическое расстояние, на которое content-area может подняться над хедером
-    // Это будет (headerTotalHeight - borderRadiusSize)
-    const scrollRevealHeight = headerTotalHeight - borderRadiusSize;
-
+    const maxTranslateY = headerTotalHeight + borderRadiusSize; 
+    
     window.addEventListener('scroll', () => {
         let currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
-        // Определяем желаемое смещение content-area
-        // При скролле вниз, contentArea.transformY будет уходить в отрицательное значение,
-        // поднимая content-area вверх и скрывая хедер.
-        // Максимальное отрицательное значение -scrollRevealHeight (т.е. на высоту хедера минус радиус)
-        let translateYValue = Math.min(0, Math.max(-scrollRevealHeight, currentScrollTop));
+        // Определяем, насколько высоко должен подняться content-area
+        // 0px при currentScrollTop = 0
+        // -maxTranslateY при currentScrollTop >= maxTranslateY
+        let translateYValue = -Math.min(currentScrollTop, maxTranslateY);
         
-        // Применяем transform к contentArea, а не к headerContainer
         contentArea.style.transform = `translateY(${translateYValue}px)`;
 
         lastScrollTop = currentScrollTop;
@@ -140,7 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
     applyCompanyChangesBtn.addEventListener('click', () => {
         const newLogoUrl = logoUrlInput.value.trim();
         const newCompanyName = companyNameInput.value.trim();
-        const newCompanyDescription = companyDescriptionInput.value.trim(); // Правильное обращение к value
+        const newCompanyDescription = companyDescriptionInput.value.trim();
 
         updateCompanyInfo(
             newLogoUrl || null,
@@ -148,15 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
             newCompanyDescription || null
         );
 
-        if (newLogoUrl || newCompanyName || newCompanyDescription) {
-            // После обновления, пересчитываем анимацию текста, если она нужна
-            // Вызываем updateCompanyInfo еще раз, чтобы триггернуть пересчет
-            // (передаем текущие значения, чтобы не сбросить их)
-            updateCompanyInfo(companyLogo.src, companyName.textContent, companyDescription.textContent);
-            alert('Информация компании обновлена!');
-        } else {
-            alert('Пожалуйста, введите данные для обновления информации о компании.');
-        }
+        alert('Информация компании обновлена!');
     });
 
     // Логика для тестирования логотипа бота
