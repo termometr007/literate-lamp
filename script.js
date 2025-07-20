@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const companyLogo = document.getElementById('company-logo');
     const companyName = document.getElementById('company-name');
-    // const companyDescription = document.getElementById('company-description'); // Удалена константа
+    // const companyDescription = document.getElementById('company-description'); // Удалена константа описания
     const backgroundBlur = document.querySelector('.background-blur');
     const headerContainer = document.querySelector('.header-container');
     const themeSwitch = document.getElementById('theme-switch');
@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const logoUrlInput = document.getElementById('logo-url-input');
     const companyNameInput = document.getElementById('company-name-input');
-    // const companyDescriptionInput = document.getElementById('company-description-input'); // Удалена константа
+    // const companyDescriptionInput = document.getElementById('company-description-input'); // Удалена константа для поля ввода описания
     const applyCompanyChangesBtn = document.getElementById('apply-company-changes');
 
     const botLogoUrlInput = document.getElementById('bot-logo-url-input');
@@ -23,8 +23,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Telegram.WebApp.expand();
     }
 
-    // Функция для обновления логотипа компании и названия
-    function updateCompanyInfo(logoUrl, name /*, description */) { // Удален параметр description
+    // Функция для обновления логотипа компании и названия (без описания)
+    function updateCompanyInfo(logoUrl, name) {
         if (logoUrl !== null) {
             companyLogo.src = logoUrl;
             backgroundBlur.style.backgroundImage = `url(${logoUrl})`;
@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (name !== null) {
             companyName.textContent = name;
         }
-        // Удалена вся логика, связанная с companyDescription
+        // Вся логика, связанная с companyDescription, была удалена
     }
 
     // Функция для обновления логотипа бота
@@ -42,8 +42,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Устанавливаем дефолтные значения при загрузке
-    updateCompanyInfo('https://via.placeholder.com/60/0000FF/FFFFFF?text=MyComp', 'Название Компании'); // Удалено описание из вызова
+    // Устанавливаем дефолтные значения при загрузке (без описания)
+    updateCompanyInfo('https://via.placeholder.com/60/0000FF/FFFFFF?text=MyComp', 'Название Компании');
     updateBotLogo('https://via.placeholder.com/60/FF5733/FFFFFF?text=B');
 
     // --- Логика скролла: теперь двигается content-area, а header-container остается неподвижным ---
@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             document.body.classList.remove('dark-mode');
         }
-        // Удалены строки, которые устанавливали цвет иконок через JS, теперь это управляется CSS-переменными напрямую и без transition
+        // Эти строки больше не нужны, т.к. цвет иконок управляется CSS-переменными без transition
         // sunIcon.style.color = getComputedStyle(document.body).getPropertyValue('--icon-color-light');
         // moonIcon.style.color = getComputedStyle(document.body).getPropertyValue('--icon-color-dark');
     }
@@ -92,19 +92,19 @@ document.addEventListener('DOMContentLoaded', () => {
         applyTheme(false);
     }
 
-    // Логика для тестирования админ-функционала компании
+    // Логика для тестирования админ-функционала компании (без описания)
     applyCompanyChangesBtn.addEventListener('click', () => {
         const newLogoUrl = logoUrlInput.value.trim();
         const newCompanyName = companyNameInput.value.trim();
-        // const newCompanyDescription = companyDescriptionInput.value.trim(); // Удалена константа
+        // const newCompanyDescription = companyDescriptionInput.value.trim(); // Удалена переменная
 
         updateCompanyInfo(
             newLogoUrl || null,
             newCompanyName || null
-            // newCompanyDescription || null // Удалено описание из вызова
+            // newCompanyDescription || null // Удален параметр из вызова
         );
 
-        if (newLogoUrl || newCompanyName) { // Проверяем только лого и название
+        if (newLogoUrl || newCompanyName) {
             alert('Информация компании обновлена!');
         } else {
             alert('Пожалуйста, введите данные для обновления информации о компании.');

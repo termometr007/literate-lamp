@@ -3,45 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Мое Telegram WebApp</title>
+    <title>Мой WebApp</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
     <div class="header-container">
-        <div class="background-blur"></div>
+        <div class="background-blur" style="background-image: url('https://via.placeholder.com/60/0000FF/FFFFFF?text=MyComp');"></div>
         <div class="header-content">
             <div class="left-section">
                 <div class="company-info">
-                    <img id="company-logo" src="https://via.placeholder.com/60/0000FF/FFFFFF?text=Logo" alt="Company Logo" class="round-logo">
+                    <img id="company-logo" class="round-logo" src="https://via.placeholder.com/60/0000FF/FFFFFF?text=MyComp" alt="Лого компании">
                     <div class="text-info">
                         <h1 id="company-name">Название Компании</h1>
-                        <p id="company-description" class="company-description">Мотивационные слова здесь</p>
-                    </div>
+                        </div>
+                </div>
+                <div class="theme-toggle-container">
+                    <span class="theme-icon sun-icon">☀️</span>
+                    <label class="switch">
+                        <input type="checkbox" id="theme-switch">
+                        <span class="slider round"></span>
+                    </label>
+                    <span class="theme-icon moon-icon">🌙</span>
                 </div>
             </div>
-            <img id="bot-logo" src="https://via.placeholder.com/60/FF5733/FFFFFF?text=B" alt="Bot Logo" class="bot-logo">
+            <img id="bot-logo" class="bot-logo" src="https://via.placeholder.com/60/FF5733/FFFFFF?text=B" alt="Лого бота">
         </div>
-        <div class="theme-toggle-container"> <span class="theme-icon sun-icon">&#9728;</span> <label class="switch">
-                <input type="checkbox" id="theme-switch">
-                <span class="slider round"></span>
-            </label>
-            <span class="theme-icon moon-icon">&#9790;</span> </div>
     </div>
+
     <div class="content-area">
-        <h2>Основной функционал будет здесь</h2>
-        <p>Для тестирования админского функционала (только для разработчика):</p>
+        <h2>Привет! Это контент твоей страницы.</h2>
+        <p>Здесь может быть любая информация, кнопки, интерактивные элементы.</p>
+        <p>Эта область будет сдвигаться вверх при прокрутке, создавая эффект "скрывающегося" хедера.</p>
+
         <div class="admin-test-controls">
-            <input type="text" id="logo-url-input" placeholder="URL фото компании (например, из imgbb.com)">
-            <input type="text" id="company-name-input" placeholder="Название компании">
-            <textarea id="company-description-input" placeholder="Описание компании (мотивационные слова)"></textarea>
+            <h3>Админ-контроль (только для тестирования)</h3>
+            <input type="text" id="logo-url-input" placeholder="URL нового лого компании">
+            <input type="text" id="company-name-input" placeholder="Новое название компании">
             <button id="apply-company-changes">Применить изменения компании</button>
+            
+            <hr style="width: 80%; border: 0; border-top: 1px solid var(--border-color); margin: 15px 0;">
+
+            <input type="text" id="bot-logo-url-input" placeholder="URL нового лого бота">
+            <button id="apply-bot-logo-changes">Применить логотип бота</button>
         </div>
-        <div class="admin-test-controls">
-            <input type="text" id="bot-logo-url-input" placeholder="URL лого бота (PNG с прозрачным фоном)">
-            <button id="apply-bot-logo-changes">Применить лого бота</button>
-        </div>
-        <p>Свайпните вниз, чтобы скрыть верхнюю панель.</p>
+        
+        <p>Просто прокрутите вниз, чтобы увидеть, как работает эффект!</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+        <p>Curabitur pretium tincidunt lacus. Nulla gravida orci a odio. Nullam varius, turpis et commodo pharetra, est eros bibendum elit, nec luctus magna felis sollicitudin mauris. Integer in mauris eu nibh euismod gravida. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+        <p>Fusce ac elit at lacus feugiat placerat. Proin ut dui vel lectus dapibus pharetra. Curabitur vel lectus non est fringilla consectetur. Sed non ante id dui euismod volutpat. Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+        <p>Donec eget leo at urna pellentesque. Curabitur pretium tincidunt lacus. Nulla gravida orci a odio. Nullam varius, turpis et commodo pharetra, est eros bibendum elit, nec luctus magna felis sollicitudin mauris. Integer in mauris eu nibh euismod gravida. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+        <p>Mauris nec erat in turpis ullamcorper sollicitudin. Proin ut dui vel lectus dapibus pharetra. Curabitur vel lectus non est fringilla consectetur. Sed non ante id dui euismod volutpat. Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
     </div>
 
     <script src="script.js"></script>
