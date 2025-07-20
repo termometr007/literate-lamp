@@ -71,9 +71,8 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             document.body.classList.remove('dark-mode');
         }
-        // Эти строки больше не нужны, т.к. цвет иконок управляется CSS-переменными без transition
-        // sunIcon.style.color = getComputedStyle(document.body).getPropertyValue('--icon-color-light');
-        // moonIcon.style.color = getComputedStyle(document.body).getPropertyValue('--icon-color-dark');
+        // Эти строки больше не нужны, т.к. цвет иконок управляется CSS-переменными без transition,
+        // но сами иконки и ползунок сохранены и стилизуются через CSS
     }
 
     // Логика переключения темы (дневной/ночной)
@@ -96,12 +95,10 @@ document.addEventListener('DOMContentLoaded', () => {
     applyCompanyChangesBtn.addEventListener('click', () => {
         const newLogoUrl = logoUrlInput.value.trim();
         const newCompanyName = companyNameInput.value.trim();
-        // const newCompanyDescription = companyDescriptionInput.value.trim(); // Удалена переменная
 
         updateCompanyInfo(
             newLogoUrl || null,
             newCompanyName || null
-            // newCompanyDescription || null // Удален параметр из вызова
         );
 
         if (newLogoUrl || newCompanyName) {

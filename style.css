@@ -10,8 +10,8 @@
     --slider-bg: #ccc;
     --slider-handle: white;
     --slider-checked-bg: #2196F3;
-    --icon-color-light: #FFD700;
-    --icon-color-dark: #A9A9A9;
+    --icon-color-light: #FFD700; /* Восстановлен цвет иконки солнца */
+    --icon-color-dark: #A9A9A9; /* Восстановлен цвет иконки луны */
     /* --description-text-color: #666; */ /* Удалено, так как описание больше не нужно */
 
     /* Новые переменные для анимации панели */
@@ -32,8 +32,8 @@ body.dark-mode {
     --slider-bg: #555;
     --slider-handle: #ccc;
     --slider-checked-bg: #9C27B0;
-    --icon-color-light: #A9A9A9;
-    --icon-color-dark: #ADD8E6;
+    --icon-color-light: #A9A9A9; /* Восстановлен цвет иконки солнца в темной теме */
+    --icon-color-dark: #ADD8E6; /* Восстановлен цвет иконки луны в темной теме */
     /* --description-text-color: #bbb; */ /* Удалено, так как описание больше не нужно */
 }
 
@@ -184,18 +184,17 @@ body {
     flex-shrink: 0;
 }
 
-/* Theme Toggle Container - Максимально влево, под аватаром */
+/* Theme Toggle Container - Восстановлено расположение */
 .theme-toggle-container {
     position: relative;
     z-index: 2;
     display: flex;
     align-items: center;
-    justify-content: flex-start; /* Максимально влево */
-    
-    margin-top: 5px; /* Отступ от company-info */
-    margin-left: 20px; /* Отступ слева, как у company-info */
+    justify-content: flex-start; 
+    margin-top: 5px; 
+    margin-left: 20px; 
     box-sizing: border-box;
-    width: auto; /* Ширина по контенту */
+    width: auto; 
 }
 
 /* Стили для иконок солнца и луны */
@@ -207,14 +206,14 @@ body {
 }
 
 .sun-icon {
-    color: var(--icon-color-light);
+    color: var(--icon-color-light); /* Теперь цвет берется из CSS-переменной */
 }
 
 .moon-icon {
-    color: var(--icon-color-dark);
+    color: var(--icon-color-dark); /* Теперь цвет берется из CSS-переменной */
 }
 
-/* Стили для ползунка (слайдера) */
+/* Стили для ползунка (слайдера) - Восстановлены */
 .switch {
     position: relative;
     display: inline-block;
