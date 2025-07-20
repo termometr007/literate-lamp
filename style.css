@@ -18,6 +18,10 @@
     --header-height: 120px;
     --header-transition-duration: 0.3s;
     --border-radius-size: 15px;
+
+    /* Цвета для обводки текста */
+    --text-stroke-color-light: #fff; /* Обводка для светлой темы */
+    --text-stroke-color-dark: #333; /* Обводка для темной темы */
 }
 
 body.dark-mode {
@@ -35,6 +39,10 @@ body.dark-mode {
     --icon-color-light: #A9A9A9;
     --icon-color-dark: #ADD8E6;
     /* --description-text-color: #bbb; */ /* УДАЛЕНО */
+
+    /* Цвета для обводки текста в темной теме */
+    --text-stroke-color-light: #333;
+    --text-stroke-color-dark: #fff;
 }
 
 body {
@@ -102,7 +110,7 @@ body {
     width: 100%;
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: center; /* ВАЖНО: Выравнивает элементы по центру по вертикали */
     padding: 15px 20px 0; /* padding-left: 20px; устанавливает начальный отступ */
     box-sizing: border-box;
 }
@@ -146,12 +154,19 @@ body {
     white-space: nowrap;
     overflow: hidden;
     max-width: 180px;
+    /* НОВАЯ ОБВОДКА ТЕКСТА */
+    text-shadow: 
+        -1px -1px 0 var(--text-stroke-color-light),  
+         1px -1px 0 var(--text-stroke-color-light),
+        -1px  1px 0 var(--text-stroke-color-light),
+         1px  1px 0 var(--text-stroke-color-light);
+    transition: text-shadow 0.3s ease; /* Плавное изменение обводки при смене темы */
 }
 
 /* Описание компании и его анимация полностью удалены */
 
 
-/* Bot Logo */
+/* Bot Logo - ИСПРАВЛЕНО: УДАЛЕНЫ НЕКОРРЕКТНЫЕ СТИЛИ, ВЫРАВНИВАНИЕ ЧЕРЕЗ align-items: center в .header-content */
 .bot-logo {
     width: 60px;
     height: 60px;
@@ -160,9 +175,10 @@ body {
     border: none;
     box-shadow: none;
     flex-shrink: 0;
+    /* margin-top: -15px; УДАЛЕНО - это смещало логотип вниз */
 }
 
-/* Theme Toggle Container - ИСПРАВЛЕНО: УДАЛЕН margin-left */
+/* Theme Toggle Container - ВАЖНО: ВОССТАНОВЛЕНОjustify-content: flex-start; и margin-left: 20px; */
 .theme-toggle-container {
     position: relative;
     z-index: 2;
