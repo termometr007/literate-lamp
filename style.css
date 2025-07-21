@@ -29,6 +29,11 @@
     --bottom-nav-icon-color: #666;
     --bottom-nav-active-color: #007bff; /* Цвет активной кнопки */
     --bottom-nav-shadow: rgba(0, 0, 0, 0.15);
+
+    /* Модальное окно и блюр */
+    --modal-backdrop-color: rgba(0, 0, 0, 0.4);
+    --modal-bg-color: #fff;
+    --modal-border-radius: 12px;
 }
 
 body.dark-mode {
@@ -56,6 +61,10 @@ body.dark-mode {
     --bottom-nav-icon-color: #bbb;
     --bottom-nav-active-color: #9C27B0;
     --bottom-nav-shadow: rgba(0, 0, 0, 0.5);
+
+    /* Модальное окно и блюр в темной теме */
+    --modal-backdrop-color: rgba(0, 0, 0, 0.6);
+    --modal-bg-color: #333;
 }
 
 body {
@@ -88,7 +97,7 @@ body {
 }
 
 /* Основная область контента */
-.content-area {
+.content-area, .page-content {
     position: relative;
     z-index: 20;
     padding: 20px;
@@ -102,7 +111,19 @@ body {
     /* transition: background-color 0.3s, color 0.3s, transform var(--header-transition-duration) ease-out; */ /* УДАЛЕНО background-color и color для резкой смены темы */
     transition: transform var(--header-transition-duration) ease-out;
     will-change: transform;
+    /* Убедимся, что фон блюра будет применятья к этим элементам */
+    filter: none; 
+    transition: filter 0.3s ease-out;
 }
+
+/* Применяем блюр к основному контенту при открытии модального окна */
+body.modal-open .content-area,
+body.modal-open .sections-page {
+    filter: blur(5px);
+    pointer-events: none; /* Отключаем события на размытом фоне */
+    user-select: none;
+}
+
 
 /* Background Blur */
 .background-blur {
@@ -176,9 +197,6 @@ body {
     transition: text-shadow 0.3s ease;
 }
 
-/* Описание компании и его анимация полностью удалены */
-
-
 /* Bot Logo - ИСПРАВЛЕНО: УСТАНОВЛЕНЫ РАЗМЕРЫ И УДАЛЕНЫ НЕКОРРЕКТНЫЕ СТИЛИ */
 .bot-logo {
     width: 60px; /* Установлен размер как у аватарки фирмы */
@@ -188,7 +206,6 @@ body {
     border: none;
     box-shadow: none;
     flex-shrink: 0;
-    /* margin-top: -10px; */ /* УДАЛЕНО: теперь выравнивание достигается через flexbox */
 }
 
 /* Theme Toggle Container */
@@ -199,7 +216,6 @@ body {
     align-items: center;
     justify-content: flex-start; 
     margin-top: 5px; 
-    /* margin-left: 20px; */ 
     box-sizing: border-box;
     width: auto; 
 }
@@ -310,7 +326,8 @@ input:checked + .slider:before {
     min-height: 40px;
 }
 
-.admin-test-controls button {
+.admin-test-controls button,
+.action-button {
     padding: 10px 20px;
     font-size: 1em;
     cursor: pointer;
@@ -321,8 +338,10 @@ input:checked + .slider:before {
     transition: background-color 0.3s, transform 0.2s;
 }
 
-.admin-test-controls button:hover {
+.admin-test-controls button:hover,
+.action-button:hover {
     transform: translateY(-2px);
+    opacity: 0.9;
 }
 
 /* НОВАЯ НИЖНЯЯ ПАНЕЛЬ НАВИГАЦИИ */
@@ -442,8 +461,9 @@ input:checked + .slider:before {
     border: 1px solid var(--border-color);
     border-radius: 10px;
     box-shadow: 0 2px 5px var(--shadow-color);
-    cursor: pointer;
+    /* cursor: pointer; */ /* Курсор поменяем в JS, чтобы не мешал long press */
     transition: background-color 0.2s ease, transform 0.1s ease;
+    -webkit-tap-highlight-color: transparent; /* Убираем синюю подсветку при тапе на мобильных */
 }
 
 .section-item:hover {
@@ -456,11 +476,24 @@ input:checked + .slider:before {
     color: var(--header-text-color);
     flex-grow: 1;
     text-align: left;
+    display: flex; /* Для выравнивания текста и кол-ва */
+    justify-content: space-between; /* Для выравнивания текста и кол-ва */
+    align-items: center;
+    gap: 10px;
+}
+
+.section-item-quantity {
+    font-size: 0.9em;
+    color: var(--bottom-nav-text-color);
+    background-color: var(--border-color);
+    padding: 3px 8px;
+    border-radius: 5px;
+    white-space: nowrap; /* чтобы количество не переносилось */
 }
 
 .section-item-actions {
     display: flex;
-    gap: 10px;
+    gap: 5px; /* Уменьшил gap для компактности */
     flex-shrink: 0;
 }
 
@@ -491,23 +524,198 @@ body.dark-mode .section-action-button:hover {
     gap: 15px;
 }
 
-.action-button {
-    padding: 12px 25px;
-    font-size: 1em;
-    cursor: pointer;
-    background-color: var(--button-bg);
-    color: var(--button-text);
-    border: none;
-    border-radius: 8px;
-    transition: background-color 0.3s, transform 0.2s;
-}
-
-.action-button:hover {
-    transform: translateY(-2px);
-    opacity: 0.9;
-}
 
 .no-sections-message {
     color: var(--bottom-nav-text-color);
     margin-top: 40px;
+}
+
+/* Стили для модальных окон */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1000; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: var(--modal-backdrop-color); /* Black w/ opacity */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(8px); /* Эффект блюра на заднем фоне */
+    -webkit-backdrop-filter: blur(8px); /* Для Safari */
+}
+
+.modal-content {
+    background-color: var(--modal-bg-color);
+    margin: auto;
+    padding: 25px;
+    border-radius: var(--modal-border-radius);
+    box-shadow: 0 5px 15px var(--shadow-color);
+    max-width: 85%;
+    min-width: 280px;
+    text-align: center;
+    transform: translateY(0);
+    opacity: 1;
+    transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+}
+
+/* Анимация появления модального окна */
+.modal.hidden .modal-content {
+    transform: translateY(-50px);
+    opacity: 0;
+}
+
+.modal h3 {
+    color: var(--header-text-color);
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+.modal input[type="text"],
+.modal input[type="number"],
+.modal input[type="datetime-local"],
+.modal textarea {
+    width: calc(100% - 20px);
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    box-sizing: border-box;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.secondary-button {
+    background-color: var(--border-color);
+    color: var(--text-color);
+}
+
+.secondary-button:hover {
+    background-color: #ccc; /* Более темный при наведении */
+}
+
+/* Стили для контекстного меню (доп. меню) */
+.context-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 15px;
+    min-width: 200px;
+}
+
+.context-menu-item {
+    padding: 12px 15px;
+    text-align: left;
+    color: var(--text-color);
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+}
+
+.context-menu-item:hover {
+    background-color: var(--border-color);
+}
+
+.close-context-menu {
+    margin-top: 10px;
+    font-weight: bold;
+    color: var(--button-bg);
+}
+
+.close-context-menu:hover {
+    background-color: var(--border-color);
+    color: var(--bottom-nav-active-color);
+}
+
+
+/* Стили для списка получателей */
+.recipient-filter-tabs {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 15px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.filter-tab {
+    background: none;
+    border: none;
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 0.95em;
+    color: var(--bottom-nav-text-color);
+    border-bottom: 2px solid transparent;
+    transition: color 0.2s, border-bottom-color 0.2s;
+}
+
+.filter-tab.active {
+    color: var(--bottom-nav-active-color);
+    border-bottom-color: var(--bottom-nav-active-color);
+    font-weight: bold;
+}
+
+.filter-tab:hover:not(.active) {
+    color: var(--text-color);
+}
+
+.select-all-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 15px;
+    padding: 5px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.select-all-container input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.select-all-container label {
+    font-weight: bold;
+    color: var(--header-text-color);
+}
+
+.recipients-list {
+    max-height: 250px;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.recipient-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 5px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.recipient-item:last-child {
+    border-bottom: none;
+}
+
+.recipient-item input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.recipient-item-name {
+    flex-grow: 1;
+    color: var(--text-color);
 }
