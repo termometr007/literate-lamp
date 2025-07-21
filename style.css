@@ -94,6 +94,12 @@ body {
     flex-direction: column;
     justify-content: flex-start;
     z-index: 10;
+    transition: transform 0.3s ease-out; /* Добавлено для анимации скрытия */
+}
+
+/* Скрытый хедер */
+.header-container.hidden {
+    transform: translateY(-100%);
 }
 
 /* Основная область контента */
@@ -118,7 +124,7 @@ body {
 
 /* Применяем блюр к основному контенту при открытии модального окна */
 body.modal-open .content-area,
-body.modal-open .sections-page {
+body.modal-open .page-content { /* Изменено с .sections-page на .page-content */
     filter: blur(5px);
     pointer-events: none; /* Отключаем события на размытом фоне */
     user-select: none;
