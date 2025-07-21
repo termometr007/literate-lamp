@@ -17,12 +17,10 @@
                     <img id="company-logo" class="round-logo" src="https://via.placeholder.com/60/0000FF/FFFFFF?text=MyComp" alt="Лого компании">
                     <div class="text-info">
                         <h1 id="company-name">Название Компании</h1>
-                        
-</div>
+                    </div>
                 </div>
                 <div class="theme-toggle-container">
-                    
-<span class="theme-icon sun-icon">&#9728;</span>
+                    <span class="theme-icon sun-icon">&#9728;</span>
                     <label class="switch">
                         <input type="checkbox" id="theme-switch">
                         <span class="slider round"></span>
@@ -34,18 +32,16 @@
         </div>
     </div>
 
-    <div class="content-area">
+    <div class="content-area" id="content-area">
         <h2>Привет! Это контент твоей страницы.</h2>
         <p>Здесь может быть любая информация, кнопки, интерактивные элементы.</p>
         <p>Эта область будет сдвигаться вверх при прокрутке, создавая эффект "скрывающегося" хедера.</p>
 
-        
-<div class="admin-test-controls">
+        <div class="admin-test-controls">
             <h3>Админ-контроль (только для тестирования)</h3>
             <input type="text" id="logo-url-input" placeholder="URL нового лого компании">
             <input type="text" id="company-name-input" placeholder="Новое название компании">
-            
-<button id="apply-company-changes">Применить изменения компании</button>
+            <button id="apply-company-changes">Применить изменения компании</button>
             
             <hr style="width: 80%; border: 0; border-top: 1px solid var(--border-color); margin: 15px 0;">
 
@@ -61,7 +57,21 @@
         <p>Mauris nec erat in turpis ullamcorper sollicitudin. Proin ut dui vel lectus dapibus pharetra. Curabitur vel lectus non est fringilla consectetur. Sed non ante id dui euismod volutpat. Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
     </div>
 
-    <!-- НОВАЯ НИЖНЯЯ ПАНЕЛЬ НАВИГАЦИИ -->
+    <div id="sections-page" class="page-content" style="display: none;">
+        <h2>Управление разделами</h2>
+        <div class="breadcrumbs" id="sections-breadcrumbs">
+            <span class="breadcrumb-item active" data-id="root">Главная</span>
+        </div>
+
+        <div class="sections-list" id="current-sections-list">
+            <p class="no-sections-message">Нет созданных разделов. Создайте первый!</p>
+        </div>
+
+        <div class="sections-actions">
+            <button id="create-section-btn" class="action-button">Создать новый раздел</button>
+            <button id="go-back-section-btn" class="action-button" style="display: none;">Назад</button>
+        </div>
+    </div>
     <div id="bottom-nav" class="bottom-nav">
         <button class="nav-button">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
