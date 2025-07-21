@@ -72,11 +72,12 @@ body {
     margin: 0;
     background-color: var(--background-color);
     color: var(--text-color);
-    /* transition: background-color 0.3s, color 0.3s; */ /* УДАЛЕНО для резкой смены темы */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    padding-top: var(--header-height);
     padding-bottom: var(--bottom-nav-height); /* Отступ снизу для нижней панели */
+    display: flex; /* Используем flexbox для компоновки */
+    flex-direction: column; /* Элементы располагаются вертикально */
+    min-height: 100vh; /* Минимальная высота viewport */
 }
 
 /* Header Container */
@@ -89,17 +90,29 @@ body {
     overflow: hidden; 
     background-color: var(--header-bg);
     box-shadow: 0 2px 4px var(--shadow-color);
-    /* transition: background-color 0.3s, box-shadow 0.3s; */ /* УДАЛЕНО для резкой смены темы */
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     z-index: 10;
-    transition: transform 0.3s ease-out; /* Добавлено для анимации скрытия */
+    transition: transform 0.3s ease-out, height 0.3s ease-out; /* Добавлено для анимации скрытия и изменения высоты */
 }
 
 /* Скрытый хедер */
 .header-container.hidden {
     transform: translateY(-100%);
+    height: 0; /* Полностью убираем высоту */
+    box-shadow: none; /* Убираем тень, чтобы не было видно "пустого" места */
+}
+
+/* Обёртка для контента, чтобы управлять отступом сверху */
+.content-wrapper {
+    flex-grow: 1; /* Позволяет обертке занимать все доступное пространство */
+    padding-top: var(--header-height); /* Отступ сверху для хедера */
+    transition: padding-top 0.3s ease-out; /* Анимируем изменение отступа */
+}
+
+.content-wrapper.header-hidden {
+    padding-top: 0; /* Убираем отступ, когда хедер скрыт */
 }
 
 /* Основная область контента */
@@ -114,19 +127,19 @@ body {
     margin-top: calc(var(--border-radius-size) * -1);
     padding-top: calc(20px + var(--border-radius-size));
     box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
-    /* transition: background-color 0.3s, color 0.3s, transform var(--header-transition-duration) ease-out; */ /* УДАЛЕНО background-color и color для резкой смены темы */
     transition: transform var(--header-transition-duration) ease-out;
     will-change: transform;
-    /* Убедимся, что фон блюра будет применятья к этим элементам */
     filter: none; 
     transition: filter 0.3s ease-out;
+    min-height: calc(100vh - var(--bottom-nav-height) - 40px); /* Учитываем только нижнюю панель и padding */
+    box-sizing: border-box;
 }
 
 /* Применяем блюр к основному контенту при открытии модального окна */
 body.modal-open .content-area,
-body.modal-open .page-content { /* Изменено с .sections-page на .page-content */
+body.modal-open .page-content {
     filter: blur(5px);
-    pointer-events: none; /* Отключаем события на размытом фоне */
+    pointer-events: none; 
     user-select: none;
 }
 
@@ -142,7 +155,6 @@ body.modal-open .page-content { /* Изменено с .sections-page на .page
     background-position: center;
     filter: blur(15px);
     opacity: 0.7;
-    /* transition: filter 0.3s, opacity 0.3s; */ /* УДАЛЕНО для резкой смены темы */
 }
 
 .header-content {
@@ -151,7 +163,7 @@ body.modal-open .page-content { /* Изменено с .sections-page на .page
     width: 100%;
     display: flex;
     justify-content: space-between;
-    align-items: flex-start; /* Выравниваем элементы по верхнему краю */
+    align-items: flex-start;
     padding: 15px 20px 0; 
     box-sizing: border-box;
 }
@@ -167,7 +179,6 @@ body.modal-open .page-content { /* Изменено с .sections-page на .page
     align-items: center;
     gap: 15px;
     color: var(--header-text-color);
-    /* transition: color 0.3s; */ /* УДАЛЕНО для резкой смены темы */
 }
 
 .round-logo {
@@ -203,12 +214,12 @@ body.modal-open .page-content { /* Изменено с .sections-page на .page
     transition: text-shadow 0.3s ease;
 }
 
-/* Bot Logo - ИСПРАВЛЕНО: УСТАНОВЛЕНЫ РАЗМЕРЫ И УДАЛЕНЫ НЕКОРРЕКТНЫЕ СТИЛИ */
+/* Bot Logo */
 .bot-logo {
-    width: 60px; /* Установлен размер как у аватарки фирмы */
-    height: 60px; /* Установлен размер как у аватарки фирмы */
+    width: 60px; 
+    height: 60px; 
     object-fit: contain;
-    border-radius: 0; /* Убедимся, что квадратный */
+    border-radius: 0;
     border: none;
     box-shadow: none;
     flex-shrink: 0;
@@ -364,9 +375,9 @@ input:checked + .slider:before {
     align-items: center;
     border-top-left-radius: var(--border-radius-size);
     border-top-right-radius: var(--border-radius-size);
-    padding-bottom: env(safe-area-inset-bottom); /* Для iPhone X и подобных */
+    padding-bottom: env(safe-area-inset-bottom);
     box-sizing: border-box;
-    z-index: 100; /* Чтобы быть поверх всего */
+    z-index: 100;
 }
 
 .nav-button {
@@ -382,9 +393,9 @@ input:checked + .slider:before {
     font-weight: 500;
     cursor: pointer;
     padding: 8px 0;
-    flex: 1; /* Распределяем пространство равномерно */
+    flex: 1;
     transition: color 0.2s ease-in-out;
-    -webkit-tap-highlight-color: transparent; /* Убираем синюю подсветку при тапе на мобильных */
+    -webkit-tap-highlight-color: transparent;
 }
 
 .nav-button:hover,
@@ -405,14 +416,14 @@ input:checked + .slider:before {
 }
 
 /* НОВЫЕ СТИЛИ ДЛЯ СТРАНИЦЫ РАЗДЕЛОВ */
-.page-content {
+/* .page-content {
     padding: 20px;
     text-align: center;
     background-color: var(--background-color);
     color: var(--text-color);
-    min-height: calc(100vh - var(--header-height) - var(--bottom-nav-height) - 40px); /* Adjust for header/footer and padding */
+    min-height: calc(100vh - var(--bottom-nav-height) - 40px);
     box-sizing: border-box;
-}
+} */
 
 .breadcrumbs {
     text-align: left;
@@ -453,7 +464,7 @@ input:checked + .slider:before {
     flex-direction: column;
     gap: 10px;
     width: 100%;
-    max-width: 500px; /* Ограничим ширину списка для лучшей читаемости */
+    max-width: 500px;
     margin-left: auto;
     margin-right: auto;
 }
@@ -467,9 +478,8 @@ input:checked + .slider:before {
     border: 1px solid var(--border-color);
     border-radius: 10px;
     box-shadow: 0 2px 5px var(--shadow-color);
-    /* cursor: pointer; */ /* Курсор поменяем в JS, чтобы не мешал long press */
     transition: background-color 0.2s ease, transform 0.1s ease;
-    -webkit-tap-highlight-color: transparent; /* Убираем синюю подсветку при тапе на мобильных */
+    -webkit-tap-highlight-color: transparent;
 }
 
 .section-item:hover {
@@ -482,8 +492,8 @@ input:checked + .slider:before {
     color: var(--header-text-color);
     flex-grow: 1;
     text-align: left;
-    display: flex; /* Для выравнивания текста и кол-ва */
-    justify-content: space-between; /* Для выравнивания текста и кол-ва */
+    display: flex;
+    justify-content: space-between;
     align-items: center;
     gap: 10px;
 }
@@ -494,19 +504,19 @@ input:checked + .slider:before {
     background-color: var(--border-color);
     padding: 3px 8px;
     border-radius: 5px;
-    white-space: nowrap; /* чтобы количество не переносилось */
+    white-space: nowrap;
 }
 
 .section-item-actions {
     display: flex;
-    gap: 5px; /* Уменьшил gap для компактности */
+    gap: 5px;
     flex-shrink: 0;
 }
 
 .section-action-button {
     background: none;
     border: none;
-    color: var(--button-bg); /* Используем цвет кнопки для иконок действий */
+    color: var(--button-bg);
     cursor: pointer;
     font-size: 1.1em;
     padding: 5px;
@@ -538,20 +548,20 @@ body.dark-mode .section-action-button:hover {
 
 /* Стили для модальных окон */
 .modal {
-    display: none; /* Hidden by default */
-    position: fixed; /* Stay in place */
-    z-index: 1000; /* Sit on top */
+    display: none;
+    position: fixed;
+    z-index: 1000;
     left: 0;
     top: 0;
-    width: 100%; /* Full width */
-    height: 100%; /* Full height */
-    overflow: auto; /* Enable scroll if needed */
-    background-color: var(--modal-backdrop-color); /* Black w/ opacity */
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: var(--modal-backdrop-color);
     display: flex;
     justify-content: center;
     align-items: center;
-    backdrop-filter: blur(8px); /* Эффект блюра на заднем фоне */
-    -webkit-backdrop-filter: blur(8px); /* Для Safari */
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
 }
 
 .modal-content {
@@ -592,6 +602,8 @@ body.dark-mode .section-action-button:hover {
     background-color: var(--background-color);
     color: var(--text-color);
     box-sizing: border-box;
+    resize: vertical;
+    min-height: 40px;
 }
 
 .modal-actions {
@@ -607,7 +619,7 @@ body.dark-mode .section-action-button:hover {
 }
 
 .secondary-button:hover {
-    background-color: #ccc; /* Более темный при наведении */
+    background-color: #ccc;
 }
 
 /* Стили для контекстного меню (доп. меню) */

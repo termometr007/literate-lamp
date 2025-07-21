@@ -3,12 +3,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const companyLogo = document.getElementById('company-logo');
     const companyName = document.getElementById('company-name');
     const backgroundBlur = document.querySelector('.background-blur');
-    const headerContainer = document.querySelector('.header-container');
+    const headerContainer = document.getElementById('header-container'); // Получаем по ID
     const themeSwitch = document.getElementById('theme-switch');
     const botLogo = document.getElementById('bot-logo');
     const sunIcon = document.querySelector('.theme-icon.sun-icon');
     const moonIcon = document.querySelector('.theme-icon.moon-icon');
     const contentArea = document.getElementById('content-area'); // Главная страница
+    const contentWrapper = document.querySelector('.content-wrapper'); // Новая обертка для контента
 
     // Элементы админ-контроля (для разработчика/тестирования)
     const logoUrlInput = document.getElementById('logo-url-input');
@@ -150,20 +151,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Логика скролла хедера ---
     let lastScrollTop = 0;
-    const headerTotalHeight = parseInt(getComputedStyle(headerContainer).getPropertyValue('--header-height'));
+    // const headerTotalHeight = parseInt(getComputedStyle(headerContainer).getPropertyValue('--header-height')); // Это не нужно, так как хедер скрывается полностью
     const borderRadiusSize = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--border-radius-size'));
-    const scrollRevealHeight = headerTotalHeight - borderRadiusSize;
+    // const scrollRevealHeight = headerTotalHeight - borderRadiusSize; // Это тоже не нужно
 
     window.addEventListener('scroll', () => {
         let currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        let translateYValue = Math.min(0, Math.max(-scrollRevealHeight, currentScrollTop));
         
-        // Применяем transform только к видимой странице
+        // Только для главной страницы, где хедер виден и скроллится
         if (contentArea.style.display !== 'none') {
-             contentArea.style.transform = `translateY(${translateYValue}px)`;
-        } else if (sectionsPage.style.display !== 'none') {
-            sectionsPage.style.transform = `translateY(${translateYValue}px)`;
+            let translateYValue = Math.min(0, Math.max(-headerContainer.offsetHeight + borderRadiusSize, currentScrollTop));
+            contentArea.style.transform = `translateY(${translateYValue}px)`;
         }
+        // Для sectionsPage transform не нужен, так как она занимает весь экран
         lastScrollTop = currentScrollTop;
     });
 
@@ -236,11 +236,13 @@ document.addEventListener('DOMContentLoaded', () => {
         // Показываем нужную страницу
         pageElement.style.display = 'block';
 
-        // Управление видимостью хедера
+        // Управление видимостью хедера и отступом content-wrapper
         if (pageElement === contentArea) {
             headerContainer.classList.remove('hidden'); // Показать хедер на главной
+            contentWrapper.classList.remove('header-hidden'); // Установить отступ
         } else if (pageElement === sectionsPage) {
             headerContainer.classList.add('hidden'); // Скрыть хедер на странице разделов
+            contentWrapper.classList.add('header-hidden'); // Убрать отступ
         }
 
         // Обновляем активную кнопку навигации
@@ -405,9 +407,6 @@ document.addEventListener('DOMContentLoaded', () => {
     createSectionBtn.addEventListener('click', async () => {
         if (window.Telegram && window.Telegram.WebApp) {
             Telegram.WebApp.HapticFeedback.impactOccurred('medium');
-            // Telegram.WebApp.showPopup не позволяет ввести текст напрямую, 
-            // поэтому для имитации ввода используем prompt после выбора кнопки.
-            // В реальном приложении это будет реализовано через поле ввода в боте или кастомный WebApp UI.
             const sectionName = prompt('Введите название нового раздела:'); 
             if (sectionName && sectionName.trim() !== '') {
                 const newId = generateUniqueId();
@@ -415,19 +414,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     id: newId,
                     name: sectionName.trim(),
                     parentId: currentParentId,
-                    quantity: 0, // Новые разделы начинаются с 0 шт.
-                    min_quantity: null // По умолчанию нет критического минимума
+                    quantity: 0,
+                    min_quantity: null
                 };
                 sectionsData.push(newSection);
                 renderSections(currentParentId);
 
-                // Отправляем данные боту
                 Telegram.WebApp.sendData(JSON.stringify({
                     type: 'create_section',
                     payload: newSection
                 }));
                 Telegram.WebApp.showAlert(`Раздел "${sectionName}" создан и данные отправлены боту.`);
-            } else {
+            } else if (sectionName !== null) { // Если пользователь не отменил ввод
                 Telegram.WebApp.showAlert('Название раздела не может быть пустым.');
             }
         } else {
@@ -444,7 +442,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 sectionsData.push(newSection);
                 renderSections(currentParentId);
                 alert(`Раздел "${sectionName}" создан (только в браузере).`);
-            } else {
+            } else if (sectionName !== null) {
                 alert('Название раздела не может быть пустым.');
             }
         }
@@ -459,21 +457,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 const sectionIndex = sectionsData.findIndex(s => s.id === id);
                 if (sectionIndex !== -1) {
                     sectionsData[sectionIndex].name = newName.trim();
-                    // Обновляем имя в текущем пути, если оно там есть
                     const pathIndex = currentPath.findIndex(p => p.id === id);
                     if (pathIndex !== -1) {
                         currentPath[pathIndex].name = newName.trim();
                     }
                     renderSections(currentParentId);
 
-                    // Отправляем данные боту
                     Telegram.WebApp.sendData(JSON.stringify({
                         type: 'update_section',
                         payload: { id: id, name: newName.trim() }
                     }));
                     Telegram.WebApp.showAlert(`Раздел обновлен и данные отправлены боту.`);
                 }
-            } else {
+            } else if (newName !== null) {
                 Telegram.WebApp.showAlert('Название раздела не может быть пустым.');
             }
         } else {
@@ -489,7 +485,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     renderSections(currentParentId);
                     alert(`Раздел обновлен (только в браузере).`);
                 }
-            } else {
+            } else if (newName !== null) {
                 alert('Название раздела не может быть пустым.');
             }
         }
@@ -501,7 +497,6 @@ document.addEventListener('DOMContentLoaded', () => {
             Telegram.WebApp.HapticFeedback.notificationOccurred('warning');
             Telegram.WebApp.showConfirm('Вы уверены, что хотите удалить этот раздел и все его подразделы?', (confirmed) => {
                 if (confirmed) {
-                    // Рекурсивная функция для получения всех ID, которые нужно удалить
                     const idsToDelete = [id];
                     function collectChildrenIds(parentId) {
                         const children = sectionsData.filter(s => s.parentId === parentId);
@@ -515,10 +510,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     sectionsData = sectionsData.filter(s => !idsToDelete.includes(s.id));
                     renderSections(currentParentId);
 
-                    // Отправляем данные боту
                     Telegram.WebApp.sendData(JSON.stringify({
                         type: 'delete_section',
-                        payload: { ids: idsToDelete } // Отправляем список удаленных ID
+                        payload: { ids: idsToDelete }
                     }));
                     Telegram.WebApp.showAlert('Раздел и его подразделы удалены. Данные отправлены боту.');
                 }
@@ -545,8 +539,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Кнопка "Назад"
     goBackSectionBtn.addEventListener('click', () => {
         if (currentPath.length > 1) {
-            currentPath.pop(); // Удаляем текущий раздел из пути
-            currentParentId = currentPath[currentPath.length - 1].id; // Новый родитель
+            currentPath.pop();
+            currentParentId = currentPath[currentPath.length - 1].id;
             renderSections(currentParentId);
             if (window.Telegram && window.Telegram.WebApp) {
                 Telegram.WebApp.HapticFeedback.impactOccurred('light');
@@ -558,19 +552,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const LONG_PRESS_THRESHOLD = 500; // milliseconds
 
     function startLongPress(e, sectionId) {
-        // Если это тач-событие и уже есть активное касание, не запускаем новый таймер
         if (e.touches && e.touches.length > 1) {
             cancelLongPress();
             return;
         }
 
-        // Предотвращаем стандартное контекстное меню браузера для правого клика
         if (e.type === 'mousedown' && e.button === 2) {
              e.preventDefault(); 
-             return; // Игнорируем правый клик для long press
+             return;
         }
 
-        clearTimeout(longPressTimer); // Очищаем предыдущий таймер, если он был
+        clearTimeout(longPressTimer);
 
         longPressTimer = setTimeout(() => {
             currentSectionForMenu = sectionId;
@@ -586,17 +578,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (window.Telegram && window.Telegram.WebApp) {
             Telegram.WebApp.HapticFeedback.impactOccurred('heavy');
         }
-        document.body.classList.add('modal-open'); // Добавляем класс для блюра
+        document.body.classList.add('modal-open');
         contextMenuModal.classList.remove('hidden');
         contextMenuModal.style.display = 'flex';
-        // Убедимся, что modal-content не закрывает модальное окно при клике
+        // Важно: предотвращаем закрытие модального окна при клике на его контент
         contextMenuModal.querySelector('.modal-content').addEventListener('click', (e) => e.stopPropagation());
     }
 
     function hideContextMenu() {
         document.body.classList.remove('modal-open');
         contextMenuModal.classList.add('hidden');
-        setTimeout(() => { // Ждем окончания анимации, затем скрываем
+        setTimeout(() => {
             contextMenuModal.style.display = 'none';
         }, 300); 
         currentSectionForMenu = null;
@@ -604,20 +596,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     closeContextMenuBtn.addEventListener('click', hideContextMenu);
     contextMenuModal.addEventListener('click', (e) => {
-        // Закрываем, если клик был на фоне (вне modal-content)
         if (e.target === contextMenuModal) {
             hideContextMenu();
         }
     });
 
     // --- Обработчики кнопок контекстного меню ---
-    addQuantityBtn.addEventListener('click', async () => {
+    // Добавлены e.stopPropagation() на каждую кнопку, чтобы клик по кнопке не закрывал модальное окно
+    addQuantityBtn.addEventListener('click', async (e) => {
+        e.stopPropagation(); // Предотвращаем закрытие модального окна при клике на кнопку
         hideContextMenu();
         if (!currentSectionForMenu) return;
 
         let amountInput;
-        // В реальном TWA приложении для ввода числа потребуется более сложный UI или кастомная клавиатура бота.
-        // Здесь используем prompt для демонстрации.
         if (window.Telegram && window.Telegram.WebApp) {
             amountInput = prompt('Введите количество для добавления (можно дробное):');
             Telegram.WebApp.HapticFeedback.impactOccurred('light');
@@ -629,8 +620,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!isNaN(amount) && amount > 0) {
             const section = sectionsData.find(s => s.id === currentSectionForMenu);
             if (section) {
-                section.quantity = (section.quantity || 0) + amount; // Добавляем к текущему или к 0
-                renderSections(currentParentId); // Перерисовать, чтобы обновилось кол-во
+                section.quantity = (section.quantity || 0) + amount;
+                renderSections(currentParentId);
 
                 if (window.Telegram && window.Telegram.WebApp) {
                     Telegram.WebApp.sendData(JSON.stringify({
@@ -643,7 +634,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         } else {
-            if (amountInput !== null) { // Если пользователь не отменил ввод
+            if (amountInput !== null) {
                 if (window.Telegram && window.Telegram.WebApp) {
                     Telegram.WebApp.showAlert('Некорректное количество.');
                 } else {
@@ -653,7 +644,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    removeQuantityBtn.addEventListener('click', async () => {
+    removeQuantityBtn.addEventListener('click', async (e) => {
+        e.stopPropagation(); // Предотвращаем закрытие модального окна при клике на кнопку
         hideContextMenu();
         if (!currentSectionForMenu) return;
 
@@ -692,7 +684,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         } else {
-            if (amountInput !== null) { // Если пользователь не отменил ввод
+            if (amountInput !== null) {
                 if (window.Telegram && window.Telegram.WebApp) {
                     Telegram.WebApp.showAlert('Некорректное количество.');
                 } else {
@@ -702,7 +694,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    criticalMinBtn.addEventListener('click', () => {
+    criticalMinBtn.addEventListener('click', (e) => {
+        e.stopPropagation(); // Предотвращаем закрытие модального окна при клике на кнопку
         hideContextMenu();
         if (!currentSectionForMenu) return;
         currentRecipientsSelectionType = 'critical_minimum';
@@ -719,11 +712,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!isNaN(minQuantity) && minQuantity >= 0) {
             const section = sectionsData.find(s => s.id === currentSectionForMenu);
             if (section) {
-                section.min_quantity = minQuantity; // Сохраняем критический минимум
-                showRecipientsModal(); // Показываем модальное окно выбора получателей
+                section.min_quantity = minQuantity;
+                showRecipientsModal();
             }
         } else {
-             if (minQuantityInput !== null) { // Если пользователь не отменил ввод
+             if (minQuantityInput !== null) {
                 if (window.Telegram && window.Telegram.WebApp) {
                     Telegram.WebApp.showAlert('Некорректное значение для критического минимума.');
                 } else {
@@ -733,7 +726,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    setReminderBtn.addEventListener('click', () => {
+    setReminderBtn.addEventListener('click', (e) => {
+        e.stopPropagation(); // Предотвращаем закрытие модального окна при клике на кнопку
         hideContextMenu();
         if (!currentSectionForMenu) return;
         currentRecipientsSelectionType = 'reminder';
@@ -743,7 +737,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (window.Telegram && window.Telegram.WebApp) {
             reminderMessage = prompt('Введите сообщение для напоминания:');
-            // Для datetime-local в TWA, скорее всего, потребуется кастомный ввод или выбор из UI
             reminderDateTime = prompt('Введите дату и время напоминания (YYYY-MM-DDTHH:MM):'); 
             Telegram.WebApp.HapticFeedback.impactOccurred('light');
         } else {
@@ -752,15 +745,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (reminderMessage && reminderMessage.trim() !== '' && reminderDateTime && reminderDateTime.trim() !== '') {
-            // В реальном приложении нужно будет проверить формат даты/времени
             const section = sectionsData.find(s => s.id === currentSectionForMenu);
             if (section) {
                 section.reminder_message = reminderMessage.trim();
                 section.reminder_datetime = reminderDateTime.trim();
-                showRecipientsModal(); // Показываем модальное окно выбора получателей
+                showRecipientsModal();
             }
         } else {
-             if (reminderMessage !== null && reminderDateTime !== null) { // Если пользователь не отменил ввод
+             if (reminderMessage !== null && reminderDateTime !== null) {
                 if (window.Telegram && window.Telegram.WebApp) {
                     Telegram.WebApp.showAlert('Сообщение или дата/время напоминания не могут быть пустыми.');
                 } else {
@@ -772,14 +764,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Логика выбора получателей ---
     function showRecipientsModal() {
-        document.body.classList.add('modal-open'); // Добавляем класс для блюра
+        document.body.classList.add('modal-open');
         recipientsModal.classList.remove('hidden');
         recipientsModal.style.display = 'flex';
-        // Изначально показываем всех пользователей
         renderUsersForSelection('all'); 
-        // Сбросить чекбокс "Выбрать всех"
         selectAllRecipientsCheckbox.checked = false;
-        // Активировать вкладку "Все"
         recipientFilterTabs.forEach(tab => {
             if (tab.dataset.filter === 'all') {
                 tab.classList.add('active');
@@ -787,7 +776,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 tab.classList.remove('active');
             }
         });
-        // Убедимся, что modal-content не закрывает модальное окно при клике
         recipientsModal.querySelector('.modal-content').addEventListener('click', (e) => e.stopPropagation());
     }
 
@@ -837,7 +825,7 @@ document.addEventListener('DOMContentLoaded', () => {
             recipientFilterTabs.forEach(t => t.classList.remove('active'));
             tab.classList.add('active');
             renderUsersForSelection(tab.dataset.filter);
-            selectAllRecipientsCheckbox.checked = false; // Сбросить при смене фильтра
+            selectAllRecipientsCheckbox.checked = false;
         });
     });
 
@@ -873,7 +861,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     type: 'set_critical_minimum',
                     payload: {
                         id: section.id,
-                        min_quantity: section.min_quantity, // Используем ранее сохраненное значение
+                        min_quantity: section.min_quantity,
                         recipients: selectedUserIds
                     }
                 }));
@@ -888,8 +876,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     type: 'set_reminder',
                     payload: {
                         id: section.id,
-                        message: section.reminder_message, // Используем ранее сохраненное сообщение
-                        datetime: section.reminder_datetime, // Используем ранее сохраненное время
+                        message: section.reminder_message,
+                        datetime: section.reminder_datetime,
                         recipients: selectedUserIds
                     }
                 }));
@@ -909,12 +897,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     recipientsModal.addEventListener('click', (e) => {
-        // Закрываем, если клик был на фоне (вне modal-content)
         if (e.target === recipientsModal) {
             hideRecipientsModal();
         }
     });
-
 
     // Инициализация разделов при загрузке страницы (если не в TWA)
     if (!(window.Telegram && window.Telegram.WebApp)) {
