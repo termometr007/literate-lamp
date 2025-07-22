@@ -1,70 +1,150 @@
 :root {
-    --primary-color: #007bff; /* Синий */
-    --primary-dark-color: #0056b3;
-    --secondary-color: #6c757d; /* Серый */
-    --background-color: #f8f9fa; /* Светлый фон */
-    --surface-color: #ffffff; /* Белый фон для карточек/модалов */
-    --text-color: #212529; /* Темный текст */
-    --text-color-light: #f8f9fa; /* Светлый текст для темного фона */
-    --border-color: #dee2e6; /* Цвет границ */
+    --text-color: #333;
+    --background-color: #f0f2f5;
+    --header-bg: #fff;
+    --header-text-color: #333;
+    --button-bg: #007bff;
+    --button-text: #fff;
+    --border-color: #ddd;
     --shadow-color: rgba(0, 0, 0, 0.1);
+    --slider-bg: #ccc;
+    --slider-handle: white;
+    --slider-checked-bg: #2196F3;
+    --icon-color-light: #FFD700; 
+    --icon-color-dark: #A9A9A9;
+
+    /* Новые переменные для анимации панели */
     --header-height: 120px;
+    --header-transition-duration: 0.3s;
     --border-radius-size: 15px;
-    --icon-color-light: #6c757d;
-    --icon-color-dark: #ced4da;
-    --button-bg-color: #007bff;
-    --button-text-color: #ffffff;
-    --button-hover-bg-color: #0056b3;
+
+    /* Цвета для обводки текста */
+    --text-stroke-color-light: #fff;
+    --text-stroke-color-dark: #333;
+
+    /* НОВЫЕ ПЕРЕМЕННЫЕ ДЛЯ НИЖНЕЙ НАВИГАЦИИ */
+    --bottom-nav-height: 60px;
+    --bottom-nav-bg: #fff;
+    --bottom-nav-text-color: #666;
+    --bottom-nav-icon-color: #666;
+    --bottom-nav-active-color: #007bff; /* Цвет активной кнопки */
+    --bottom-nav-shadow: rgba(0, 0, 0, 0.15);
+
+    /* Модальное окно и блюр */
+    --modal-backdrop-color: rgba(0, 0, 0, 0.4);
+    --modal-bg-color: #fff;
+    --modal-border-radius: 12px;
 }
 
-/* Dark mode variables */
 body.dark-mode {
-    --primary-color: #6a9ee8;
-    --primary-dark-color: #4a7cc7;
-    --secondary-color: #9fa6ad;
-    --background-color: #1a1a1a; /* Темный фон */
-    --surface-color: #2c2c2c; /* Темный фон для карточек/модалов */
-    --text-color: #e0e0e0; /* Светлый текст */
-    --text-color-light: #212529; /* Темный текст для светлого фона */
-    --border-color: #444444;
-    --shadow-color: rgba(255, 255, 255, 0.05);
-    --icon-color-light: #ced4da;
-    --icon-color-dark: #6c757d;
-    --button-bg-color: #6a9ee8;
-    --button-text-color: #1a1a1a;
-    --button-hover-bg-color: #4a7cc7;
+    --text-color: #f0f2f5;
+    --background-color: #1a1a1a;
+    --header-bg: #2d2d2d;
+    --header-text-color: #f0f2f5;
+    --button-bg: #6a0dad;
+    --button-text: #fff;
+    --border-color: #444;
+    --shadow-color: rgba(0, 0, 0, 0.3);
+    --slider-bg: #555;
+    --slider-handle: #ccc;
+    --slider-checked-bg: #9C27B0;
+    --icon-color-light: #A9A9A9;
+    --icon-color-dark: #ADD8E6;
+
+    /* Цвета для обводки текста в темной теме */
+    --text-stroke-color-light: #333;
+    --text-stroke-color-dark: #fff;
+
+    /* НОВЫЕ ПЕРЕМЕННЫЕ ДЛЯ НИЖНЕЙ НАВИГАЦИИ В ТЕМНОЙ ТЕМЕ */
+    --bottom-nav-bg: #2d2d2d;
+    --bottom-nav-text-color: #bbb;
+    --bottom-nav-icon-color: #bbb;
+    --bottom-nav-active-color: #9C27B0;
+    --bottom-nav-shadow: rgba(0, 0, 0, 0.5);
+
+    /* Модальное окно и блюр в темной теме */
+    --modal-backdrop-color: rgba(0, 0, 0, 0.6);
+    --modal-bg-color: #333;
 }
 
 body {
     font-family: 'Roboto', sans-serif;
     margin: 0;
-    padding: 0;
     background-color: var(--background-color);
     color: var(--text-color);
-    transition: background-color 0.3s ease, color 0.3s ease;
-    -webkit-tap-highlight-color: transparent; /* Отключает синюю подсветку при тапе на iOS */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    padding-bottom: var(--bottom-nav-height); /* Отступ снизу для нижней панели */
+    display: flex; /* Используем flexbox для компоновки */
+    flex-direction: column; /* Элементы располагаются вертикально */
+    min-height: 100vh; /* Минимальная высота viewport */
 }
 
-/* Header */
+/* Header Container */
 .header-container {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: var(--header-height);
-    overflow: hidden;
-    border-bottom-left-radius: var(--border-radius-size);
-    border-bottom-right-radius: var(--border-radius-size);
-    box-shadow: var(--shadow-color) 0px 4px 12px;
-    transition: transform 0.3s ease, opacity 0.3s ease;
+    overflow: hidden; 
+    background-color: var(--header-bg);
+    box-shadow: 0 2px 4px var(--shadow-color);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
     z-index: 10;
+    transition: transform 0.3s ease-out, height 0.3s ease-out; /* Добавлено для анимации скрытия и изменения высоты */
 }
 
+/* Скрытый хедер */
 .header-container.hidden {
     transform: translateY(-100%);
-    opacity: 0;
+    height: 0; /* Полностью убираем высоту */
+    box-shadow: none; /* Убираем тень, чтобы не было видно "пустого" места */
 }
 
+/* Обёртка для контента, чтобы управлять отступом сверху */
+.content-wrapper {
+    flex-grow: 1; /* Позволяет обертке занимать все доступное пространство */
+    padding-top: var(--header-height); /* Отступ сверху для хедера */
+    transition: padding-top 0.3s ease-out; /* Анимируем изменение отступа */
+}
+
+.content-wrapper.header-hidden {
+    padding-top: 0; /* Убираем отступ, когда хедер скрыт */
+}
+
+/* Основная область контента */
+.content-area, .page-content {
+    position: relative;
+    z-index: 20;
+    padding: 20px;
+    text-align: center;
+    background-color: var(--background-color);
+    border-top-left-radius: var(--border-radius-size);
+    border-top-right-radius: var(--border-radius-size);
+    margin-top: calc(var(--border-radius-size) * -1);
+    padding-top: calc(20px + var(--border-radius-size));
+    box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+    transition: transform var(--header-transition-duration) ease-out;
+    will-change: transform;
+    filter: none; 
+    transition: filter 0.3s ease-out;
+    min-height: calc(100vh - var(--bottom-nav-height) - 40px); /* Учитываем только нижнюю панель и padding */
+    box-sizing: border-box;
+}
+
+/* Применяем блюр к основному контенту при открытии модального окна */
+body.modal-open .content-area,
+body.modal-open .page-content {
+    filter: blur(5px);
+    pointer-events: none; 
+    user-select: none;
+}
+
+
+/* Background Blur */
 .background-blur {
     position: absolute;
     top: 0;
@@ -73,38 +153,32 @@ body {
     height: 100%;
     background-size: cover;
     background-position: center;
-    filter: blur(8px);
-    -webkit-filter: blur(8px);
-    transform: scale(1.05);
-    z-index: -1;
+    filter: blur(15px);
+    opacity: 0.7;
 }
 
 .header-content {
     position: relative;
+    z-index: 1;
+    width: 100%;
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    height: 100%;
-    padding: 0 20px;
-    background-color: rgba(255, 255, 255, 0.7); /* Полупрозрачный фон */
-    backdrop-filter: blur(5px); /* Эффект размытия для контента */
-    -webkit-backdrop-filter: blur(5px);
-    color: var(--text-color);
-    transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-body.dark-mode .header-content {
-    background-color: rgba(44, 44, 44, 0.7);
+    align-items: flex-start;
+    padding: 15px 20px 0; 
+    box-sizing: border-box;
 }
 
 .left-section {
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    align-items: flex-start;
 }
 
 .company-info {
     display: flex;
     align-items: center;
+    gap: 15px;
+    color: var(--header-text-color);
 }
 
 .round-logo {
@@ -112,35 +186,63 @@ body.dark-mode .header-content {
     height: 60px;
     border-radius: 50%;
     object-fit: cover;
-    margin-right: 15px;
-    border: 2px solid var(--border-color);
+    border: 2px solid var(--header-text-color);
+    box-shadow: 0 0 6px var(--shadow-color);
+    flex-shrink: 0;
 }
 
-.text-info h1 {
+.text-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+#company-name {
     margin: 0;
-    font-size: 1.5em;
-    font-weight: 700;
-    color: var(--text-color);
+    font-size: 1.3em;
+    font-weight: bold;
+    white-space: nowrap;
+    overflow: hidden;
+    max-width: 180px;
+    text-shadow: 
+        -1px -1px 0 var(--text-stroke-color-light),  
+         1px -1px 0 var(--text-stroke-color-light),
+        -1px  1px 0 var(--text-stroke-color-light),
+         1px  1px 0 var(--text-stroke-color-light);
+    transition: text-shadow 0.3s ease;
 }
 
+/* Bot Logo */
 .bot-logo {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid var(--border-color);
+    width: 60px; 
+    height: 60px; 
+    object-fit: contain;
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+    flex-shrink: 0;
 }
 
-/* Theme Toggle */
+/* Theme Toggle Container */
 .theme-toggle-container {
+    position: relative;
+    z-index: 2;
     display: flex;
     align-items: center;
-    margin-left: 20px;
+    justify-content: flex-start; 
+    margin-top: 5px; 
+    box-sizing: border-box;
+    width: auto; 
 }
 
+/* Стили для иконок солнца и луны */
 .theme-icon {
-    font-size: 1.5em;
-    margin: 0 5px;
+    font-size: 0.9em;
+    margin: 0 2px;
+    transition: color 0.3s;
+    line-height: 1;
 }
 
 .sun-icon {
@@ -151,19 +253,14 @@ body.dark-mode .header-content {
     color: var(--icon-color-dark);
 }
 
-body.dark-mode .sun-icon {
-    color: var(--icon-color-dark);
-}
-
-body.dark-mode .moon-icon {
-    color: var(--icon-color-light);
-}
-
+/* Стили для ползунка (слайдера) */
 .switch {
     position: relative;
     display: inline-block;
-    width: 40px;
-    height: 24px;
+    width: 25px;
+    height: 14px;
+    margin: 0 3px;
+    flex-shrink: 0;
 }
 
 .switch input {
@@ -179,398 +276,450 @@ body.dark-mode .moon-icon {
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: var(--secondary-color);
+    background-color: var(--slider-bg);
     -webkit-transition: .4s;
     transition: .4s;
-    border-radius: 24px;
 }
 
 .slider:before {
     position: absolute;
     content: "";
-    height: 16px;
-    width: 16px;
-    left: 4px;
-    bottom: 4px;
-    background-color: white;
+    height: 10px;
+    width: 10px;
+    left: 2px;
+    bottom: 2px;
+    background-color: var(--slider-handle);
     -webkit-transition: .4s;
     transition: .4s;
-    border-radius: 50%;
 }
 
 input:checked + .slider {
-    background-color: var(--primary-color);
+    background-color: var(--slider-checked-bg);
 }
 
 input:focus + .slider {
-    box-shadow: 0 0 1px var(--primary-color);
+    box-shadow: 0 0 1px var(--slider-checked-bg);
 }
 
 input:checked + .slider:before {
-    -webkit-transform: translateX(16px);
-    -ms-transform: translateX(16px);
-    transform: translateX(16px);
+    -webkit-transform: translateX(11px);
+    -ms-transform: translateX(11px);
+    transform: translateX(11px);
 }
 
-/* Content Area */
-.content-wrapper {
-    padding-top: var(--header-height); /* Отступ для хедера */
-    padding-bottom: 70px; /* Отступ для нижней навигации */
-    transition: padding-top 0.3s ease;
+/* Rounded sliders */
+.slider.round {
+    border-radius: 14px;
 }
 
-.content-wrapper.header-hidden {
-    padding-top: 0; /* Убираем отступ, когда хедер скрыт */
+.slider.round:before {
+    border-radius: 50%;
 }
 
-.content-area, .page-content {
-    padding: 20px;
-    transition: transform 0.3s ease;
-}
 
 .admin-test-controls {
-    background-color: var(--surface-color);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-size);
-    padding: 15px;
     margin-top: 20px;
-    box-shadow: var(--shadow-color) 0px 2px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+    border: 1px dashed var(--border-color);
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
 }
 
-.admin-test-controls h3 {
-    margin-top: 0;
-    color: var(--primary-color);
-}
-
-.admin-test-controls input[type="text"] {
-    width: calc(100% - 20px);
+.admin-test-controls input[type="text"],
+.admin-test-controls textarea {
+    width: 80%;
+    max-width: 300px;
     padding: 10px;
-    margin-bottom: 10px;
     border: 1px solid var(--border-color);
-    border-radius: 5px;
-    background-color: var(--background-color);
+    border-radius: 8px;
+    background-color: var(--header-bg);
     color: var(--text-color);
+    box-sizing: border-box;
+    resize: vertical;
+    min-height: 40px;
 }
 
-.admin-test-controls button {
-    background-color: var(--primary-color);
-    color: white;
-    padding: 10px 15px;
-    border: none;
-    border-radius: 5px;
+.admin-test-controls button,
+.action-button {
+    padding: 10px 20px;
+    font-size: 1em;
     cursor: pointer;
-    margin-right: 10px;
-    margin-bottom: 10px;
-    transition: background-color 0.2s ease;
+    background-color: var(--button-bg);
+    color: var(--button-text);
+    border: none;
+    border-radius: 8px;
+    transition: background-color 0.3s, transform 0.2s;
 }
 
-.admin-test-controls button:hover {
-    background-color: var(--primary-dark-color);
+.admin-test-controls button:hover,
+.action-button:hover {
+    transform: translateY(-2px);
+    opacity: 0.9;
 }
 
-/* Bottom Navigation */
+/* НОВАЯ НИЖНЯЯ ПАНЕЛЬ НАВИГАЦИИ */
 .bottom-nav {
     position: fixed;
     bottom: 0;
     left: 0;
     width: 100%;
-    height: 60px;
-    background-color: var(--surface-color);
-    border-top: 1px solid var(--border-color);
+    height: var(--bottom-nav-height);
+    background-color: var(--bottom-nav-bg);
+    box-shadow: 0 -2px 8px var(--bottom-nav-shadow);
     display: flex;
     justify-content: space-around;
     align-items: center;
-    box-shadow: var(--shadow-color) 0px -4px 12px;
-    z-index: 10;
+    border-top-left-radius: var(--border-radius-size);
+    border-top-right-radius: var(--border-radius-size);
+    padding-bottom: env(safe-area-inset-bottom);
+    box-sizing: border-box;
+    z-index: 100;
 }
 
 .nav-button {
     background: none;
     border: none;
-    color: var(--secondary-color);
+    color: var(--bottom-nav-text-color);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 5px;
+    gap: 4px;
+    font-size: 0.75em;
+    font-weight: 500;
     cursor: pointer;
-    font-size: 0.8em;
-    transition: color 0.2s ease;
-    flex: 1; /* Распределяет кнопки равномерно */
-    max-width: 100px; /* Ограничение ширины кнопки */
+    padding: 8px 0;
+    flex: 1;
+    transition: color 0.2s ease-in-out;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .nav-button:hover,
 .nav-button.active {
-    color: var(--primary-color);
+    color: var(--bottom-nav-active-color);
 }
 
 .nav-icon {
     width: 24px;
     height: 24px;
-    margin-bottom: 3px;
-    stroke: currentColor; /* Использует цвет родителя */
+    stroke: var(--bottom-nav-icon-color);
+    transition: stroke 0.2s ease-in-out;
 }
 
+.nav-button:hover .nav-icon,
 .nav-button.active .nav-icon {
-    stroke: var(--primary-color);
+    stroke: var(--bottom-nav-active-color);
 }
 
-/* Modal Styles */
-.modal {
-    display: none; /* Hidden by default */
-    position: fixed; /* Stay in place */
-    z-index: 100; /* Sit on top */
-    left: 0;
-    top: 0;
-    width: 100%; /* Full width */
-    height: 100%; /* Full height */
-    overflow: auto; /* Enable scroll if needed */
-    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
-    justify-content: center;
-    align-items: center;
-    -webkit-backdrop-filter: blur(5px); /* Safari */
-    backdrop-filter: blur(5px);
-}
-
-.modal-content {
-    background-color: var(--surface-color);
-    margin: auto;
+/* НОВЫЕ СТИЛИ ДЛЯ СТРАНИЦЫ РАЗДЕЛОВ */
+/* .page-content {
     padding: 20px;
-    border-radius: var(--border-radius-size);
-    box-shadow: var(--shadow-color) 0px 4px 12px;
-    width: 90%;
-    max-width: 500px;
-    position: relative;
-    color: var(--text-color);
-}
-
-.modal-content h3 {
-    color: var(--primary-color);
-    margin-top: 0;
-    margin-bottom: 15px;
-}
-
-.modal-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 20px;
-}
-
-.action-button {
-    background-color: var(--button-bg-color);
-    color: var(--button-text-color);
-    padding: 10px 15px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 1em;
-    transition: background-color 0.2s ease, transform 0.1s ease;
-    flex-grow: 1; /* Allow buttons to grow */
     text-align: center;
-}
-
-.action-button:hover {
-    background-color: var(--button-hover-bg-color);
-    transform: translateY(-1px);
-}
-
-.action-button:active {
-    transform: translateY(0);
-}
-
-.secondary-button {
-    background-color: var(--secondary-color);
-}
-
-.secondary-button:hover {
-    background-color: #5a6268;
-}
-
-/* Context Menu Specific Styles */
-.context-menu {
-    padding: 10px 0;
-}
-
-.context-menu-item {
-    padding: 12px 20px;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-    border-bottom: 1px solid var(--border-color);
-    color: var(--text-color);
-}
-
-.context-menu-item:last-child {
-    border-bottom: none;
-}
-
-.context-menu-item:hover {
     background-color: var(--background-color);
-}
+    color: var(--text-color);
+    min-height: calc(100vh - var(--bottom-nav-height) - 40px);
+    box-sizing: border-box;
+} */
 
-.close-context-menu {
-    font-weight: bold;
-    color: var(--primary-color);
-}
-
-/* Sections Page */
 .breadcrumbs {
+    text-align: left;
+    margin-bottom: 20px;
+    font-size: 0.9em;
+    color: var(--bottom-nav-text-color);
     display: flex;
     flex-wrap: wrap;
-    padding: 10px 0;
-    border-bottom: 1px solid var(--border-color);
-    margin-bottom: 15px;
+    gap: 5px;
 }
 
 .breadcrumb-item {
-    padding: 5px 8px;
-    margin-right: 5px;
-    background-color: var(--surface-color);
-    border-radius: 5px;
     cursor: pointer;
-    color: var(--primary-color);
-    font-weight: bold;
-}
-
-.breadcrumb-item.active {
-    background-color: var(--primary-color);
-    color: var(--text-color-light);
-    cursor: default;
+    padding: 2px 5px;
+    border-radius: 5px;
+    transition: background-color 0.2s ease;
 }
 
 .breadcrumb-item:not(.active):hover {
-    background-color: var(--primary-dark-color);
-    color: var(--text-color-light);
+    background-color: var(--border-color);
+}
+
+.breadcrumb-item:not(:last-child)::after {
+    content: ' > ';
+    margin-left: 5px;
+    color: var(--bottom-nav-text-color);
+}
+
+.breadcrumb-item.active {
+    font-weight: bold;
+    color: var(--text-color);
 }
 
 .sections-list {
+    margin-top: 20px;
+    margin-bottom: 20px;
     display: flex;
     flex-direction: column;
     gap: 10px;
-    margin-bottom: 20px;
+    width: 100%;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .section-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: var(--surface-color);
+    padding: 12px 15px;
+    background-color: var(--header-bg);
     border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-size);
-    padding: 15px;
-    box-shadow: var(--shadow-color) 0px 2px 8px;
-    cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px var(--shadow-color);
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    -webkit-tap-highlight-color: transparent;
 }
 
-.section-item:active {
-    transform: scale(0.98);
-    box-shadow: var(--shadow-color) 0px 1px 4px;
+.section-item:hover {
+    background-color: var(--background-color);
+    transform: translateY(-2px);
 }
 
 .section-item-name {
-    font-weight: bold;
-    font-size: 1.1em;
-    color: var(--text-color);
+    font-weight: 500;
+    color: var(--header-text-color);
     flex-grow: 1;
+    text-align: left;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
 }
 
 .section-item-quantity {
-    margin-left: 10px;
     font-size: 0.9em;
-    color: var(--secondary-color);
+    color: var(--bottom-nav-text-color);
+    background-color: var(--border-color);
+    padding: 3px 8px;
+    border-radius: 5px;
+    white-space: nowrap;
 }
 
 .section-item-actions {
     display: flex;
     gap: 5px;
+    flex-shrink: 0;
 }
 
 .section-action-button {
-    background-color: var(--secondary-color);
-    color: white;
+    background: none;
     border: none;
-    border-radius: 5px;
-    width: 30px;
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    color: var(--button-bg);
     cursor: pointer;
     font-size: 1.1em;
-    transition: background-color 0.2s ease;
+    padding: 5px;
+    border-radius: 5px;
+    transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .section-action-button:hover {
-    background-color: #5a6268;
+    background-color: rgba(0, 0, 0, 0.05);
+    color: var(--bottom-nav-active-color);
 }
 
+body.dark-mode .section-action-button:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.sections-actions {
+    margin-top: 30px;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+
 .no-sections-message {
+    color: var(--bottom-nav-text-color);
+    margin-top: 40px;
+}
+
+/* Стили для модальных окон */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: var(--modal-backdrop-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.modal-content {
+    background-color: var(--modal-bg-color);
+    margin: auto;
+    padding: 25px;
+    border-radius: var(--modal-border-radius);
+    box-shadow: 0 5px 15px var(--shadow-color);
+    max-width: 85%;
+    min-width: 280px;
     text-align: center;
-    color: var(--secondary-color);
-    padding: 20px;
-    border: 1px dashed var(--border-color);
-    border-radius: var(--border-radius-size);
+    transform: translateY(0);
+    opacity: 1;
+    transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+}
+
+/* Анимация появления модального окна */
+.modal.hidden .modal-content {
+    transform: translateY(-50px);
+    opacity: 0;
+}
+
+.modal h3 {
+    color: var(--header-text-color);
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+.modal input[type="text"],
+.modal input[type="number"],
+.modal input[type="datetime-local"],
+.modal textarea {
+    width: calc(100% - 20px);
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    box-sizing: border-box;
+    resize: vertical;
+    min-height: 40px;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
     margin-top: 20px;
 }
 
-/* Recipients Modal */
+.secondary-button {
+    background-color: var(--border-color);
+    color: var(--text-color);
+}
+
+.secondary-button:hover {
+    background-color: #ccc;
+}
+
+/* Стили для контекстного меню (доп. меню) */
+.context-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 15px;
+    min-width: 200px;
+}
+
+.context-menu-item {
+    padding: 12px 15px;
+    text-align: left;
+    color: var(--text-color);
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+}
+
+.context-menu-item:hover {
+    background-color: var(--border-color);
+}
+
+.close-context-menu {
+    margin-top: 10px;
+    font-weight: bold;
+    color: var(--button-bg);
+}
+
+.close-context-menu:hover {
+    background-color: var(--border-color);
+    color: var(--bottom-nav-active-color);
+}
+
+
+/* Стили для списка получателей */
 .recipient-filter-tabs {
     display: flex;
     justify-content: center;
     margin-bottom: 15px;
-    gap: 10px;
+    border-bottom: 1px solid var(--border-color);
 }
 
-.recipient-filter-tabs .filter-tab {
-    background-color: var(--background-color);
-    border: 1px solid var(--border-color);
-    color: var(--text-color);
-    padding: 8px 15px;
-    border-radius: 5px;
+.filter-tab {
+    background: none;
+    border: none;
+    padding: 10px 15px;
     cursor: pointer;
-    transition: background-color 0.2s ease, color 0.2s ease;
+    font-size: 0.95em;
+    color: var(--bottom-nav-text-color);
+    border-bottom: 2px solid transparent;
+    transition: color 0.2s, border-bottom-color 0.2s;
 }
 
-.recipient-filter-tabs .filter-tab.active {
-    background-color: var(--primary-color);
-    color: var(--text-color-light);
-    border-color: var(--primary-color);
+.filter-tab.active {
+    color: var(--bottom-nav-active-color);
+    border-bottom-color: var(--bottom-nav-active-color);
+    font-weight: bold;
 }
 
-.recipient-filter-tabs .filter-tab:hover:not(.active) {
-    background-color: var(--border-color);
+.filter-tab:hover:not(.active) {
+    color: var(--text-color);
 }
 
 .select-all-container {
     display: flex;
     align-items: center;
-    margin-bottom: 10px;
+    gap: 8px;
+    margin-bottom: 15px;
     padding: 5px;
-    background-color: var(--background-color);
-    border-radius: 5px;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .select-all-container input[type="checkbox"] {
-    margin-right: 10px;
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.select-all-container label {
+    font-weight: bold;
+    color: var(--header-text-color);
 }
 
 .recipients-list {
-    max-height: 300px;
+    max-height: 250px;
     overflow-y: auto;
     border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 10px;
-    background-color: var(--background-color);
+    margin-bottom: 20px;
+    text-align: left;
 }
 
 .recipient-item {
     display: flex;
     align-items: center;
-    padding: 8px 0;
+    gap: 10px;
+    padding: 8px 5px;
     border-bottom: 1px solid var(--border-color);
 }
 
@@ -579,166 +728,12 @@ input:checked + .slider:before {
 }
 
 .recipient-item input[type="checkbox"] {
-    margin-right: 10px;
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
 }
 
 .recipient-item-name {
     flex-grow: 1;
     color: var(--text-color);
-}
-
-/* Employee Features */
-.admin-notes-container {
-    background-color: var(--surface-color);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-size);
-    padding: 15px;
-    margin-top: 20px;
-    box-shadow: var(--shadow-color) 0px 2px 8px;
-}
-
-.admin-notes-container h3 {
-    margin-top: 0;
-    color: var(--primary-color);
-}
-
-.admin-notes-content p {
-    margin: 5px 0;
-    font-size: 0.95em;
-    line-height: 1.4;
-}
-
-.clock-button {
-    width: 100%;
-    margin-top: 20px;
-    padding: 15px 20px;
-    font-size: 1.2em;
-    font-weight: bold;
-    background-color: #28a745; /* Зеленый для "Пришел" */
-}
-
-.clock-button:hover {
-    background-color: #218838;
-}
-
-.clock-button.clocked-in {
-    background-color: #dc3545; /* Красный для "Ушел" */
-}
-
-.clock-button.clocked-in:hover {
-    background-color: #c82333;
-}
-
-/* Tasks Page */
-.task-filter-tabs {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 15px;
-    gap: 10px;
-}
-
-.task-filter-tabs .filter-tab {
-    background-color: var(--background-color);
-    border: 1px solid var(--border-color);
-    color: var(--text-color);
-    padding: 8px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.2s ease, color 0.2s ease;
-}
-
-.task-filter-tabs .filter-tab.active {
-    background-color: var(--primary-color);
-    color: var(--text-color-light);
-    border-color: var(--primary-color);
-}
-
-.task-filter-tabs .filter-tab:hover:not(.active) {
-    background-color: var(--border-color);
-}
-
-.tasks-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.task-item {
-    background-color: var(--surface-color);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-size);
-    padding: 15px;
-    box-shadow: var(--shadow-color) 0px 2px 8px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.task-title {
-    font-weight: bold;
-    color: var(--text-color);
-}
-
-.task-status {
-    font-size: 0.9em;
-    color: var(--secondary-color);
-}
-
-.no-tasks-message {
-    text-align: center;
-    color: var(--secondary-color);
-    padding: 20px;
-    border: 1px dashed var(--border-color);
-    border-radius: var(--border-radius-size);
-    margin-top: 20px;
-}
-
-/* Chats Page */
-.chats-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.chat-item {
-    display: flex;
-    align-items: center;
-    background-color: var(--surface-color);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-size);
-    padding: 15px;
-    box-shadow: var(--shadow-color) 0px 2px 8px;
-    text-decoration: none; /* Убираем подчеркивание для ссылок */
-    color: var(--text-color);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.chat-item:active {
-    transform: scale(0.98);
-    box-shadow: var(--shadow-color) 0px 1px 4px;
-}
-
-.chat-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    object-fit: cover;
-    margin-right: 15px;
-    border: 1px solid var(--border-color);
-}
-
-.chat-name {
-    font-weight: bold;
-    font-size: 1.1em;
-}
-
-.no-chats-message {
-    text-align: center;
-    color: var(--secondary-color);
-    padding: 20px;
-    border: 1px dashed var(--border-color);
-    border-radius: var(--border-radius-size);
-    margin-top: 20px;
 }

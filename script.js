@@ -833,16 +833,12 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.classList.add('modal-open');
         recipientsModal.classList.remove('hidden');
         recipientsModal.style.display = 'flex';
-        renderUsersForSelection('all'); 
+        // Устанавливаем фильтр по умолчанию на "Все", но затем отрисовываем на основе активного таба
+        const activeTab = document.querySelector('.recipient-filter-tabs .filter-tab.active');
+        const filter = activeTab ? activeTab.dataset.filter : 'all';
+        renderUsersForSelection(filter); 
         selectAllRecipientsCheckbox.checked = false;
-        recipientFilterTabs.forEach(tab => {
-            if (tab.dataset.filter === 'all') {
-                tab.classList.add('active');
-            } else {
-                tab.classList.remove('active');
-            }
-        });
-
+        
         // Предварительно выбираем пользователей, если они уже скрыты от этого раздела
         const section = sectionsData.find(s => s.id === currentSectionForMenu);
         if (section && currentRecipientsSelectionType === 'hide_from' && section.hidden_from_users) {
@@ -876,7 +872,7 @@ document.addEventListener('DOMContentLoaded', () => {
             filteredUsers = allUsers;
         } else if (filter === 'admins') {
             filteredUsers = allUsers.filter(user => user.role === 'admin');
-        } else if (filter === 'employees') { // ИСПРАВЛЕНО
+        } else if (filter === 'employees') { 
             filteredUsers = allUsers.filter(user => user.role === 'employee');
         }
 
