@@ -34,6 +34,16 @@
     --modal-backdrop-color: rgba(0, 0, 0, 0.4);
     --modal-bg-color: #fff;
     --modal-border-radius: 12px;
+
+    /* Цвета для статусов задач */
+    --status-new-bg: #e0f2f7; /* Light Blue */
+    --status-new-text: #2196F3;
+    --status-in-progress-bg: #fffde7; /* Light Yellow */
+    --status-in-progress-text: #FFC107;
+    --status-completed-bg: #e8f5e9; /* Light Green */
+    --status-completed-text: #4CAF50;
+    --status-deferred-bg: #fbe9e7; /* Light Red/Orange */
+    --status-deferred-text: #FF5722;
 }
 
 body.dark-mode {
@@ -65,6 +75,16 @@ body.dark-mode {
     /* Модальное окно и блюр в темной теме */
     --modal-backdrop-color: rgba(0, 0, 0, 0.6);
     --modal-bg-color: #333;
+
+    /* Цвета для статусов задач в темной теме */
+    --status-new-bg: #1a2a3a;
+    --status-new-text: #64B5F6;
+    --status-in-progress-bg: #3a3a1a;
+    --status-in-progress-text: #FFEE58;
+    --status-completed-bg: #1a3a1a;
+    --status-completed-text: #81C784;
+    --status-deferred-bg: #3a1a1a;
+    --status-deferred-text: #FF8A65;
 }
 
 body {
@@ -74,10 +94,10 @@ body {
     color: var(--text-color);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    padding-bottom: var(--bottom-nav-height); /* Отступ снизу для нижней панели */
-    display: flex; /* Используем flexbox для компоновки */
-    flex-direction: column; /* Элементы располагаются вертикально */
-    min-height: 100vh; /* Минимальная высота viewport */
+    padding-bottom: var(--bottom-nav-height);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
 
 /* Header Container */
@@ -94,25 +114,25 @@ body {
     flex-direction: column;
     justify-content: flex-start;
     z-index: 10;
-    transition: transform 0.3s ease-out, height 0.3s ease-out; /* Добавлено для анимации скрытия и изменения высоты */
+    transition: transform 0.3s ease-out, height 0.3s ease-out;
 }
 
 /* Скрытый хедер */
 .header-container.hidden {
     transform: translateY(-100%);
-    height: 0; /* Полностью убираем высоту */
-    box-shadow: none; /* Убираем тень, чтобы не было видно "пустого" места */
+    height: 0;
+    box-shadow: none;
 }
 
 /* Обёртка для контента, чтобы управлять отступом сверху */
 .content-wrapper {
-    flex-grow: 1; /* Позволяет обертке занимать все доступное пространство */
-    padding-top: var(--header-height); /* Отступ сверху для хедера */
-    transition: padding-top 0.3s ease-out; /* Анимируем изменение отступа */
+    flex-grow: 1;
+    padding-top: var(--header-height);
+    transition: padding-top 0.3s ease-out;
 }
 
 .content-wrapper.header-hidden {
-    padding-top: 0; /* Убираем отступ, когда хедер скрыт */
+    padding-top: 0;
 }
 
 /* Основная область контента */
@@ -131,7 +151,7 @@ body {
     will-change: transform;
     filter: none; 
     transition: filter 0.3s ease-out;
-    min-height: calc(100vh - var(--bottom-nav-height) - 40px); /* Учитываем только нижнюю панель и padding */
+    min-height: calc(100vh - var(--bottom-nav-height) - 40px);
     box-sizing: border-box;
 }
 
@@ -142,7 +162,6 @@ body.modal-open .page-content {
     pointer-events: none; 
     user-select: none;
 }
-
 
 /* Background Blur */
 .background-blur {
@@ -415,16 +434,7 @@ input:checked + .slider:before {
     stroke: var(--bottom-nav-active-color);
 }
 
-/* НОВЫЕ СТИЛИ ДЛЯ СТРАНИЦЫ РАЗДЕЛОВ */
-/* .page-content {
-    padding: 20px;
-    text-align: center;
-    background-color: var(--background-color);
-    color: var(--text-color);
-    min-height: calc(100vh - var(--bottom-nav-height) - 40px);
-    box-sizing: border-box;
-} */
-
+/* Стили для хлебных крошек */
 .breadcrumbs {
     text-align: left;
     margin-bottom: 20px;
@@ -457,6 +467,7 @@ input:checked + .slider:before {
     color: var(--text-color);
 }
 
+/* Стили для списка разделов */
 .sections-list {
     margin-top: 20px;
     margin-bottom: 20px;
@@ -539,7 +550,6 @@ body.dark-mode .section-action-button:hover {
     justify-content: center;
     gap: 15px;
 }
-
 
 .no-sections-message {
     color: var(--bottom-nav-text-color);
@@ -655,7 +665,6 @@ body.dark-mode .section-action-button:hover {
     color: var(--bottom-nav-active-color);
 }
 
-
 /* Стили для списка получателей */
 .recipient-filter-tabs {
     display: flex;
@@ -736,4 +745,215 @@ body.dark-mode .section-action-button:hover {
 .recipient-item-name {
     flex-grow: 1;
     color: var(--text-color);
+}
+
+/* --- НОВЫЕ СТИЛИ ДЛЯ ФУНКЦИОНАЛА СОТРУДНИКОВ --- */
+
+/* Блок заметок администратора */
+.admin-notes-container {
+    margin-top: 25px;
+    margin-bottom: 25px;
+    padding: 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    background-color: var(--header-bg);
+    box-shadow: 0 2px 5px var(--shadow-color);
+    text-align: left;
+    max-width: 500px; /* Ограничиваем ширину для лучшего вида */
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.admin-notes-container h3 {
+    margin-top: 0;
+    color: var(--bottom-nav-active-color);
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.admin-notes-content p {
+    margin: 5px 0;
+    padding-left: 10px;
+    border-left: 3px solid var(--border-color);
+}
+
+/* Кнопка Пришел/Ушел */
+.clock-button {
+    width: 80%;
+    max-width: 300px;
+    padding: 12px 0;
+    margin-top: 20px;
+    font-size: 1.1em;
+    font-weight: bold;
+}
+
+.clock-button.clock-in {
+    background-color: #4CAF50; /* Зеленый для "Пришел" */
+}
+
+.clock-button.clock-in:hover {
+    background-color: #45a049;
+}
+
+.clock-button.clock-out {
+    background-color: #f44336; /* Красный для "Ушел" */
+}
+
+.clock-button.clock-out:hover {
+    background-color: #da332a;
+}
+
+/* Стили для страницы ЗАДАЧ */
+#tasks-page {
+    /* Уже есть .page-content */
+}
+
+.task-filter-tabs {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.task-filter-tabs .filter-tab { /* Переиспользуем стиль .filter-tab */
+    flex: 1; /* Распределяем кнопки равномерно */
+    text-align: center;
+}
+
+.tasks-list {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.no-tasks-message {
+    color: var(--bottom-nav-text-color);
+    margin-top: 40px;
+}
+
+.task-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 15px;
+    background-color: var(--header-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    box-shadow: 0 2px 5px var(--shadow-color);
+    transition: transform 0.1s ease;
+    text-align: left;
+    cursor: pointer;
+}
+
+.task-item:hover {
+    transform: translateY(-2px);
+}
+
+.task-title {
+    font-weight: bold;
+    font-size: 1.1em;
+    color: var(--header-text-color);
+}
+
+.task-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85em;
+    color: var(--bottom-nav-text-color);
+}
+
+.task-status {
+    padding: 4px 8px;
+    border-radius: 5px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.task-status.status-new {
+    background-color: var(--status-new-bg);
+    color: var(--status-new-text);
+}
+
+.task-status.status-in-progress {
+    background-color: var(--status-in-progress-bg);
+    color: var(--status-in-progress-text);
+}
+
+.task-status.status-completed {
+    background-color: var(--status-completed-bg);
+    color: var(--status-completed-text);
+}
+
+.task-status.status-deferred {
+    background-color: var(--status-deferred-bg);
+    color: var(--status-deferred-text);
+}
+
+/* Стили для страницы ЧАТОВ */
+#chats-page {
+    /* Уже есть .page-content */
+}
+
+.chats-list {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.no-chats-message {
+    color: var(--bottom-nav-text-color);
+    margin-top: 40px;
+}
+
+.chat-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 12px 15px;
+    background-color: var(--header-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    box-shadow: 0 2px 5px var(--shadow-color);
+    transition: transform 0.1s ease;
+    text-align: left;
+    text-decoration: none; /* Убираем подчеркивание у ссылки */
+    color: var(--header-text-color); /* Наследуем цвет текста */
+    cursor: pointer;
+}
+
+.chat-item:hover {
+    transform: translateY(-2px);
+}
+
+.chat-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.chat-name {
+    flex-grow: 1;
+    font-weight: 500;
+}
+
+.chat-arrow {
+    width: 24px;
+    height: 24px;
+    stroke: var(--bottom-nav-text-color);
+    flex-shrink: 0;
 }

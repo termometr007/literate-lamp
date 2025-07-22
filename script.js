@@ -3,13 +3,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const companyLogo = document.getElementById('company-logo');
     const companyName = document.getElementById('company-name');
     const backgroundBlur = document.querySelector('.background-blur');
-    const headerContainer = document.getElementById('header-container'); // Получаем по ID
+    const headerContainer = document.getElementById('header-container');
     const themeSwitch = document.getElementById('theme-switch');
     const botLogo = document.getElementById('bot-logo');
     const sunIcon = document.querySelector('.theme-icon.sun-icon');
     const moonIcon = document.querySelector('.theme-icon.moon-icon');
-    const contentArea = document.getElementById('content-area'); // Главная страница
-    const contentWrapper = document.querySelector('.content-wrapper'); // Новая обертка для контента
+    const contentArea = document.getElementById('content-area');
+    const contentWrapper = document.querySelector('.content-wrapper');
 
     // Элементы админ-контроля (для разработчика/тестирования)
     const logoUrlInput = document.getElementById('logo-url-input');
@@ -20,9 +20,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Элементы нижней навигации
     const navButtons = document.querySelectorAll('.nav-button');
-    const homeNavButton = navButtons[0]; // Кнопка "Главная"
-    const sectionsNavButton = navButtons[1]; // Кнопка "Разделы"
-    // const chatsNavButton = navButtons[2]; // Кнопка "Чаты"
+    const homeNavButton = document.querySelector('.nav-button[data-target-page="content-area"]');
+    const sectionsNavButton = document.querySelector('.nav-button[data-target-page="sections-page"]');
+    const tasksNavButton = document.querySelector('.nav-button[data-target-page="tasks-page"]'); // Новая кнопка
+    const chatsNavButton = document.querySelector('.nav-button[data-target-page="chats-page"]'); // Новая кнопка
 
     // Элементы страницы "Разделы"
     const sectionsPage = document.getElementById('sections-page');
@@ -38,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const removeQuantityBtn = document.getElementById('remove-quantity-btn');
     const criticalMinBtn = document.getElementById('critical-min-btn');
     const setReminderBtn = document.getElementById('set-reminder-btn');
-    const hideFromBtn = document.getElementById('hide-from-btn'); // НОВАЯ КНОПКА
+    const hideFromBtn = document.getElementById('hide-from-btn');
     const closeContextMenuBtn = document.getElementById('close-context-menu');
 
     // Элементы модального окна выбора получателей
@@ -47,30 +48,61 @@ document.addEventListener('DOMContentLoaded', () => {
     const confirmRecipientsBtn = document.getElementById('confirm-recipients-btn');
     const cancelRecipientsBtn = document.getElementById('cancel-recipients-btn');
     const selectAllRecipientsCheckbox = document.getElementById('select-all-recipients');
-    const recipientFilterTabs = document.querySelectorAll('.filter-tab');
+    const recipientFilterTabs = document.querySelectorAll('.recipient-filter-tabs .filter-tab');
+
+    // --- НОВЫЕ ЭЛЕМЕНТЫ ДЛЯ ФУНКЦИОНАЛА СОТРУДНИКОВ ---
+    const adminNotesContainer = document.getElementById('admin-notes-container');
+    const adminNotesContent = document.getElementById('admin-notes-content');
+    const clockInOutBtn = document.getElementById('clock-in-out-btn');
+    const tasksPage = document.getElementById('tasks-page');
+    const chatsPage = document.getElementById('chats-page');
+    const taskFilterTabs = document.querySelectorAll('#tasks-page .filter-tab');
+    const tasksList = document.getElementById('tasks-list');
+    const chatsList = document.getElementById('chats-list');
+    const noTasksMessage = tasksPage.querySelector('.no-tasks-message');
+    const noChatsMessage = chatsPage.querySelector('.no-chats-message');
 
     // --- Состояние приложения ---
-    let currentPath = [{ id: 'root', name: 'Главная' }]; // Текущий путь в древовидной структуре
-    // Добавляем quantity и min_quantity для каждого раздела
-    let sectionsData = []; // Здесь будут храниться все разделы (имитация базы данных)
-    let currentParentId = 'root'; // ID текущего родительского раздела
+    let currentPath = [{ id: 'root', name: 'Главная' }];
+    let sectionsData = [];
+    let currentParentId = 'root';
     let longPressTimer;
-    let currentSectionForMenu = null; // Раздел, для которого открыто контекстное меню
-    let currentRecipientsSelectionType = ''; // 'critical_minimum', 'reminder' или 'hide_from'
+    let currentSectionForMenu = null;
+    let currentRecipientsSelectionType = '';
 
-    // Имитация данных пользователей
+    // Имитация данных пользователей (ОБНОВЛЕННЫЕ ДАННЫЕ С РЕАЛЬНЫМИ ID ДЛЯ ТЕСТИРОВАНИЯ ЗАДАЧ)
     const allUsers = [
-        { id: 'user1', name: 'Иван Иванов', role: 'employee' },
-        { id: 'user2', name: 'Петр Петров', role: 'admin' },
-        { id: 'user3', name: 'Анна Сидорова', role: 'employee' },
-        { id: 'user4', name: 'Мария Кузнецова', role: 'admin' },
-        { id: 'user5', name: 'Дмитрий Смирнов', role: 'employee' }
+        { id: '123456789', name: 'Иван Иванов', role: 'employee' }, // Замените на реальные ID пользователя
+        { id: '987654321', name: 'Петр Петров', role: 'admin' },
+        { id: '112233445', name: 'Анна Сидорова', role: 'employee' },
+        { id: '556677889', name: 'Мария Кузнецова', role: 'admin' },
+        { id: '998877665', name: 'Дмитрий Смирнов', role: 'employee' }
+    ];
+
+    // Имитация текущего пользователя (для фильтрации "Мои задачи")
+    // В реальном приложении этот ID будет приходить от Telegram Web App
+    const currentUserId = '123456789'; // Пример ID сотрудника для тестирования "Мои" задач
+
+    // --- НОВЫЕ ТЕСТОВЫЕ ДАННЫЕ ДЛЯ ЗАДАЧ И ЧАТОВ ---
+    let allTasks = [
+        { id: 'task1', title: 'Проверить запасы на складе А', assignedTo: '123456789', status: 'В работе' },
+        { id: 'task2', title: 'Отправить ежемесячный отчет', assignedTo: '998877665', status: 'Завершена' },
+        { id: 'task3', title: 'Заказать новые расходники', assignedTo: '123456789', status: 'Новая' },
+        { id: 'task4', title: 'Организовать встречу с поставщиком', assignedTo: '112233445', status: 'Отложена' },
+        { id: 'task5', title: 'Подготовить презентацию', assignedTo: '123456789', status: 'В работе' },
+        { id: 'task6', title: 'Согласовать договор', assignedTo: '998877665', status: 'Новая' }
+    ];
+
+    const availableChats = [
+        { id: 'chat1', name: 'Общий чат компании', link: 'https://t.me/telegram_web_app_bot_test_chat_1', icon: 'https://via.placeholder.com/40/007bff/FFFFFF?text=GC' },
+        { id: 'chat2', name: 'Отдел продаж', link: 'https://t.me/telegram_web_app_bot_test_chat_2', icon: 'https://via.placeholder.com/40/28a745/FFFFFF?text=S' },
+        { id: 'chat3', name: 'Техническая поддержка', link: 'https://t.me/telegram_web_app_bot_test_chat_3', icon: 'https://via.placeholder.com/40/ffc107/FFFFFF?text=TS' }
     ];
 
     // --- Инициализация Telegram Web App ---
     if (window.Telegram && window.Telegram.WebApp) {
         window.Telegram.WebApp.ready();
-        // Telegram.WebApp.expand(); // Можно раскомментировать, если нужно развернуть сразу
+        // Telegram.WebApp.expand();
 
         Telegram.WebApp.onEvent('themeChanged', () => {
             const isDark = Telegram.WebApp.colorScheme === 'dark';
@@ -79,7 +111,6 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
         });
 
-        // Обработчик для получения данных от бота (например, начальные данные или ответы на запросы)
         window.Telegram.WebApp.onEvent('web_app_data', (event) => {
             const data = JSON.parse(event.data);
             console.log('Received data from bot:', data);
@@ -96,29 +127,55 @@ document.addEventListener('DOMContentLoaded', () => {
                     updateBotLogo(data.botLogo);
                     botLogoUrlInput.value = data.botLogo;
                 }
+                if (data.sections && Array.isArray(data.sections)) {
+                    sectionsData = data.sections;
+                    renderSections(currentParentId);
+                }
+                if (data.adminNotes && Array.isArray(data.adminNotes)) {
+                    updateAdminNotes(data.adminNotes);
+                }
+                if (data.tasks && Array.isArray(data.tasks)) {
+                    allTasks = data.tasks; // Обновляем задачи из бота
+                    renderTasks('all'); // Отрисовываем их
+                }
+                // Для chat и employee_clock_in_out, они больше отправляются боту, чем приходят от него для инициализации.
             } else if (data.type === 'all_sections_data' && Array.isArray(data.sections)) {
                 sectionsData = data.sections;
-                renderSections(currentParentId); // Перерисовываем разделы с учетом полученных данных
+                renderSections(currentParentId);
             }
-            // Здесь можно добавить обработку других типов данных от бота, например, подтверждений операций
             Telegram.WebApp.showAlert(`Получен ответ от бота: ${JSON.stringify(data)}`);
         });
 
-        // Запрашиваем начальные данные при старте (включая разделы)
+        // Запрашиваем начальные данные при старте (включая разделы, заметки, задачи)
         Telegram.WebApp.sendData(JSON.stringify({ command: 'request_initial_data' }));
 
     } else {
-        // Устанавливаем дефолтные значения, если не в Telegram Web App
+        // Устанавливаем дефолтные значения, если не в Telegram Web App (для браузерного тестирования)
         updateCompanyInfo('https://via.placeholder.com/60/0000FF/FFFFFF?text=MyComp', 'Название Компании');
         updateBotLogo('https://via.placeholder.com/60/FF5733/FFFFFF?text=B');
-        // Для тестирования в браузере, инициализируем тестовые разделы
+        
+        // Тестовые разделы
         sectionsData = [
             { id: 'sec1', name: 'Раздел А (тестовый)', parentId: 'root', quantity: 10.5, min_quantity: 5, hidden_from_users: [] },
-            { id: 'sec2', name: 'Раздел Б (тестовый)', parentId: 'root', quantity: 0, min_quantity: 0, hidden_from_users: ['user1'] },
+            { id: 'sec2', name: 'Раздел Б (тестовый)', parentId: 'root', quantity: 0, min_quantity: 0, hidden_from_users: ['123456789'] }, // Скрыт от user1
             { id: 'sec1_1', name: 'Позиция А1', parentId: 'sec1', quantity: 20, min_quantity: 10, hidden_from_users: [] },
-            { id: 'sec1_2', name: 'Позиция А2', parentId: 'sec1', quantity: 5, min_quantity: 2, hidden_from_users: ['user2', 'user3'] }
+            { id: 'sec1_2', name: 'Позиция А2', parentId: 'sec1', quantity: 5, min_quantity: 2, hidden_from_users: ['987654321', '112233445'] } // Скрыт от admin и user2
         ];
         renderSections(currentParentId);
+
+        // Тестовые заметки админа
+        updateAdminNotes([
+            "Важное напоминание: не забудьте сдать отчеты до конца дня.",
+            "Сегодня в 14:00 собрание по продажам в конференц-зале.",
+            "Отличная работа по проекту 'Альфа' на прошлой неделе!"
+        ]);
+
+        // Инициализация кнопки прихода/ухода
+        initClockInOutButton();
+
+        // Инициализация задач и чатов
+        renderTasks('all'); // Показываем все задачи по умолчанию
+        renderChats();
     }
 
     // --- Функции обновления UI ---
@@ -234,33 +291,33 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- Логика переключения страниц (Главная / Разделы) ---
+    // --- Логика переключения страниц ---
     function showPage(pageElement) {
         // Скрываем все "страницы"
         contentArea.style.display = 'none';
         sectionsPage.style.display = 'none';
-        // ... другие страницы, если будут
+        tasksPage.style.display = 'none'; // Скрываем новую страницу задач
+        chatsPage.style.display = 'none'; // Скрываем новую страницу чатов
 
         // Показываем нужную страницу
         pageElement.style.display = 'block';
 
         // Управление видимостью хедера и отступом content-wrapper
         if (pageElement === contentArea) {
-            headerContainer.classList.remove('hidden'); // Показать хедер на главной
-            contentWrapper.classList.remove('header-hidden'); // Установить отступ
-        } else if (pageElement === sectionsPage) {
-            headerContainer.classList.add('hidden'); // Скрыть хедер на странице разделов
-            contentWrapper.classList.add('header-hidden'); // Убрать отступ
+            headerContainer.classList.remove('hidden');
+            contentWrapper.classList.remove('header-hidden');
+        } else { // Для всех остальных страниц (разделы, задачи, чаты) хедер скрыт
+            headerContainer.classList.add('hidden');
+            contentWrapper.classList.add('header-hidden');
         }
 
         // Обновляем активную кнопку навигации
         navButtons.forEach(btn => btn.classList.remove('active'));
-        if (pageElement === contentArea) {
-            homeNavButton.classList.add('active');
-        } else if (pageElement === sectionsPage) {
-            sectionsNavButton.classList.add('active');
+        // Находим кнопку по data-target-page и добавляем active класс
+        const activeButton = document.querySelector(`.nav-button[data-target-page="${pageElement.id}"]`);
+        if (activeButton) {
+            activeButton.classList.add('active');
         }
-        // ... другие кнопки
     }
 
     // Обработчики кликов по кнопкам нижней навигации
@@ -279,13 +336,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // НОВЫЕ ОБРАБОТЧИКИ ДЛЯ КНОПОК "ЗАДАЧИ" И "ЧАТЫ"
+    tasksNavButton.addEventListener('click', () => {
+        showPage(tasksPage);
+        renderTasks('all'); // Показываем все задачи при переходе на страницу задач
+        if (window.Telegram && window.Telegram.WebApp) {
+            Telegram.WebApp.HapticFeedback.impactOccurred('light');
+        }
+    });
+
+    chatsNavButton.addEventListener('click', () => {
+        showPage(chatsPage);
+        renderChats(); // Отрисовываем чаты
+        if (window.Telegram && window.Telegram.WebApp) {
+            Telegram.WebApp.HapticFeedback.impactOccurred('light');
+        }
+    });
+
     // Активируем кнопку "Главная" по умолчанию при загрузке
-    homeNavButton.classList.add('active');
-    showPage(contentArea); // Показываем главную страницу по умолчанию
+    showPage(contentArea);
 
     // --- Функции для управления разделами (Древовидная структура) ---
 
-    // Генерируем уникальный ID (для имитации)
     function generateUniqueId() {
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
             var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
@@ -293,7 +365,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Обновляет хлебные крошки
     function updateBreadcrumbs() {
         sectionsBreadcrumbs.innerHTML = '';
         currentPath.forEach((item, index) => {
@@ -305,17 +376,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 span.addEventListener('click', () => navigateToPath(item.id));
             }
             span.textContent = item.name;
-            span.dataset.id = item.id; // Для навигации
+            span.dataset.id = item.id;
             sectionsBreadcrumbs.appendChild(span);
         });
-        // Показываем/скрываем кнопку "Назад"
         goBackSectionBtn.style.display = currentParentId === 'root' ? 'none' : 'inline-block';
     }
 
-    // Отображает разделы для текущего родителя
     function renderSections(parentId) {
         currentSectionsList.innerHTML = '';
-        const children = sectionsData.filter(section => section.parentId === parentId);
+        const children = sectionsData.filter(section => {
+            // Фильтруем разделы, которые скрыты от текущего пользователя
+            const isHiddenFromCurrentUser = section.hidden_from_users && section.hidden_from_users.includes(currentUserId);
+            return section.parentId === parentId && !isHiddenFromCurrentUser;
+        });
 
         if (children.length === 0) {
             noSectionsMessage.style.display = 'block';
@@ -326,7 +399,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 sectionDiv.classList.add('section-item');
                 sectionDiv.dataset.id = section.id;
                 
-                // Добавляем обработчики для долгого нажатия
                 sectionDiv.addEventListener('mousedown', (e) => startLongPress(e, section.id));
                 sectionDiv.addEventListener('mouseup', cancelLongPress);
                 sectionDiv.addEventListener('mouseleave', cancelLongPress);
@@ -334,14 +406,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 sectionDiv.addEventListener('touchend', cancelLongPress);
                 sectionDiv.addEventListener('touchcancel', cancelLongPress);
 
-                // Добавляем обработчик для обычного клика (для перехода)
                 sectionDiv.addEventListener('click', (e) => {
-                    // Проверяем, был ли клик по кнопке действия, чтобы не переходить в раздел
                     if (e.target.closest('.section-action-button') || e.target.closest('.context-menu-item')) {
-                        return; // Не переходим, если кликнули на кнопку действия или пункт меню
+                        return;
                     }
-                    // Важно: проверяем, что долгое нажатие не было инициировано
-                    if (longPressTimer) { // Если таймер еще активен, это, скорее всего, начало долгого нажатия, а не клик
+                    if (longPressTimer) {
                         return;
                     }
                     if (window.Telegram && window.Telegram.WebApp) {
@@ -354,11 +423,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 sectionNameSpan.classList.add('section-item-name');
                 sectionNameSpan.textContent = section.name;
                 
-                // Добавляем отображение количества, только если оно больше 0
                 if (typeof section.quantity === 'number' && section.quantity > 0) {
                     const quantitySpan = document.createElement('span');
                     quantitySpan.classList.add('section-item-quantity');
-                    quantitySpan.textContent = `${section.quantity.toFixed(1).replace(/\.0$/, '')} шт.`; // Форматируем до 1 знака, убираем .0 если целое
+                    quantitySpan.textContent = `${section.quantity.toFixed(1).replace(/\.0$/, '')} шт.`;
                     sectionNameSpan.appendChild(quantitySpan);
                 }
                 
@@ -367,23 +435,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 const sectionActionsDiv = document.createElement('div');
                 sectionActionsDiv.classList.add('section-item-actions');
 
-                // Кнопки "Редактировать" и "Удалить" остаются
                 const editButton = document.createElement('button');
                 editButton.classList.add('section-action-button');
-                editButton.innerHTML = '&#9998;'; // ✏️
+                editButton.innerHTML = '&#9998;';
                 editButton.title = 'Редактировать раздел';
                 editButton.addEventListener('click', (e) => {
-                    e.stopPropagation(); // Предотвращаем срабатывание клика на родительском элементе
+                    e.stopPropagation();
                     editSection(section.id, section.name);
                 });
                 sectionActionsDiv.appendChild(editButton);
 
                 const deleteButton = document.createElement('button');
                 deleteButton.classList.add('section-action-button');
-                deleteButton.innerHTML = '&#10006;'; // ❌
+                deleteButton.innerHTML = '&#10006;';
                 deleteButton.title = 'Удалить раздел';
                 deleteButton.addEventListener('click', (e) => {
-                    e.stopPropagation(); // Предотвращаем срабатывание клика на родительском элементе
+                    e.stopPropagation();
                     deleteSection(section.id);
                 });
                 sectionActionsDiv.appendChild(deleteButton);
@@ -395,14 +462,12 @@ document.addEventListener('DOMContentLoaded', () => {
         updateBreadcrumbs();
     }
 
-    // Переходит в указанный раздел (добавляет в путь)
     function navigateToSection(id, name) {
         currentParentId = id;
         currentPath.push({ id: id, name: name });
         renderSections(id);
     }
 
-    // Переходит к указанному элементу в хлебных крошках
     function navigateToPath(id) {
         const index = currentPath.findIndex(item => item.id === id);
         if (index !== -1) {
@@ -415,13 +480,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Создание нового раздела/подраздела
     createSectionBtn.addEventListener('click', async () => {
         if (window.Telegram && window.Telegram.WebApp) {
             Telegram.WebApp.HapticFeedback.impactOccurred('medium');
-            // Внимание: prompt() может быть блокирован в некоторых WebApp средах.
-            // Для надежного ввода рассмотрите создание собственного модального окна или использование
-            // методов бота (например, showCustomMethod) с кастомным UI.
             const sectionName = prompt('Введите название нового раздела:'); 
             if (sectionName && sectionName.trim() !== '') {
                 const newId = generateUniqueId();
@@ -431,7 +492,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     parentId: currentParentId,
                     quantity: 0,
                     min_quantity: null,
-                    hidden_from_users: [] // Инициализируем пустым массивом
+                    hidden_from_users: []
                 };
                 sectionsData.push(newSection);
                 renderSections(currentParentId);
@@ -441,7 +502,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     payload: newSection
                 }));
                 Telegram.WebApp.showAlert(`Раздел "${sectionName}" создан и данные отправлены боту.`);
-            } else if (sectionName !== null) { // Если пользователь не отменил ввод
+            } else if (sectionName !== null) {
                 Telegram.WebApp.showAlert('Название раздела не может быть пустым.');
             }
         } else {
@@ -465,7 +526,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Редактирование раздела
     function editSection(id, oldName) {
         if (window.Telegram && window.Telegram.WebApp) {
             Telegram.WebApp.HapticFeedback.impactOccurred('medium');
@@ -508,7 +568,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Удаление раздела
     function deleteSection(id) {
         if (window.Telegram && window.Telegram.WebApp) {
             Telegram.WebApp.HapticFeedback.notificationOccurred('warning');
@@ -553,7 +612,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Кнопка "Назад"
     goBackSectionBtn.addEventListener('click', () => {
         if (currentPath.length > 1) {
             currentPath.pop();
@@ -566,7 +624,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- Логика долгого нажатия и контекстного меню ---
-    const LONG_PRESS_THRESHOLD = 500; // milliseconds
+    const LONG_PRESS_THRESHOLD = 500;
 
     function startLongPress(e, sectionId) {
         if (e.touches && e.touches.length > 1) {
@@ -574,7 +632,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Предотвращаем открытие контекстного меню браузера при долгом нажатии правой кнопкой мыши
         if (e.type === 'mousedown' && e.button === 2) {
              e.preventDefault(); 
              currentSectionForMenu = sectionId;
@@ -592,7 +649,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function cancelLongPress() {
         clearTimeout(longPressTimer);
-        longPressTimer = null; // Сбросим таймер
+        longPressTimer = null;
     }
 
     function showContextMenu() {
@@ -602,18 +659,15 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.classList.add('modal-open');
         contextMenuModal.classList.remove('hidden');
         contextMenuModal.style.display = 'flex';
-        // Важно: предотвращаем закрытие модального окна при клике на его контент
         contextMenuModal.querySelector('.modal-content').addEventListener('click', (e) => e.stopPropagation());
     }
 
     function hideContextMenu() {
         document.body.classList.remove('modal-open');
         contextMenuModal.classList.add('hidden');
-        // Даем время на анимацию закрытия перед скрытием
         setTimeout(() => {
             contextMenuModal.style.display = 'none';
         }, 300); 
-        // currentSectionForMenu = null; // Не сбрасываем сразу, так как он нужен для последующих действий
     }
 
     closeContextMenuBtn.addEventListener('click', hideContextMenu);
@@ -624,11 +678,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- Обработчики кнопок контекстного меню ---
-    // Добавлены e.stopPropagation() на каждую кнопку, чтобы клик по кнопке не закрывал модальное окно
-    // и setTimeout для задержки вызова prompt/модального окна получателей
-    const CONTEXT_MENU_CLOSE_DELAY = 350; // Должно быть больше, чем 300мс в hideContextMenu
+    const CONTEXT_MENU_CLOSE_DELAY = 350;
 
-    // Функция для запроса количества и подтверждения
     async function askForQuantityAndConfirm(type) {
         const section = sectionsData.find(s => s.id === currentSectionForMenu);
         if (!section) return;
@@ -644,7 +695,7 @@ document.addEventListener('DOMContentLoaded', () => {
             promptMessage = 'Введите количество для списания (можно дробное):';
         }
 
-        while (true) { // Цикл для повторного запроса ввода при отмене подтверждения
+        while (true) {
             if (window.Telegram && window.Telegram.WebApp) {
                 Telegram.WebApp.HapticFeedback.impactOccurred('light');
                 amountInput = prompt(promptMessage);
@@ -652,7 +703,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 amountInput = prompt(promptMessage);
             }
             
-            if (amountInput === null) { // Пользователь отменил ввод
+            if (amountInput === null) {
                 currentSectionForMenu = null;
                 return;
             }
@@ -665,7 +716,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     alert('Некорректное количество. Пожалуйста, введите положительное число.');
                 }
-                continue; // Повторный запрос ввода
+                continue;
             }
 
             let newQty;
@@ -679,7 +730,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     } else {
                         alert(`Недостаточное количество. Доступно: ${currentQty.toFixed(1).replace(/\.0$/, '')} шт.`);
                     }
-                    continue; // Повторный запрос ввода
+                    continue;
                 }
                 newQty = currentQty - amount;
                 confirmMessage = `Вы уверены, что хотите списать ${amount.toFixed(1).replace(/\.0$/, '')} шт.? После списания останется ${newQty.toFixed(1).replace(/\.0$/, '')} шт.`;
@@ -710,11 +761,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentSectionForMenu = null;
                 return;
             } else {
-                // Если пользователь нажал "Нет", цикл продолжится, и будет задан предыдущий вопрос (prompt)
                 if (window.Telegram && window.Telegram.WebApp) {
                     Telegram.WebApp.HapticFeedback.notificationOccurred('light');
                 }
-                // Не сбрасываем currentSectionForMenu, чтобы можно было повторить ввод
             }
         }
     }
@@ -725,7 +774,7 @@ document.addEventListener('DOMContentLoaded', () => {
         hideContextMenu();
         if (!currentSectionForMenu) return;
 
-        setTimeout(() => { // Задержка для полного скрытия контекстного меню
+        setTimeout(() => {
             askForQuantityAndConfirm('add');
         }, CONTEXT_MENU_CLOSE_DELAY);
     });
@@ -735,7 +784,7 @@ document.addEventListener('DOMContentLoaded', () => {
         hideContextMenu();
         if (!currentSectionForMenu) return;
 
-        setTimeout(() => { // Задержка для полного скрытия контекстного меню
+        setTimeout(() => {
             askForQuantityAndConfirm('remove');
         }, CONTEXT_MENU_CLOSE_DELAY);
     });
@@ -745,7 +794,7 @@ document.addEventListener('DOMContentLoaded', () => {
         hideContextMenu();
         if (!currentSectionForMenu) return;
         
-        setTimeout(() => { // Задержка для полного скрытия контекстного меню
+        setTimeout(() => {
             currentRecipientsSelectionType = 'critical_minimum';
             let minQuantityInput;
             if (window.Telegram && window.Telegram.WebApp) {
@@ -760,7 +809,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const section = sectionsData.find(s => s.id === currentSectionForMenu);
                 if (section) {
                     section.min_quantity = minQuantity;
-                    showRecipientsModal(); // Открываем модальное окно получателей
+                    showRecipientsModal();
                 }
             } else {
                 if (minQuantityInput !== null) {
@@ -771,7 +820,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
             }
-            // currentSectionForMenu = null; // Сбрасываем после использования в showRecipientsModal или его отмене
         }, CONTEXT_MENU_CLOSE_DELAY);
     });
 
@@ -780,7 +828,7 @@ document.addEventListener('DOMContentLoaded', () => {
         hideContextMenu();
         if (!currentSectionForMenu) return;
         
-        setTimeout(() => { // Задержка для полного скрытия контекстного меню
+        setTimeout(() => {
             currentRecipientsSelectionType = 'reminder';
 
             let reminderMessage = '';
@@ -789,10 +837,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (window.Telegram && window.Telegram.WebApp) {
                 Telegram.WebApp.HapticFeedback.impactOccurred('light');
                 reminderMessage = prompt('Введите сообщение для напоминания:');
-                reminderDateTime = prompt('Введите дату и время напоминания (пример: 01.01.2025 12:30):'); // Изменен текст подсказки
+                reminderDateTime = prompt('Введите дату и время напоминания (пример: 01.01.2025 12:30):');
             } else {
                 reminderMessage = prompt('Введите сообщение для напоминания:');
-                reminderDateTime = prompt('Введите дату и время напоминания (пример: 01.01.2025 12:30):'); // Изменен текст подсказки
+                reminderDateTime = prompt('Введите дату и время напоминания (пример: 01.01.2025 12:30):');
             }
 
             if (reminderMessage && reminderMessage.trim() !== '' && reminderDateTime && reminderDateTime.trim() !== '') {
@@ -800,7 +848,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (section) {
                     section.reminder_message = reminderMessage.trim();
                     section.reminder_datetime = reminderDateTime.trim();
-                    showRecipientsModal(); // Открываем модальное окно получателей
+                    showRecipientsModal();
                 }
             } else {
                 if (reminderMessage !== null && reminderDateTime !== null) {
@@ -811,47 +859,41 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
             }
-            // currentSectionForMenu = null; // Сбрасываем после использования в showRecipientsModal или его отмене
         }, CONTEXT_MENU_CLOSE_DELAY);
     });
 
-    // НОВАЯ КНОПКА "СКРЫТЬ ОТ:"
     hideFromBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         hideContextMenu();
         if (!currentSectionForMenu) return;
 
-        setTimeout(() => { // Задержка для полного скрытия контекстного меню
+        setTimeout(() => {
             currentRecipientsSelectionType = 'hide_from';
-            showRecipientsModal(); // Открываем модальное окно выбора получателей
+            showRecipientsModal();
         }, CONTEXT_MENU_CLOSE_DELAY);
     });
-
 
     // --- Логика выбора получателей ---
     function showRecipientsModal() {
         document.body.classList.add('modal-open');
         recipientsModal.classList.remove('hidden');
         recipientsModal.style.display = 'flex';
-        // Устанавливаем фильтр по умолчанию на "Все", но затем отрисовываем на основе активного таба
         const activeTab = document.querySelector('.recipient-filter-tabs .filter-tab.active');
         const filter = activeTab ? activeTab.dataset.filter : 'all';
         renderUsersForSelection(filter); 
         selectAllRecipientsCheckbox.checked = false;
         
-        // Предварительно выбираем пользователей, если они уже скрыты от этого раздела
         const section = sectionsData.find(s => s.id === currentSectionForMenu);
         if (section && currentRecipientsSelectionType === 'hide_from' && section.hidden_from_users) {
-            setTimeout(() => { // Небольшая задержка, чтобы элементы успели отрисоваться
+            setTimeout(() => {
                 section.hidden_from_users.forEach(userId => {
                     const checkbox = recipientsList.querySelector(`input[value="${userId}"]`);
                     if (checkbox) {
                         checkbox.checked = true;
                     }
                 });
-            }, 50); // Небольшая задержка
+            }, 50);
         }
-
 
         recipientsModal.querySelector('.modal-content').addEventListener('click', (e) => e.stopPropagation());
     }
@@ -862,7 +904,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
             recipientsModal.style.display = 'none';
         }, 300);
-        currentSectionForMenu = null; // Сбрасываем здесь, так как модальное окно получателей либо подтверждает, либо отменяет действие
+        currentSectionForMenu = null;
     }
 
     function renderUsersForSelection(filter) {
@@ -897,7 +939,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Обработчики для табов фильтра
     recipientFilterTabs.forEach(tab => {
         tab.addEventListener('click', () => {
             recipientFilterTabs.forEach(t => t.classList.remove('active'));
@@ -907,7 +948,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Выбрать/снять выделение со всех
     selectAllRecipientsCheckbox.addEventListener('change', (e) => {
         recipientsList.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
             checkbox.checked = e.target.checked;
@@ -924,7 +964,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        if (selectedUserIds.length === 0 && currentRecipientsSelectionType !== 'hide_from') { // Для скрытия можно выбрать никого, чтобы "раскрыть" всем
+        if (selectedUserIds.length === 0 && currentRecipientsSelectionType !== 'hide_from') {
             if (window.Telegram && window.Telegram.WebApp) {
                 Telegram.WebApp.showAlert('Пожалуйста, выберите хотя бы одного получателя.');
             } else {
@@ -963,8 +1003,8 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 alert(`Напоминание для "${section.name}" запланировано. Сообщение "${section.reminder_message}" будет отправлено выбранным пользователям в ${section.reminder_datetime}.`);
             }
-        } else if (currentRecipientsSelectionType === 'hide_from') { // НОВАЯ ЛОГИКА ДЛЯ "СКРЫТЬ ОТ:"
-            section.hidden_from_users = selectedUserIds; // Обновляем массив скрытых пользователей
+        } else if (currentRecipientsSelectionType === 'hide_from') {
+            section.hidden_from_users = selectedUserIds;
             if (window.Telegram && window.Telegram.WebApp) {
                 Telegram.WebApp.sendData(JSON.stringify({
                     type: 'set_hidden_from_users',
@@ -985,7 +1025,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     alert(`Раздел "${section.name}" теперь виден всем (только в браузере).`);
                 }
             }
-            renderSections(currentParentId); // Перерисовываем, чтобы обновить состояние, если нужно
+            renderSections(currentParentId);
         }
         hideRecipientsModal();
     });
@@ -1003,8 +1043,173 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Инициализация разделов при загрузке страницы (если не в TWA)
+    // --- ФУНКЦИОНАЛ СОТРУДНИКОВ (из employeeFeatures.js) ---
+
+    // 1. Заметки от Администратора
+    function updateAdminNotes(notes) {
+        adminNotesContent.innerHTML = '';
+        if (notes && notes.length > 0) {
+            adminNotesContainer.style.display = 'block';
+            notes.forEach(note => {
+                const p = document.createElement('p');
+                p.textContent = note;
+                adminNotesContent.appendChild(p);
+            });
+        } else {
+            adminNotesContainer.style.display = 'none';
+        }
+    }
+
+    // 2. Кнопка "Пришел/Ушел"
+    function initClockInOutButton() {
+        let isClockedIn = localStorage.getItem('isClockedIn') === 'true'; // Состояние сохраняется
+
+        function updateClockButton() {
+            if (isClockedIn) {
+                clockInOutBtn.textContent = 'Ушел/Ушла';
+                clockInOutBtn.classList.add('clock-out');
+                clockInOutBtn.classList.remove('clock-in');
+            } else {
+                clockInOutBtn.textContent = 'Пришел/Пришла';
+                clockInOutBtn.classList.add('clock-in');
+                clockInOutBtn.classList.remove('clock-out');
+            }
+        }
+
+        clockInOutBtn.addEventListener('click', () => {
+            isClockedIn = !isClockedIn;
+            localStorage.setItem('isClockedIn', isClockedIn);
+            updateClockButton();
+
+            const command = isClockedIn ? 'employee_clock_in' : 'employee_clock_out';
+            const message = isClockedIn ? 'Отмечен приход.' : 'Отмечен уход.';
+
+            if (window.Telegram && window.Telegram.WebApp) {
+                Telegram.WebApp.sendData(JSON.stringify({
+                    command: command,
+                    timestamp: new Date().toISOString()
+                }));
+                Telegram.WebApp.showAlert(message);
+                Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+            } else {
+                alert(message + ' (Только в браузере)');
+            }
+        });
+
+        updateClockButton(); // Инициализация состояния кнопки при загрузке
+    }
+
+    // 3. Страница "Задачи"
+    function renderTasks(filter) {
+        tasksList.innerHTML = '';
+        const filteredTasks = allTasks.filter(task => {
+            if (filter === 'all') return true;
+            if (filter === 'my') return task.assignedTo === currentUserId;
+            return false;
+        });
+
+        if (filteredTasks.length === 0) {
+            noTasksMessage.style.display = 'block';
+        } else {
+            noTasksMessage.style.display = 'none';
+            filteredTasks.forEach(task => {
+                const taskItem = document.createElement('div');
+                taskItem.classList.add('task-item');
+                taskItem.dataset.id = task.id;
+
+                let statusClass = '';
+                let statusText = '';
+                switch (task.status) {
+                    case 'Новая':
+                        statusClass = 'status-new';
+                        statusText = 'Новая';
+                        break;
+                    case 'В работе':
+                        statusClass = 'status-in-progress';
+                        statusText = 'В работе';
+                        break;
+                    case 'Завершена':
+                        statusClass = 'status-completed';
+                        statusText = 'Завершена';
+                        break;
+                    case 'Отложена':
+                        statusClass = 'status-deferred';
+                        statusText = 'Отложена';
+                        break;
+                    default:
+                        statusClass = 'status-new';
+                        statusText = 'Неизвестно';
+                }
+
+                taskItem.innerHTML = `
+                    <div class="task-title">${task.title}</div>
+                    <div class="task-info">
+                        <span class="task-status ${statusClass}">${statusText}</span>
+                        <span class="task-assigned-to">Назначено: ${allUsers.find(u => u.id === task.assignedTo)?.name || 'Неизвестно'}</span>
+                    </div>
+                `;
+                // Добавляем обработчик клика для каждой задачи (можно добавить модалку с деталями задачи)
+                taskItem.addEventListener('click', () => {
+                    if (window.Telegram && window.Telegram.WebApp) {
+                        Telegram.WebApp.HapticFeedback.impactOccurred('light');
+                        Telegram.WebApp.showAlert(`Задача: "${task.title}"\nСтатус: ${task.status}\nНазначена: ${allUsers.find(u => u.id === task.assignedTo)?.name || 'Неизвестно'}`);
+                    } else {
+                        alert(`Задача: "${task.title}"\nСтатус: ${task.status}\nНазначена: ${allUsers.find(u => u.id === task.assignedTo)?.name || 'Неизвестно'}`);
+                    }
+                });
+                tasksList.appendChild(taskItem);
+            });
+        }
+    }
+
+    // Обработчики для табов фильтра задач
+    taskFilterTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            taskFilterTabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            renderTasks(tab.dataset.filter);
+            if (window.Telegram && window.Telegram.WebApp) {
+                Telegram.WebApp.HapticFeedback.impactOccurred('light');
+            }
+        });
+    });
+
+    // 4. Страница "Чаты"
+    function renderChats() {
+        chatsList.innerHTML = '';
+        if (availableChats.length === 0) {
+            noChatsMessage.style.display = 'block';
+        } else {
+            noChatsMessage.style.display = 'none';
+            availableChats.forEach(chat => {
+                const chatItem = document.createElement('a');
+                chatItem.classList.add('chat-item');
+                chatItem.href = chat.link;
+                chatItem.target = '_blank'; // Открывать в новой вкладке (или внешнем приложении)
+
+                chatItem.innerHTML = `
+                    <img class="chat-icon" src="${chat.icon || 'https://via.placeholder.com/40/CCCCCC/FFFFFF?text=C'}" alt="Иконка чата">
+                    <span class="chat-name">${chat.name}</span>
+                    <svg class="chat-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                `;
+                chatItem.addEventListener('click', (e) => {
+                    if (window.Telegram && window.Telegram.WebApp) {
+                        // Для открытия внешних ссылок лучше использовать Telegram.WebApp.openLink
+                        e.preventDefault(); // Предотвращаем стандартное действие
+                        Telegram.WebApp.openLink(chat.link);
+                        Telegram.WebApp.HapticFeedback.impactOccurred('light');
+                    }
+                });
+                chatsList.appendChild(chatItem);
+            });
+        }
+    }
+
+    // --- Инициализация при загрузке страницы (если не в TWA) ---
     if (!(window.Telegram && window.Telegram.WebApp)) {
         renderSections(currentParentId);
+        // Заметки, кнопка прихода/ухода, задачи и чаты уже инициализируются в блоке else выше.
     }
 });
