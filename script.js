@@ -628,49 +628,105 @@ document.addEventListener('DOMContentLoaded', () => {
     // и setTimeout для задержки вызова prompt/модального окна получателей
     const CONTEXT_MENU_CLOSE_DELAY = 350; // Должно быть больше, чем 300мс в hideContextMenu
 
+    // Функция для запроса количества и подтверждения
+    async function askForQuantityAndConfirm(type) {
+        const section = sectionsData.find(s => s.id === currentSectionForMenu);
+        if (!section) return;
+
+        let amountInput;
+        let currentQty = section.quantity || 0;
+        let promptMessage;
+        let confirmMessage;
+
+        if (type === 'add') {
+            promptMessage = 'Введите количество для добавления (можно дробное):';
+        } else { // 'remove'
+            promptMessage = 'Введите количество для списания (можно дробное):';
+        }
+
+        while (true) { // Цикл для повторного запроса ввода при отмене подтверждения
+            if (window.Telegram && window.Telegram.WebApp) {
+                Telegram.WebApp.HapticFeedback.impactOccurred('light');
+                amountInput = prompt(promptMessage);
+            } else {
+                amountInput = prompt(promptMessage);
+            }
+            
+            if (amountInput === null) { // Пользователь отменил ввод
+                currentSectionForMenu = null;
+                return;
+            }
+
+            const amount = parseFloat(amountInput);
+
+            if (isNaN(amount) || amount <= 0) {
+                if (window.Telegram && window.Telegram.WebApp) {
+                    Telegram.WebApp.showAlert('Некорректное количество. Пожалуйста, введите положительное число.');
+                } else {
+                    alert('Некорректное количество. Пожалуйста, введите положительное число.');
+                }
+                continue; // Повторный запрос ввода
+            }
+
+            let newQty;
+            if (type === 'add') {
+                newQty = currentQty + amount;
+                confirmMessage = `Вы уверены, что хотите добавить ${amount.toFixed(1).replace(/\.0$/, '')} шт.? После добавления получится ${newQty.toFixed(1).replace(/\.0$/, '')} шт.`;
+            } else { // 'remove'
+                if (amount > currentQty) {
+                    if (window.Telegram && window.Telegram.WebApp) {
+                        Telegram.WebApp.showAlert(`Недостаточное количество. Доступно: ${currentQty.toFixed(1).replace(/\.0$/, '')} шт.`);
+                    } else {
+                        alert(`Недостаточное количество. Доступно: ${currentQty.toFixed(1).replace(/\.0$/, '')} шт.`);
+                    }
+                    continue; // Повторный запрос ввода
+                }
+                newQty = currentQty - amount;
+                confirmMessage = `Вы уверены, что хотите списать ${amount.toFixed(1).replace(/\.0$/, '')} шт.? После списания останется ${newQty.toFixed(1).replace(/\.0$/, '')} шт.`;
+            }
+
+            let confirmed;
+            if (window.Telegram && window.Telegram.WebApp) {
+                confirmed = await new Promise(resolve => {
+                    Telegram.WebApp.showConfirm(confirmMessage, (result) => resolve(result));
+                });
+            } else {
+                confirmed = confirm(confirmMessage);
+            }
+
+            if (confirmed) {
+                section.quantity = newQty;
+                renderSections(currentParentId);
+
+                if (window.Telegram && window.Telegram.WebApp) {
+                    Telegram.WebApp.sendData(JSON.stringify({
+                        type: `${type}_quantity`,
+                        payload: { id: section.id, amount: amount }
+                    }));
+                    Telegram.WebApp.showAlert(`${type === 'add' ? 'Добавлено' : 'Списано'} ${amount.toFixed(1).replace(/\.0$/, '')} ${type === 'add' ? 'к' : 'из'} "${section.name}".`);
+                } else {
+                    alert(`${type === 'add' ? 'Добавлено' : 'Списано'} ${amount.toFixed(1).replace(/\.0$/, '')} ${type === 'add' ? 'к' : 'из'} "${section.name}".`);
+                }
+                currentSectionForMenu = null;
+                return;
+            } else {
+                // Если пользователь нажал "Нет", цикл продолжится, и будет задан предыдущий вопрос (prompt)
+                if (window.Telegram && window.Telegram.WebApp) {
+                    Telegram.WebApp.HapticFeedback.notificationOccurred('light');
+                }
+                // Не сбрасываем currentSectionForMenu, чтобы можно было повторить ввод
+            }
+        }
+    }
+
+
     addQuantityBtn.addEventListener('click', (e) => {
         e.stopPropagation(); 
         hideContextMenu();
         if (!currentSectionForMenu) return;
 
         setTimeout(() => { // Задержка для полного скрытия контекстного меню
-            let amountInput;
-            if (window.Telegram && window.Telegram.WebApp) {
-                Telegram.WebApp.HapticFeedback.impactOccurred('light');
-                // Используем prompt() как временное решение. Для надежного ввода в TWA
-                // лучше реализовать собственное модальное окно или использовать бота для ввода.
-                amountInput = prompt('Введите количество для добавления (можно дробное):');
-            } else {
-                amountInput = prompt('Введите количество для добавления (можно дробное):');
-            }
-            const amount = parseFloat(amountInput);
-
-            if (!isNaN(amount) && amount > 0) {
-                const section = sectionsData.find(s => s.id === currentSectionForMenu);
-                if (section) {
-                    section.quantity = (section.quantity || 0) + amount;
-                    renderSections(currentParentId);
-
-                    if (window.Telegram && window.Telegram.WebApp) {
-                        Telegram.WebApp.sendData(JSON.stringify({
-                            type: 'add_quantity',
-                            payload: { id: section.id, amount: amount }
-                        }));
-                        Telegram.WebApp.showAlert(`Добавлено ${amount.toFixed(1).replace(/\.0$/, '')} к "${section.name}".`);
-                    } else {
-                        alert(`Добавлено ${amount.toFixed(1).replace(/\.0$/, '')} к "${section.name}".`);
-                    }
-                }
-            } else {
-                if (amountInput !== null) { // Если пользователь не отменил ввод
-                    if (window.Telegram && window.Telegram.WebApp) {
-                        Telegram.WebApp.showAlert('Некорректное количество.');
-                    } else {
-                        alert('Некорректное количество.');
-                    }
-                }
-            }
-            currentSectionForMenu = null; // Сбрасываем после использования
+            askForQuantityAndConfirm('add');
         }, CONTEXT_MENU_CLOSE_DELAY);
     });
 
@@ -680,50 +736,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!currentSectionForMenu) return;
 
         setTimeout(() => { // Задержка для полного скрытия контекстного меню
-            let amountInput;
-            if (window.Telegram && window.Telegram.WebApp) {
-                Telegram.WebApp.HapticFeedback.impactOccurred('light');
-                amountInput = prompt('Введите количество для списания (можно дробное):');
-            } else {
-                amountInput = prompt('Введите количество для списания (можно дробное):');
-            }
-            const amount = parseFloat(amountInput);
-
-            if (!isNaN(amount) && amount > 0) {
-                const section = sectionsData.find(s => s.id === currentSectionForMenu);
-                if (section) {
-                    const currentQty = section.quantity || 0;
-                    if (amount > currentQty) {
-                        if (window.Telegram && window.Telegram.WebApp) {
-                            Telegram.WebApp.showAlert(`Недостаточное количество. Доступно: ${currentQty.toFixed(1).replace(/\.0$/, '')} шт.`);
-                        } else {
-                            alert(`Недостаточное количество. Доступно: ${currentQty.toFixed(1).replace(/\.0$/, '')} шт.`);
-                        }
-                        return;
-                    }
-                    section.quantity = currentQty - amount;
-                    renderSections(currentParentId);
-
-                    if (window.Telegram && window.Telegram.WebApp) {
-                        Telegram.WebApp.sendData(JSON.stringify({
-                            type: 'remove_quantity',
-                            payload: { id: section.id, amount: amount }
-                        }));
-                        Telegram.WebApp.showAlert(`Списано ${amount.toFixed(1).replace(/\.0$/, '')} из "${section.name}".`);
-                    } else {
-                        alert(`Списано ${amount.toFixed(1).replace(/\.0$/, '')} из "${section.name}".`);
-                    }
-                }
-            } else {
-                if (amountInput !== null) {
-                    if (window.Telegram && window.Telegram.WebApp) {
-                        Telegram.WebApp.showAlert('Некорректное количество.');
-                    } else {
-                        alert('Некорректное количество.');
-                    }
-                }
-            }
-            currentSectionForMenu = null;
+            askForQuantityAndConfirm('remove');
         }, CONTEXT_MENU_CLOSE_DELAY);
     });
 
@@ -776,10 +789,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (window.Telegram && window.Telegram.WebApp) {
                 Telegram.WebApp.HapticFeedback.impactOccurred('light');
                 reminderMessage = prompt('Введите сообщение для напоминания:');
-                reminderDateTime = prompt('Введите дату и время напоминания (ДД.ММ.ГГГГ ЧЧ:ММ):'); // Изменен текст подсказки
+                reminderDateTime = prompt('Введите дату и время напоминания (пример: 01.01.2025 12:30):'); // Изменен текст подсказки
             } else {
                 reminderMessage = prompt('Введите сообщение для напоминания:');
-                reminderDateTime = prompt('Введите дату и время напоминания (ДД.ММ.ГГГГ ЧЧ:ММ):'); // Изменен текст подсказки
+                reminderDateTime = prompt('Введите дату и время напоминания (пример: 01.01.2025 12:30):'); // Изменен текст подсказки
             }
 
             if (reminderMessage && reminderMessage.trim() !== '' && reminderDateTime && reminderDateTime.trim() !== '') {
@@ -863,7 +876,7 @@ document.addEventListener('DOMContentLoaded', () => {
             filteredUsers = allUsers;
         } else if (filter === 'admins') {
             filteredUsers = allUsers.filter(user => user.role === 'admin');
-        } else if (filter === 'employees') {
+        } else if (filter === 'employees') { // ИСПРАВЛЕНО
             filteredUsers = allUsers.filter(user => user.role === 'employee');
         }
 
