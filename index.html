@@ -3,106 +3,134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Учет Запасов</title>
+    <title>Мой WebApp</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
-    <div class="background-blur"></div>
-    <div class="content-wrapper">
-        <header id="header-container">
-            <div class="company-info">
-                <img id="company-logo" src="https://via.placeholder.com/60" alt="Company Logo">
-                <h1 id="company-name">Загрузка...</h1>
-            </div>
-            <div class="header-actions">
-                <div class="theme-switch-wrapper">
+    <div class="header-container" id="header-container">
+        <div class="background-blur" style="background-image: url('https://via.placeholder.com/60/0000FF/FFFFFF?text=MyComp');"></div>
+        <div class="header-content">
+            <div class="left-section">
+                <div class="company-info">
+                    <img id="company-logo" class="round-logo" src="https://via.placeholder.com/60/0000FF/FFFFFF?text=MyComp" alt="Лого компании">
+                    <div class="text-info">
+                        <h1 id="company-name">Название Компании</h1>
+                    </div>
+                </div>
+                <div class="theme-toggle-container">
                     <span class="theme-icon sun-icon">&#9728;</span>
-                    <label class="theme-switch">
+                    <label class="switch">
                         <input type="checkbox" id="theme-switch">
                         <span class="slider round"></span>
                     </label>
                     <span class="theme-icon moon-icon">&#9790;</span>
                 </div>
-                <img id="bot-logo" src="https://via.placeholder.com/60" alt="Bot Logo" class="bot-logo">
             </div>
-        </header>
-
-        <main>
-            <section id="content-area" class="page-section">
-                <h2>Настройки компании</h2>
-                <div class="admin-control-group">
-                    <label for="logo-url-input">URL логотипа компании:</label>
-                    <input type="text" id="logo-url-input" placeholder="Введите URL логотипа">
-                    <label for="company-name-input">Название компании:</label>
-                    <input type="text" id="company-name-input" placeholder="Введите название компании">
-                    <button id="apply-company-changes" class="primary-button">Применить</button>
-                </div>
-
-                <h2>Настройки бота</h2>
-                <div class="admin-control-group">
-                    <label for="bot-logo-url-input">URL логотипа бота:</label>
-                    <input type="text" id="bot-logo-url-input" placeholder="Введите URL логотипа бота">
-                    <button id="apply-bot-logo-changes" class="primary-button">Применить</button>
-                </div>
-            </section>
-
-            <section id="sections-page" class="page-section hidden">
-                <div class="sections-header">
-                    <div id="sections-breadcrumbs" class="breadcrumbs">
-                        </div>
-                    <button id="go-back-section-btn" class="secondary-button back-button" style="display: none;">Назад</button>
-                </div>
-                <div id="current-sections-list" class="sections-list">
-                    </div>
-                <p class="no-sections-message" style="display: none;">В этом разделе пока нет подразделов. Добавьте первый!</p>
-                <button id="create-section-btn" class="primary-button add-button">Создать раздел</button>
-            </section>
-        </main>
-
-        <nav class="bottom-nav">
-            <button class="nav-button" id="home-nav-button">
-                <span class="nav-icon">&#127963;</span>
-                <span class="nav-text">Главная</span>
-            </button>
-            <button class="nav-button" id="sections-nav-button">
-                <span class="nav-icon">&#128213;</span>
-                <span class="nav-text">Разделы</span>
-            </button>
-        </nav>
-    </div>
-
-    <div id="context-menu-modal" class="modal hidden">
-        <div id="context-menu-content" class="modal-content context-menu">
-            <button id="add-quantity-btn" class="context-menu-item">Добавить</button>
-            <button id="remove-quantity-btn" class="context-menu-item">Списать</button>
-            <button id="critical-min-btn" class="context-menu-item">Критический минимум</button>
-            <button id="set-reminder-btn" class="context-menu-item">Напомнить</button>
-            <button id="close-context-menu" class="context-menu-item close-button">Закрыть</button>
+            <img id="bot-logo" class="bot-logo" src="https://via.placeholder.com/60/FF5733/FFFFFF?text=B" alt="Лого бота">
         </div>
     </div>
 
-    <div id="recipients-modal" class="modal hidden">
+    <div class="content-wrapper">
+        <div class="content-area" id="content-area">
+            <h2>Привет! Это контент твоей страницы.</h2>
+            <p>Здесь может быть любая информация, кнопки, интерактивные элементы.</p>
+            <p>Эта область будет сдвигаться вверх при прокрутке, создавая эффект "скрывающегося" хедера.</p>
+
+            <div class="admin-test-controls">
+                <h3>Админ-контроль (только для тестирования)</h3>
+                <input type="text" id="logo-url-input" placeholder="URL нового лого компании">
+                <input type="text" id="company-name-input" placeholder="Новое название компании">
+                <button id="apply-company-changes">Применить изменения компании</button>
+                
+                <hr style="width: 80%; border: 0; border-top: 1px solid var(--border-color); margin: 15px 0;">
+
+                <input type="text" id="bot-logo-url-input" placeholder="URL нового лого бота">
+                <button id="apply-bot-logo-changes">Применить логотип бота</button>
+            </div>
+            
+            <p>Просто прокрутите вниз, чтобы увидеть, как работает эффект!</p>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+            <p>Curabitur pretium tincidunt lacus. Nulla gravida orci a odio. Nullam varius, turpis et commodo pharetra, est eros bibendum elit, nec luctus magna felis sollicitudin mauris. Integer in mauris eu nibh euismod gravida. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+            <p>Fusce ac elit at lacus feugiat placerat. Proin ut dui vel lectus dapibus pharetra. Curabitur vel lectus non est fringilla consectetur. Sed non ante id dui euismod volutpat. Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+            <p>Donec eget leo at urna pellentesque. Curabitur pretium tincidunt lacus. Nulla gravida orci a odio. Nullam varius, turpis et commodo pharetra, est eros bibendum elit, nec luctus magna felis sollicitudin mauris. Integer in mauris eu nibh euismod gravida. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+            <p>Mauris nec erat in turpis ullamcorper sollicitudin. Proin ut dui vel lectus dapibus pharetra. Curabitur vel lectus non est fringilla consectetur. Sed non ante id dui euismod volutpat. Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+        </div>
+
+        <div id="sections-page" class="page-content" style="display: none;">
+            <h2>Управление разделами</h2>
+            <div class="breadcrumbs" id="sections-breadcrumbs">
+                <span class="breadcrumb-item active" data-id="root">Главная</span>
+            </div>
+
+            <div class="sections-list" id="current-sections-list">
+                <p class="no-sections-message">Нет созданных разделов. Создайте первый!</p>
+            </div>
+
+            <div class="sections-actions">
+                <button id="create-section-btn" class="action-button">Создать новый раздел</button>
+                <button id="go-back-section-btn" class="action-button" style="display: none;">Назад</button>
+            </div>
+        </div>
+        </div>
+
+    <div id="context-menu-modal" class="modal" style="display: none;">
+        <div class="modal-content context-menu">
+            <div class="context-menu-item" id="add-quantity-btn">Добавить</div>
+            <div class="context-menu-item" id="remove-quantity-btn">Списать</div>
+            <div class="context-menu-item" id="critical-min-btn">Критический минимум</div>
+            <div class="context-menu-item" id="set-reminder-btn">Напомнить</div>
+            <div class="context-menu-item close-context-menu" id="close-context-menu">Закрыть</div>
+        </div>
+    </div>
+
+    <div id="recipients-modal" class="modal" style="display: none;">
         <div class="modal-content">
-            <h2>Выберите получателей</h2>
-            <div class="filter-tabs">
+            <h3>Выберите получателей</h3>
+            <div class="recipient-filter-tabs">
                 <button class="filter-tab active" data-filter="all">Все</button>
                 <button class="filter-tab" data-filter="admins">Админы</button>
                 <button class="filter-tab" data-filter="employees">Сотрудники</button>
             </div>
-            <div class="recipient-select-all">
+            <div class="select-all-container">
                 <input type="checkbox" id="select-all-recipients">
                 <label for="select-all-recipients">Выбрать всех</label>
             </div>
-            <div id="recipients-list" class="recipients-list">
+            <div class="recipients-list" id="recipients-list">
                 </div>
             <div class="modal-actions">
-                <button id="confirm-recipients-btn" class="primary-button">Подтвердить</button>
-                <button id="cancel-recipients-btn" class="secondary-button">Отмена</button>
+                <button id="confirm-recipients-btn" class="action-button">Подтвердить</button>
+                <button id="cancel-recipients-btn" class="action-button secondary-button">Отмена</button>
             </div>
         </div>
     </div>
 
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <div id="bottom-nav" class="bottom-nav">
+        <button class="nav-button">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+            <span class="nav-text">Главная</span>
+        </button>
+        <button class="nav-button">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h12l4 4z"></path>
+                <line x1="17" y1="9" x2="7" y2="9"></line>
+                <line x1="17" y1="13" x2="7" y2="13"></line>
+                <line x1="17" y1="17" x2="7" y2="17"></line>
+            </svg>
+            <span class="nav-text">Разделы</span>
+        </button>
+        <button class="nav-button">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span class="nav-text">Чаты</span>
+        </button>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>
