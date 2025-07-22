@@ -38,6 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const removeQuantityBtn = document.getElementById('remove-quantity-btn');
     const criticalMinBtn = document.getElementById('critical-min-btn');
     const setReminderBtn = document.getElementById('set-reminder-btn');
+    const hideFromBtn = document.getElementById('hide-from-btn'); // НОВАЯ КНОПКА
     const closeContextMenuBtn = document.getElementById('close-context-menu');
 
     // Элементы модального окна выбора получателей
@@ -55,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentParentId = 'root'; // ID текущего родительского раздела
     let longPressTimer;
     let currentSectionForMenu = null; // Раздел, для которого открыто контекстное меню
-    let currentRecipientsSelectionType = 'critical_minimum'; // 'critical_minimum' или 'reminder'
+    let currentRecipientsSelectionType = ''; // 'critical_minimum', 'reminder' или 'hide_from'
 
     // Имитация данных пользователей
     const allUsers = [
@@ -112,10 +113,10 @@ document.addEventListener('DOMContentLoaded', () => {
         updateBotLogo('https://via.placeholder.com/60/FF5733/FFFFFF?text=B');
         // Для тестирования в браузере, инициализируем тестовые разделы
         sectionsData = [
-            { id: 'sec1', name: 'Раздел А (тестовый)', parentId: 'root', quantity: 10.5, min_quantity: 5 },
-            { id: 'sec2', name: 'Раздел Б (тестовый)', parentId: 'root', quantity: 0, min_quantity: 0 },
-            { id: 'sec1_1', name: 'Позиция А1', parentId: 'sec1', quantity: 20, min_quantity: 10 },
-            { id: 'sec1_2', name: 'Позиция А2', parentId: 'sec1', quantity: 5, min_quantity: 2 }
+            { id: 'sec1', name: 'Раздел А (тестовый)', parentId: 'root', quantity: 10.5, min_quantity: 5, hidden_from_users: [] },
+            { id: 'sec2', name: 'Раздел Б (тестовый)', parentId: 'root', quantity: 0, min_quantity: 0, hidden_from_users: ['user1'] },
+            { id: 'sec1_1', name: 'Позиция А1', parentId: 'sec1', quantity: 20, min_quantity: 10, hidden_from_users: [] },
+            { id: 'sec1_2', name: 'Позиция А2', parentId: 'sec1', quantity: 5, min_quantity: 2, hidden_from_users: ['user2', 'user3'] }
         ];
         renderSections(currentParentId);
     }
@@ -429,7 +430,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     name: sectionName.trim(),
                     parentId: currentParentId,
                     quantity: 0,
-                    min_quantity: null
+                    min_quantity: null,
+                    hidden_from_users: [] // Инициализируем пустым массивом
                 };
                 sectionsData.push(newSection);
                 renderSections(currentParentId);
@@ -451,7 +453,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     name: sectionName.trim(),
                     parentId: currentParentId,
                     quantity: 0,
-                    min_quantity: null
+                    min_quantity: null,
+                    hidden_from_users: []
                 };
                 sectionsData.push(newSection);
                 renderSections(currentParentId);
@@ -773,10 +776,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (window.Telegram && window.Telegram.WebApp) {
                 Telegram.WebApp.HapticFeedback.impactOccurred('light');
                 reminderMessage = prompt('Введите сообщение для напоминания:');
-                reminderDateTime = prompt('Введите дату и время напоминания (YYYY-MM-DDTHH:MM):'); 
+                reminderDateTime = prompt('Введите дату и время напоминания (ДД.ММ.ГГГГ ЧЧ:ММ):'); // Изменен текст подсказки
             } else {
                 reminderMessage = prompt('Введите сообщение для напоминания:');
-                reminderDateTime = prompt('Введите дату и время напоминания (YYYY-MM-DDTHH:MM):');
+                reminderDateTime = prompt('Введите дату и время напоминания (ДД.ММ.ГГГГ ЧЧ:ММ):'); // Изменен текст подсказки
             }
 
             if (reminderMessage && reminderMessage.trim() !== '' && reminderDateTime && reminderDateTime.trim() !== '') {
@@ -799,6 +802,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }, CONTEXT_MENU_CLOSE_DELAY);
     });
 
+    // НОВАЯ КНОПКА "СКРЫТЬ ОТ:"
+    hideFromBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        hideContextMenu();
+        if (!currentSectionForMenu) return;
+
+        setTimeout(() => { // Задержка для полного скрытия контекстного меню
+            currentRecipientsSelectionType = 'hide_from';
+            showRecipientsModal(); // Открываем модальное окно выбора получателей
+        }, CONTEXT_MENU_CLOSE_DELAY);
+    });
+
+
     // --- Логика выбора получателей ---
     function showRecipientsModal() {
         document.body.classList.add('modal-open');
@@ -813,6 +829,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 tab.classList.remove('active');
             }
         });
+
+        // Предварительно выбираем пользователей, если они уже скрыты от этого раздела
+        const section = sectionsData.find(s => s.id === currentSectionForMenu);
+        if (section && currentRecipientsSelectionType === 'hide_from' && section.hidden_from_users) {
+            setTimeout(() => { // Небольшая задержка, чтобы элементы успели отрисоваться
+                section.hidden_from_users.forEach(userId => {
+                    const checkbox = recipientsList.querySelector(`input[value="${userId}"]`);
+                    if (checkbox) {
+                        checkbox.checked = true;
+                    }
+                });
+            }, 50); // Небольшая задержка
+        }
+
+
         recipientsModal.querySelector('.modal-content').addEventListener('click', (e) => e.stopPropagation());
     }
 
@@ -884,7 +915,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        if (selectedUserIds.length === 0) {
+        if (selectedUserIds.length === 0 && currentRecipientsSelectionType !== 'hide_from') { // Для скрытия можно выбрать никого, чтобы "раскрыть" всем
             if (window.Telegram && window.Telegram.WebApp) {
                 Telegram.WebApp.showAlert('Пожалуйста, выберите хотя бы одного получателя.');
             } else {
@@ -923,6 +954,29 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 alert(`Напоминание для "${section.name}" запланировано. Сообщение "${section.reminder_message}" будет отправлено выбранным пользователям в ${section.reminder_datetime}.`);
             }
+        } else if (currentRecipientsSelectionType === 'hide_from') { // НОВАЯ ЛОГИКА ДЛЯ "СКРЫТЬ ОТ:"
+            section.hidden_from_users = selectedUserIds; // Обновляем массив скрытых пользователей
+            if (window.Telegram && window.Telegram.WebApp) {
+                Telegram.WebApp.sendData(JSON.stringify({
+                    type: 'set_hidden_from_users',
+                    payload: {
+                        id: section.id,
+                        hidden_from_users: selectedUserIds
+                    }
+                }));
+                if (selectedUserIds.length > 0) {
+                    Telegram.WebApp.showAlert(`Раздел "${section.name}" теперь скрыт от выбранных пользователей.`);
+                } else {
+                    Telegram.WebApp.showAlert(`Раздел "${section.name}" теперь виден всем.`);
+                }
+            } else {
+                if (selectedUserIds.length > 0) {
+                    alert(`Раздел "${section.name}" теперь скрыт от выбранных пользователей (только в браузере).`);
+                } else {
+                    alert(`Раздел "${section.name}" теперь виден всем (только в браузере).`);
+                }
+            }
+            renderSections(currentParentId); // Перерисовываем, чтобы обновить состояние, если нужно
         }
         hideRecipientsModal();
     });
