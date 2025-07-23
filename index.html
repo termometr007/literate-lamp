@@ -2,175 +2,242 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Мой WebApp</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WMS Web App</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="header-container" id="header-container">
-        <div class="background-blur" style="background-image: url('https://via.placeholder.com/60/0000FF/FFFFFF?text=MyComp');"></div>
-        <div class="header-content">
-            <div class="left-section">
-                <div class="company-info">
-                    <img id="company-logo" class="round-logo" src="https://via.placeholder.com/60/0000FF/FFFFFF?text=MyComp" alt="Лого компании">
-                    <div class="text-info">
-                        <h1 id="company-name">Название Компании</h1>
-                    </div>
-                </div>
-                <div class="theme-toggle-container">
-                    <span class="theme-icon sun-icon">&#9728;</span>
-                    <label class="switch">
-                        <input type="checkbox" id="theme-switch">
-                        <span class="slider round"></span>
-                    </label>
-                    <span class="theme-icon moon-icon">&#9790;</span>
-                </div>
+    <div id="app-container">
+        <header>
+            <span id="header-title">Главная</span>
+        </header>
+
+        <div id="main-page" class="page active">
+            <div class="theme-switch-wrapper">
+                <label class="theme-switch" for="checkbox">
+                    <input type="checkbox" id="checkbox" />
+                    <div class="slider round"></div>
+                </label>
+                <span>Темная тема</span>
             </div>
-            <img id="bot-logo" class="bot-logo" src="https://via.placeholder.com/60/FF5733/FFFFFF?text=B" alt="Лого бота">
-        </div>
-    </div>
 
-    <div class="content-wrapper">
-        <div class="content-area" id="content-area">
-            <h2>Привет! Это контент твоей страницы.</h2>
-            <p>Здесь может быть любая информация, кнопки, интерактивные элементы.</p>
-            <p>Эта область будет сдвигаться вверх при прокрутке, создавая эффект "скрывающегося" хедера.</p>
-
-            <div class="admin-test-controls">
-                <h3>Админ-контроль (только для тестирования)</h3>
-                <input type="text" id="logo-url-input" placeholder="URL нового лого компании">
-                <input type="text" id="company-name-input" placeholder="Новое название компании">
-                <button id="apply-company-changes">Применить изменения компании</button>
-                
-                <hr style="width: 80%; border: 0; border-top: 1px solid var(--border-color); margin: 15px 0;">
-
-                <input type="text" id="bot-logo-url-input" placeholder="URL нового лого бота">
-                <button id="apply-bot-logo-changes">Применить логотип бота</button>
+            <div class="admin-test-controls" style="display: none;">
+                <h3>Панель для отладки (видно только в браузере)</h3>
+                <button id="add-test-data-btn" class="action-button">Добавить тестовые данные</button>
+                <button id="clear-all-data-btn" class="action-button secondary-button">Очистить все данные</button>
+                <button id="toggle-admin-mode-btn" class="action-button">Включить/Выключить Админ Мод</button>
             </div>
-            
+
+            <div id="main-admin-controls" class="admin-test-controls" style="display: none;">
+                <h3>Панель Главного Администратора</h3>
+                <button id="manage-users-btn" class="action-button">Управление пользователями</button>
+                <button id="subscribe-btn" class="action-button" style="background-color: #28a745;">Оплатить подписку</button>
+            </div>
+            <button id="create-section-btn" class="action-button full-width-button" style="display: none;">Создать раздел</button>
+            <button id="create-note-btn" class="action-button full-width-button" style="display: none;">Добавить заметку</button>
+
+            <div id="sections-container" class="list-container">
+                </div>
+
+            <div id="notes-container" class="list-container notes-list">
+                </div>
+
+            <button id="download-reports-btn" class="action-button full-width-button" style="display: none; margin-top: 20px;">Скачать отчеты</button>
+
             <p>Просто прокрутите вниз, чтобы увидеть, как работает эффект!</p>
-            
-            <div id="admin-notes-container" class="admin-notes-container">
-                <h3>Заметки от Администратора</h3>
-                <div id="admin-notes-content" class="admin-notes-content">
-                    </div>
-            </div>
-
-            <button id="clock-in-out-btn" class="action-button clock-button">
-                Пришел/Пришла
-            </button>
-
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-            <p>Curabitur pretium tincidunt lacus. Nulla gravida orci a odio. Nullam varius, turpis et commodo pharetra, est eros bibendum elit, nec luctus magna felis sollicitudin mauris. Integer in mauris eu nibh euismod gravida. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-            <p>Fusce ac elit at lacus feugiat placerat. Proin ut dui vel lectus dapibus pharetra. Curabitur vel lectus non est fringilla consectetur. Sed non ante id dui euismod volutpat. Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-            <p>Donec eget leo at urna pellentesque. Curabitur pretium tincidunt lacus. Nulla gravida orci a odio. Nullam varius, turpis et commodo pharetra, est eros bibendum elit, nec luctus magna felis sollicitudin mauris. Integer in mauris eu nibh euismod gravida. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-            <p>Mauris nec erat in turpis ullamcorper sollicitudin. Proin ut dui vel lectus dapibus pharetra. Curabitur vel lectus non est fringilla consectetur. Sed non ante id dui euismod volutpat. Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
         </div>
 
-        <div id="sections-page" class="page-content" style="display: none;">
-            <h2>Управление разделами</h2>
-            <div class="breadcrumbs" id="sections-breadcrumbs">
-                <span class="breadcrumb-item active" data-id="root">Главная</span>
-            </div>
-
-            <div class="sections-list" id="current-sections-list">
-                <p class="no-sections-message">Нет созданных разделов. Создайте первый!</p>
-            </div>
-
-            <div class="sections-actions">
-                <button id="create-section-btn" class="action-button">Создать новый раздел</button>
-                <button id="go-back-section-btn" class="action-button" style="display: none;">Назад</button>
-            </div>
+        <div id="sections-page" class="page">
+            <h2 style="text-align: center; color: var(--primary-color);">Разделы</h2>
+            <div id="sections-list" class="list-container">
+                </div>
+            <p id="no-sections-message" class="no-data-message" style="display: none;">Разделов пока нет. Создайте первый!</p>
         </div>
 
-        <div id="tasks-page" class="page-content" style="display: none;">
-            <h2>Мои задачи</h2>
+        <div id="tasks-page" class="page">
+            <h2 style="text-align: center; color: var(--primary-color);">Задачи</h2>
             <div class="task-filter-tabs">
                 <button class="filter-tab active" data-filter="all">Все</button>
                 <button class="filter-tab" data-filter="my">Мои</button>
+                <button class="filter-tab" data-filter="available">Доступные</button> 
             </div>
-            <div class="tasks-list" id="tasks-list">
-                <p class="no-tasks-message">Нет доступных задач.</p>
+            <button id="create-task-btn" class="action-button full-width-button" style="display: none;">Создать задание</button>
+            <div id="tasks-list" class="list-container">
                 </div>
+            <p id="no-tasks-message" class="no-data-message" style="display: none;">Задач пока нет. Создайте первую!</p>
         </div>
 
-        <div id="chats-page" class="page-content" style="display: none;">
-            <h2>Рабочие чаты</h2>
-            <div class="chats-list" id="chats-list">
-                <p class="no-chats-message">Нет доступных рабочих чатов.</p>
+        <div id="section-settings-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <h3 id="section-settings-title">Настройки раздела</h3>
+                <label for="section-name-input">Название раздела:</label>
+                <input type="text" id="section-name-input">
+
+                <label for="stock-manager-select">Ответственный за остатки:</label>
+                <select id="stock-manager-select">
+                    <option value="">Не назначен</option>
+                    </select>
+                
+                <div class="modal-actions">
+                    <button id="save-section-settings-btn" class="action-button">Сохранить</button>
+                    <button id="cancel-section-settings-btn" class="action-button secondary-button">Отмена</button>
                 </div>
-        </div>
-
-    </div>
-
-    <div id="context-menu-modal" class="modal" style="display: none;">
-        <div class="modal-content context-menu">
-            <div class="context-menu-item" id="add-quantity-btn">Добавить</div>
-            <div class="context-menu-item" id="remove-quantity-btn">Списать</div>
-            <div class="context-menu-item" id="critical-min-btn">Критический минимум</div>
-            <div class="context-menu-item" id="set-reminder-btn">Напомнить</div>
-            <div class="context-menu-item" id="hide-from-btn">Скрыть от:</div> 
-            <div class="context-menu-item close-context-menu" id="close-context-menu">Закрыть</div>
-        </div>
-    </div>
-
-    <div id="recipients-modal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <h3>Выберите получателей</h3>
-            <div class="recipient-filter-tabs">
-                <button class="filter-tab active" data-filter="all">Все</button>
-                <button class="filter-tab" data-filter="admins">Админы</button>
-                <button class="filter-tab" data-filter="employees">Сотрудники</button> </div>
-            <div class="select-all-container">
-                <input type="checkbox" id="select-all-recipients">
-                <label for="select-all-recipients">Выбрать всех</label>
-            </div>
-            <div class="recipients-list" id="recipients-list">
-                </div>
-            <div class="modal-actions">
-                <button id="confirm-recipients-btn" class="action-button">Подтвердить</button>
-                <button id="cancel-recipients-btn" class="action-button secondary-button">Отмена</button>
             </div>
         </div>
+
+        <div id="section-detail-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <h3 id="section-detail-title"></h3>
+                <div id="section-items-list" class="section-items-list">
+                    </div>
+                <p id="no-items-message" class="no-data-message" style="display: none;">В этом разделе пока нет товаров.</p>
+                <div class="modal-actions">
+                    <button id="add-items-btn" class="action-button">Добавить</button>
+                    <button id="subtract-items-btn" class="action-button secondary-button">Списать</button>
+                    <button id="close-section-detail-modal-btn" class="action-button secondary-button">Закрыть</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="item-quantity-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <h3 id="item-quantity-title"></h3>
+                <label for="item-name-input">Название товара:</label>
+                <input type="text" id="item-name-input">
+                <label for="item-quantity-input">Количество:</label>
+                <input type="number" id="item-quantity-input" min="1" value="1">
+                <div class="modal-actions">
+                    <button id="confirm-item-quantity-btn" class="action-button">Подтвердить</button>
+                    <button id="cancel-item-quantity-btn" class="action-button secondary-button">Отмена</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="edit-item-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <h3>Редактировать товар</h3>
+                <label for="edit-item-name-input">Название товара:</label>
+                <input type="text" id="edit-item-name-input">
+                <label for="edit-item-quantity-input">Количество:</label>
+                <input type="number" id="edit-item-quantity-input" min="0">
+                <label for="edit-item-min-input">Критический минимум:</label>
+                <input type="number" id="edit-item-min-input" min="0">
+                <div class="modal-actions">
+                    <button id="save-item-changes-btn" class="action-button">Сохранить</button>
+                    <button id="delete-item-btn" class="action-button secondary-button" style="background-color: #dc3545; color: white;">Удалить</button>
+                    <button id="cancel-edit-item-btn" class="action-button secondary-button">Отмена</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="note-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <h3 id="note-modal-title">Новая заметка</h3>
+                <label for="note-title-input">Заголовок:</label>
+                <input type="text" id="note-title-input">
+                <label for="note-content-input">Содержание:</label>
+                <textarea id="note-content-input"></textarea>
+                <div class="modal-actions">
+                    <button id="save-note-btn" class="action-button">Сохранить</button>
+                    <button id="cancel-note-btn" class="action-button secondary-button">Отмена</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="task-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <h3 id="task-modal-title">Новое задание</h3>
+                <label for="task-title-input">Название задания:</label>
+                <input type="text" id="task-title-input">
+                <label for="task-description-input">Описание:</label>
+                <textarea id="task-description-input"></textarea>
+                <label for="task-assigned-to-select">Назначить сотрудника:</label>
+                <select id="task-assigned-to-select">
+                    <option value="">Не назначен</option>
+                    </select>
+                <div class="modal-actions">
+                    <button id="save-task-btn" class="action-button">Сохранить</button>
+                    <button id="cancel-task-btn" class="action-button secondary-button">Отмена</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="notification-recipients-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <h3 id="recipients-modal-title">Получатели оповещений</h3>
+                <div class="recipient-filter-tabs">
+                    <button class="filter-tab active" data-filter="all">Все</button>
+                    <button class="filter-tab" data-filter="admins">Админы</button>
+                    <button class="filter-tab" data-filter="employees">Сотрудники</button>
+                </div>
+                <div class="select-all-container">
+                    <input type="checkbox" id="select-all-recipients">
+                    <label for="select-all-recipients">Выбрать всех</label>
+                </div>
+                <div class="recipients-list" id="recipients-list-container">
+                    </div>
+                <div class="modal-actions">
+                    <button id="save-recipients-btn" class="action-button">Сохранить</button>
+                    <button id="cancel-recipients-btn" class="action-button secondary-button">Отмена</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="task-status-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <h3>Изменить статус задачи</h3>
+                <div class="task-status-options">
+                    <button class="task-status-option-button status-new" data-status="Новая">Новая</button>
+                    <button class="task-status-option-button status-in-progress" data-status="В работе">В работе</button>
+                    <button class="task-status-option-button status-completed" data-status="Завершена">Завершена</button>
+                    <button class="task-status-option-button status-deferred" data-status="Отложена">Отложена</button>
+                    <button class="task-status-option-button close-modal" id="close-task-status-modal">Отмена</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="user-management-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <h3>Управление пользователями</h3>
+                <div class="recipient-filter-tabs">
+                    <button class="filter-tab active" data-filter="all">Все</button>
+                    <button class="filter-tab" data-filter="admins">Админы</button>
+                    <button class="filter-tab" data-filter="employees">Сотрудники</button>
+                </div>
+                <div class="select-all-container">
+                    <input type="checkbox" id="select-all-manage-users">
+                    <label for="select-all-manage-users">Выбрать всех</label>
+                </div>
+                <div class="recipients-list" id="manage-users-list">
+                    </div>
+                <div class="modal-actions">
+                    <button id="assign-role-btn" class="action-button">Назначить роль</button>
+                    <button id="remove-user-btn" class="action-button secondary-button" style="background-color: #f44336; color: white;">Удалить пользователя</button>
+                    <button id="cancel-user-management-btn" class="action-button secondary-button">Отмена</button>
+                </div>
+            </div>
+        </div>
+
     </div>
 
-    <div id="bottom-nav" class="bottom-nav">
-        <button class="nav-button" data-target-page="content-area">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                <polyline points="9 22 9 12 15 12 15 22"></polyline>
-            </svg>
-            <span class="nav-text">Главная</span>
-        </button>
-        <button class="nav-button" data-target-page="sections-page">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-3h12l4 4z"></path>
-                <line x1="17" y1="9" x2="7" y2="9"></line>
-                <line x1="17" y1="13" x2="7" y2="13"></line>
-                <line x1="17" y1="17" x2="7" y2="17"></line>
-            </svg>
-            <span class="nav-text">Разделы</span>
-        </button>
-        <button class="nav-button" data-target-page="tasks-page">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <polyline points="14 2 14 8 20 8"></polyline>
-                <line x1="16" y1="13" x2="8" y2="13"></line>
-                <line x1="16" y1="17" x2="8" y2="17"></line>
-                <polyline points="10 9 9 9 8 9"></polyline>
-            </svg>
-            <span class="nav-text">Задачи</span>
-        </button>
-        <button class="nav-button" data-target-page="chats-page">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-            </svg>
-            <span class="nav-text">Чаты</span>
-        </button>
-    </div>
+    <nav class="bottom-navigation">
+        <a href="#main-page" class="nav-item active" data-page="main-page">
+            <i class="fas fa-home"></i>
+            <span>Главная</span>
+        </a>
+        <a href="#sections-page" class="nav-item" data-page="sections-page">
+            <i class="fas fa-boxes"></i>
+            <span>Разделы</span>
+        </a>
+        <a href="#tasks-page" class="nav-item" data-page="tasks-page">
+            <i class="fas fa-tasks"></i>
+            <span>Задачи</span>
+        </a>
+    </nav>
 
     <script src="script.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </body>
 </html>

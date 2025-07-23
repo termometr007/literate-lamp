@@ -1,1110 +1,1148 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Инициализация Telegram Web App
+    if (window.Telegram && window.Telegram.WebApp) {
+        Telegram.WebApp.ready();
+        Telegram.WebApp.expand();
+        // Устанавливаем тему по умолчанию из Telegram
+        document.body.classList.add(Telegram.WebApp.colorScheme + '-mode');
+        // Обновляем тему при изменении в Telegram
+        Telegram.WebApp.onEvent('themeChanged', () => {
+            document.body.classList.remove('light-mode', 'dark-mode');
+            document.body.classList.add(Telegram.WebApp.colorScheme + '-mode');
+            localStorage.setItem('theme', Telegram.WebApp.colorScheme);
+            themeToggle.checked = Telegram.WebApp.colorScheme === 'dark';
+        });
+
+        // Запрашиваем начальные данные при старте (включая разделы, заметки, задачи, роль пользователя)
+        Telegram.WebApp.sendData(JSON.stringify({ command: 'request_initial_data' }));
+
+        Telegram.WebApp.onEvent('web_app_data', (event) => {
+            const data = JSON.parse(event.data);
+            if (data.type === 'initial_data') {
+                if (data.sections) {
+                    allSections = data.sections;
+                    renderSections();
+                }
+                if (data.notes) {
+                    allNotes = data.notes;
+                    renderNotes();
+                }
+                if (data.tasks) {
+                    allTasks = data.tasks;
+                    renderTasks(document.querySelector('#tasks-page .filter-tab.active')?.dataset.filter || 'all');
+                }
+                if (data.users) {
+                    allUsers = data.users;
+                }
+                if (data.currentUserId) {
+                    currentUserId = data.currentUserId;
+                }
+                if (data.currentUserRole) { // Бот должен передать роль текущего пользователя
+                    currentUserRole = data.currentUserRole;
+                }
+                updateAdminUIVisibility(); // Вызываем эту функцию после получения роли
+            } else if (data.type === 'sections_updated' && Array.isArray(data.sections)) {
+                allSections = data.sections;
+                renderSections();
+            } else if (data.type === 'notes_updated' && Array.isArray(data.notes)) {
+                allNotes = data.notes;
+                renderNotes();
+            } else if (data.type === 'tasks_updated' && Array.isArray(data.tasks)) {
+                allTasks = data.tasks;
+                renderTasks(document.querySelector('#tasks-page .filter-tab.active')?.dataset.filter || 'all');
+            } else if (data.type === 'users_updated' && Array.isArray(data.users)) {
+                allUsers = data.users; // Обновляем список пользователей
+                if (userManagementModal.style.display === 'flex') { // Если модалка открыта, перерисовываем
+                    const activeTab = userManagementModal.querySelector('.filter-tab.active');
+                    const filter = activeTab ? activeTab.dataset.filter : 'all';
+                    renderUsersForUserManagement(filter);
+                }
+                if (notificationRecipientsModal.style.display === 'flex') { // Если модалка получателей открыта
+                    const activeTab = notificationRecipientsModal.querySelector('.filter-tab.active');
+                    const filter = activeTab ? activeTab.dataset.filter : 'all';
+                    renderRecipientsList(allUsers, currentRecipients); // Перерисовываем список получателей
+                }
+                if (taskModal.style.display === 'flex') { // Если модалка задач открыта
+                    populateUserSelect(taskAssignedToSelect); // Обновляем список пользователей для назначения задачи
+                }
+                if (sectionSettingsModal.style.display === 'flex') { // Если модалка настроек раздела открыта
+                    populateUserSelect(stockManagerSelect); // Обновляем список пользователей для менеджера остатков
+                }
+            }
+        });
+    } else {
+        // Режим отладки в браузере
+        console.log("Running in browser mode (not Telegram Web App)");
+        document.querySelector('.admin-test-controls').style.display = 'flex'; // Показываем блок для отладки
+        
+        // Имитация начальных данных для браузерного тестирования
+        allSections = JSON.parse(localStorage.getItem('sections')) || [
+            { id: 'sec_1', name: 'Склад А', items: [{id: 'item_1', name: 'Ручки', quantity: 50, minQuantity: 10}], isHidden: false, hiddenFromUsers: [], notificationRecipients: [], criticalMinRecipients: [], stockManagerId: null },
+            { id: 'sec_2', name: 'Офис Б', items: [{id: 'item_2', name: 'Бумага А4', quantity: 10, minQuantity: 5}], isHidden: false, hiddenFromUsers: [], notificationRecipients: [], criticalMinRecipients: [], stockManagerId: null }
+        ];
+        allNotes = JSON.parse(localStorage.getItem('notes')) || [
+            { id: 'note_1', title: 'Важное объявление', content: 'Совещание в пятницу в 10:00.' },
+            { id: 'note_2', title: 'График отпусков', content: 'Просьба согласовать отпуска до конца месяца.' }
+        ];
+        allTasks = JSON.parse(localStorage.getItem('tasks')) || [
+            { id: 'task_1', title: 'Заказать канцтовары', description: 'Заказать ручки, бумагу и блокноты.', assignedTo: '123456789', status: 'Новая' },
+            { id: 'task_2', title: 'Проверить инвентаризацию', description: 'Сверить фактическое наличие с данными в системе.', assignedTo: '987654321', status: 'В работе' },
+            { id: 'task_3', title: 'Организовать корпоратив', description: 'Выбрать место и меню.', assignedTo: null, status: 'Новая' }
+        ];
+        allUsers = JSON.parse(localStorage.getItem('users')) || [
+            { id: '123456789', name: 'Иван Иванов', role: 'employee' }, 
+            { id: '987654321', name: 'Петр Петров', role: 'main_admin' }, // Главный админ
+            { id: '112233445', name: 'Анна Сидорова', role: 'employee' },
+            { id: '556677889', name: 'Мария Кузнецова', role: 'junior_admin' }, // Младший админ
+            { id: '998877665', name: 'Дмитрий Смирнов', role: 'employee' }
+        ];
+        currentUserId = '987654321'; // Пример ID админа для тестирования
+        currentUserRole = 'main_admin'; // 'main_admin', 'junior_admin', 'employee'
+
+        renderSections();
+        renderNotes();
+        renderTasks('all'); // Рендерим все задачи по умолчанию
+        updateAdminUIVisibility();
+    }
+
     // --- Элементы DOM ---
-    const companyLogo = document.getElementById('company-logo');
-    const companyName = document.getElementById('company-name');
-    const backgroundBlur = document.querySelector('.background-blur');
-    const headerContainer = document.getElementById('header-container');
-    const themeSwitch = document.getElementById('theme-switch');
-    const botLogo = document.getElementById('bot-logo');
-    const sunIcon = document.querySelector('.theme-icon.sun-icon');
-    const moonIcon = document.querySelector('.theme-icon.moon-icon');
-    const contentArea = document.getElementById('content-area');
-    const contentWrapper = document.querySelector('.content-wrapper');
+    const appContainer = document.getElementById('app-container');
+    const headerTitle = document.getElementById('header-title');
+    const navItems = document.querySelectorAll('.nav-item');
+    const pages = document.querySelectorAll('.page');
 
-    // Элементы админ-контроля (для разработчика/тестирования)
-    const logoUrlInput = document.getElementById('logo-url-input');
-    const companyNameInput = document.getElementById('company-name-input');
-    const applyCompanyChangesBtn = document.getElementById('apply-company-changes');
-    const botLogoUrlInput = document.getElementById('bot-logo-url-input');
-    const applyBotLogoChangesBtn = document.getElementById('apply-bot-logo-changes');
-
-    // Элементы нижней навигации
-    const navButtons = document.querySelectorAll('.nav-button');
-    const homeNavButton = document.querySelector('.nav-button[data-target-page="content-area"]');
-    const sectionsNavButton = document.querySelector('.nav-button[data-target-page="sections-page"]');
-    const tasksNavButton = document.querySelector('.nav-button[data-target-page="tasks-page"]'); // Новая кнопка
-    const chatsNavButton = document.querySelector('.nav-button[data-target-page="chats-page"]'); // Новая кнопка
-
-    // Элементы страницы "Разделы"
-    const sectionsPage = document.getElementById('sections-page');
-    const sectionsBreadcrumbs = document.getElementById('sections-breadcrumbs');
-    const currentSectionsList = document.getElementById('current-sections-list');
+    // Главная страница
+    const mainPage = document.getElementById('main-page');
     const createSectionBtn = document.getElementById('create-section-btn');
-    const goBackSectionBtn = document.getElementById('go-back-section-btn');
-    const noSectionsMessage = document.querySelector('.no-sections-message');
+    const createNoteBtn = document.getElementById('create-note-btn');
+    const sectionsContainer = document.getElementById('sections-container');
+    const notesContainer = document.getElementById('notes-container');
+    const downloadReportsBtn = document.getElementById('download-reports-btn');
 
-    // Элементы модального окна контекстного меню
-    const contextMenuModal = document.getElementById('context-menu-modal');
-    const addQuantityBtn = document.getElementById('add-quantity-btn');
-    const removeQuantityBtn = document.getElementById('remove-quantity-btn');
-    const criticalMinBtn = document.getElementById('critical-min-btn');
-    const setReminderBtn = document.getElementById('set-reminder-btn');
-    const hideFromBtn = document.getElementById('hide-from-btn');
-    const closeContextMenuBtn = document.getElementById('close-context-menu');
+    // Страница разделов
+    const sectionsPage = document.getElementById('sections-page');
+    const sectionsList = document.getElementById('sections-list');
+    const noSectionsMessage = document.getElementById('no-sections-message');
 
-    // Элементы модального окна выбора получателей
-    const recipientsModal = document.getElementById('recipients-modal');
-    const recipientsList = document.getElementById('recipients-list');
-    const confirmRecipientsBtn = document.getElementById('confirm-recipients-btn');
-    const cancelRecipientsBtn = document.getElementById('cancel-recipients-btn');
-    const selectAllRecipientsCheckbox = document.getElementById('select-all-recipients');
-    const recipientFilterTabs = document.querySelectorAll('.recipient-filter-tabs .filter-tab');
-
-    // --- НОВЫЕ ЭЛЕМЕНТЫ ДЛЯ ФУНКЦИОНАЛА СОТРУДНИКОВ ---
-    const adminNotesContainer = document.getElementById('admin-notes-container');
-    const adminNotesContent = document.getElementById('admin-notes-content');
-    const clockInOutBtn = document.getElementById('clock-in-out-btn');
+    // Страница задач
     const tasksPage = document.getElementById('tasks-page');
-    const chatsPage = document.getElementById('chats-page');
-    const taskFilterTabs = document.querySelectorAll('#tasks-page .filter-tab');
+    const taskFilterTabs = document.querySelector('.task-filter-tabs');
+    const createTaskBtn = document.getElementById('create-task-btn');
     const tasksList = document.getElementById('tasks-list');
-    const chatsList = document.getElementById('chats-list');
-    const noTasksMessage = tasksPage.querySelector('.no-tasks-message');
-    const noChatsMessage = chatsPage.querySelector('.no-chats-message');
+    const noTasksMessage = document.getElementById('no-tasks-message');
 
-    // --- Состояние приложения ---
-    let currentPath = [{ id: 'root', name: 'Главная' }];
-    let sectionsData = [];
-    let currentParentId = 'root';
-    let longPressTimer;
-    let currentSectionForMenu = null;
-    let currentRecipientsSelectionType = '';
+    // Модальное окно создания/редактирования раздела
+    const sectionSettingsModal = document.getElementById('section-settings-modal');
+    const sectionSettingsTitle = document.getElementById('section-settings-title');
+    const sectionNameInput = document.getElementById('section-name-input');
+    const saveSectionSettingsBtn = document.getElementById('save-section-settings-btn');
+    const cancelSectionSettingsBtn = document.getElementById('cancel-section-settings-btn');
+    const stockManagerSelect = document.getElementById('stock-manager-select'); // НОВОЕ
 
-    // Имитация данных пользователей (ОБНОВЛЕННЫЕ ДАННЫЕ С РЕАЛЬНЫМИ ID ДЛЯ ТЕСТИРОВАНИЯ ЗАДАЧ)
-    const allUsers = [
-        { id: '123456789', name: 'Иван Иванов', role: 'employee' }, // Замените на реальные ID пользователя
-        { id: '987654321', name: 'Петр Петров', role: 'admin' },
-        { id: '112233445', name: 'Анна Сидорова', role: 'employee' },
-        { id: '556677889', name: 'Мария Кузнецова', role: 'admin' },
-        { id: '998877665', name: 'Дмитрий Смирнов', role: 'employee' }
-    ];
+    // Модальное окно деталей раздела
+    const sectionDetailModal = document.getElementById('section-detail-modal');
+    const sectionDetailTitle = document.getElementById('section-detail-title');
+    const sectionItemsList = document.getElementById('section-items-list');
+    const noItemsMessage = document.getElementById('no-items-message');
+    const addItemsBtn = document.getElementById('add-items-btn');
+    const subtractItemsBtn = document.getElementById('subtract-items-btn');
+    const closeSectionDetailModalBtn = document.getElementById('close-section-detail-modal-btn');
+
+    // Модальное окно добавления/списания товаров
+    const itemQuantityModal = document.getElementById('item-quantity-modal');
+    const itemQuantityTitle = document.getElementById('item-quantity-title');
+    const itemNameInput = document.getElementById('item-name-input');
+    const itemQuantityInput = document.getElementById('item-quantity-input');
+    const confirmItemQuantityBtn = document.getElementById('confirm-item-quantity-btn');
+    const cancelItemQuantityBtn = document = document.getElementById('cancel-item-quantity-btn');
+
+    // Модальное окно редактирования товара
+    const editItemModal = document.getElementById('edit-item-modal');
+    const editItemNameInput = document.getElementById('edit-item-name-input');
+    const editItemQuantityInput = document.getElementById('edit-item-quantity-input');
+    const editItemMinInput = document.getElementById('edit-item-min-input');
+    const saveItemChangesBtn = document.getElementById('save-item-changes-btn');
+    const deleteItemBtn = document.getElementById('delete-item-btn');
+    const cancelEditItemBtn = document.getElementById('cancel-edit-item-btn');
+
+    // Модальное окно заметок
+    const noteModal = document.getElementById('note-modal');
+    const noteModalTitle = document.getElementById('note-modal-title');
+    const noteTitleInput = document.getElementById('note-title-input');
+    const noteContentInput = document.getElementById('note-content-input');
+    const saveNoteBtn = document.getElementById('save-note-btn');
+    const cancelNoteBtn = document.getElementById('cancel-note-btn');
+
+    // Модальное окно задач
+    const taskModal = document.getElementById('task-modal');
+    const taskModalTitle = document.getElementById('task-modal-title');
+    const taskTitleInput = document.getElementById('task-title-input');
+    const taskDescriptionInput = document.getElementById('task-description-input');
+    const taskAssignedToSelect = document.getElementById('task-assigned-to-select');
+    const saveTaskBtn = document.getElementById('save-task-btn');
+    const cancelTaskBtn = document.getElementById('cancel-task-btn');
+
+    // Модальное окно выбора получателей оповещений
+    const notificationRecipientsModal = document.getElementById('notification-recipients-modal');
+    const recipientsModalTitle = document.getElementById('recipients-modal-title');
+    const recipientFilterTabs = notificationRecipientsModal.querySelector('.recipient-filter-tabs');
+    const selectAllRecipientsCheckbox = document.getElementById('select-all-recipients');
+    const recipientList = document.getElementById('recipients-list-container');
+    const saveRecipientsBtn = document.getElementById('save-recipients-btn');
+    const cancelRecipientsBtn = document.getElementById('cancel-recipients-btn');
+
+    // Модальное окно статусов задач
+    const taskStatusModal = document.getElementById('task-status-modal');
+    const taskStatusOptionButtons = document.querySelectorAll('.task-status-option-button[data-status]');
+    const closeTaskStatusModalBtn = document.getElementById('close-task-status-modal');
+
+    // Элементы главного админа
+    const mainAdminControls = document.getElementById('main-admin-controls');
+    const manageUsersBtn = document.getElementById('manage-users-btn');
+    const userManagementModal = document.getElementById('user-management-modal');
+    const manageUsersList = document.getElementById('manage-users-list');
+    const selectAllManageUsersCheckbox = document.getElementById('select-all-manage-users');
+    const assignRoleBtn = document.getElementById('assign-role-btn');
+    const removeUserBtn = document.getElementById('remove-user-btn');
+    const cancelUserManagementBtn = document.getElementById('cancel-user-management-btn');
+    const subscribeBtn = document.getElementById('subscribe-btn');
+
+
+    // Тестовые кнопки для браузерного режима
+    const addTestDataBtn = document.getElementById('add-test-data-btn');
+    const clearAllDataBtn = document.getElementById('clear-all-data-btn');
+    const toggleAdminModeBtn = document.getElementById('toggle-admin-mode-btn');
+
+    // --- Переменные состояния ---
+    let currentSectionId = null;
+    let currentSectionName = '';
+    let currentItemAction = ''; // 'add' или 'subtract' или 'edit'
+    let currentItemId = null;
+    let currentNoteId = null;
+    let currentTaskId = null;
+    let currentRecipientsType = ''; // 'notifications' или 'critical_minimum'
+    let currentRecipients = []; // Список ID пользователей для текущего выбора получателей
+    let currentTaskForStatusChange = null; // Для хранения ID задачи, для которой открыто меню
 
     // Имитация текущего пользователя (для фильтрации "Мои задачи")
     // В реальном приложении этот ID будет приходить от Telegram Web App
-    const currentUserId = '123456789'; // Пример ID сотрудника для тестирования "Мои" задач
+    let currentUserId = '123456789'; 
+    let currentUserRole = 'employee'; // 'main_admin', 'junior_admin', 'employee'
 
-    // --- НОВЫЕ ТЕСТОВЫЕ ДАННЫЕ ДЛЯ ЗАДАЧ И ЧАТОВ ---
-    let allTasks = [
-        { id: 'task1', title: 'Проверить запасы на складе А', assignedTo: '123456789', status: 'В работе' },
-        { id: 'task2', title: 'Отправить ежемесячный отчет', assignedTo: '998877665', status: 'Завершена' },
-        { id: 'task3', title: 'Заказать новые расходники', assignedTo: '123456789', status: 'Новая' },
-        { id: 'task4', title: 'Организовать встречу с поставщиком', assignedTo: '112233445', status: 'Отложена' },
-        { id: 'task5', title: 'Подготовить презентацию', assignedTo: '123456789', status: 'В работе' },
-        { id: 'task6', title: 'Согласовать договор', assignedTo: '998877665', status: 'Новая' }
-    ];
+    // Данные приложения (в реальном приложении будут приходить от бота)
+    let allSections = [];
+    let allNotes = [];
+    let allTasks = [];
+    let allUsers = [];
 
-    const availableChats = [
-        { id: 'chat1', name: 'Общий чат компании', link: 'https://t.me/telegram_web_app_bot_test_chat_1', icon: 'https://via.placeholder.com/40/007bff/FFFFFF?text=GC' },
-        { id: 'chat2', name: 'Отдел продаж', link: 'https://t.me/telegram_web_app_bot_test_chat_2', icon: 'https://via.placeholder.com/40/28a745/FFFFFF?text=S' },
-        { id: 'chat3', name: 'Техническая поддержка', link: 'https://t.me/telegram_web_app_bot_test_chat_3', icon: 'https://via.placeholder.com/40/ffc107/FFFFFF?text=TS' }
-    ];
-
-    // --- Инициализация Telegram Web App ---
-    if (window.Telegram && window.Telegram.WebApp) {
-        window.Telegram.WebApp.ready();
-        // Telegram.WebApp.expand();
-
-        Telegram.WebApp.onEvent('themeChanged', () => {
-            const isDark = Telegram.WebApp.colorScheme === 'dark';
-            applyTheme(isDark);
-            themeSwitch.checked = isDark;
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
-        });
-
-        window.Telegram.WebApp.onEvent('web_app_data', (event) => {
-            const data = JSON.parse(event.data);
-            console.log('Received data from bot:', data);
-            if (data.type === 'initial_data') {
-                if (data.companyLogo) {
-                    updateCompanyInfo(data.companyLogo, null);
-                    logoUrlInput.value = data.companyLogo;
-                }
-                if (data.companyName) {
-                    updateCompanyInfo(null, data.companyName);
-                    companyNameInput.value = data.companyName;
-                }
-                if (data.botLogo) {
-                    updateBotLogo(data.botLogo);
-                    botLogoUrlInput.value = data.botLogo;
-                }
-                if (data.sections && Array.isArray(data.sections)) {
-                    sectionsData = data.sections;
-                    renderSections(currentParentId);
-                }
-                if (data.adminNotes && Array.isArray(data.adminNotes)) {
-                    updateAdminNotes(data.adminNotes);
-                }
-                if (data.tasks && Array.isArray(data.tasks)) {
-                    allTasks = data.tasks; // Обновляем задачи из бота
-                    renderTasks('all'); // Отрисовываем их
-                }
-                // Для chat и employee_clock_in_out, они больше отправляются боту, чем приходят от него для инициализации.
-            } else if (data.type === 'all_sections_data' && Array.isArray(data.sections)) {
-                sectionsData = data.sections;
-                renderSections(currentParentId);
-            }
-            Telegram.WebApp.showAlert(`Получен ответ от бота: ${JSON.stringify(data)}`);
-        });
-
-        // Запрашиваем начальные данные при старте (включая разделы, заметки, задачи)
-        Telegram.WebApp.sendData(JSON.stringify({ command: 'request_initial_data' }));
-
-    } else {
-        // Устанавливаем дефолтные значения, если не в Telegram Web App (для браузерного тестирования)
-        updateCompanyInfo('https://via.placeholder.com/60/0000FF/FFFFFF?text=MyComp', 'Название Компании');
-        updateBotLogo('https://via.placeholder.com/60/FF5733/FFFFFF?text=B');
-        
-        // Тестовые разделы
-        sectionsData = [
-            { id: 'sec1', name: 'Раздел А (тестовый)', parentId: 'root', quantity: 10.5, min_quantity: 5, hidden_from_users: [] },
-            { id: 'sec2', name: 'Раздел Б (тестовый)', parentId: 'root', quantity: 0, min_quantity: 0, hidden_from_users: ['123456789'] }, // Скрыт от user1
-            { id: 'sec1_1', name: 'Позиция А1', parentId: 'sec1', quantity: 20, min_quantity: 10, hidden_from_users: [] },
-            { id: 'sec1_2', name: 'Позиция А2', parentId: 'sec1', quantity: 5, min_quantity: 2, hidden_from_users: ['987654321', '112233445'] } // Скрыт от admin и user2
-        ];
-        renderSections(currentParentId);
-
-        // Тестовые заметки админа
-        updateAdminNotes([
-            "Важное напоминание: не забудьте сдать отчеты до конца дня.",
-            "Сегодня в 14:00 собрание по продажам в конференц-зале.",
-            "Отличная работа по проекту 'Альфа' на прошлой неделе!"
-        ]);
-
-        // Инициализация кнопки прихода/ухода
-        initClockInOutButton();
-
-        // Инициализация задач и чатов
-        renderTasks('all'); // Показываем все задачи по умолчанию
-        renderChats();
-    }
-
-    // --- Функции обновления UI ---
-    function updateCompanyInfo(logoUrl, name) {
-        if (logoUrl) {
-            companyLogo.src = logoUrl;
-            backgroundBlur.style.backgroundImage = `url(${logoUrl})`;
-        }
-        if (name) {
-            companyName.textContent = name;
+    // --- Функции для работы с данными (имитация API) ---
+    function saveData(key, data) {
+        localStorage.setItem(key, JSON.stringify(data));
+        // В реальном приложении здесь будет отправка данных боту
+        if (window.Telegram && window.Telegram.WebApp) {
+            // Telegram.WebApp.sendData(JSON.stringify({ type: 'update', key: key, data: data }));
         }
     }
 
-    function updateBotLogo(logoUrl) {
-        if (logoUrl) {
-            botLogo.src = logoUrl;
-        }
+    function generateUniqueId(prefix) {
+        return `${prefix}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     }
 
-    function applyTheme(isDark) {
-        if (isDark) {
-            document.body.classList.add('dark-mode');
-            sunIcon.style.color = 'var(--icon-color-dark)';
-            moonIcon.style.color = 'var(--icon-color-light)';
+    // --- Управление видимостью UI в зависимости от роли ---
+    function updateAdminUIVisibility() {
+        // Тестовые элементы админ-контроля всегда видны в браузере для дебага
+        if (!(window.Telegram && window.Telegram.WebApp)) {
+             document.querySelector('.admin-test-controls').style.display = 'flex'; // Показываем блок для отладки
         } else {
-            document.body.classList.remove('dark-mode');
-            sunIcon.style.color = 'var(--icon-color-light)';
-            moonIcon.style.color = 'var(--icon-color-dark)';
+            // В реальном Web App скрываем этот блок, если пользователь не админ
+            document.querySelector('.admin-test-controls').style.display = 'none'; // По умолчанию скрываем
         }
-    }
 
-    // --- Логика скролла хедера ---
-    let lastScrollTop = 0;
-    const borderRadiusSize = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--border-radius-size'));
-
-    window.addEventListener('scroll', () => {
-        let currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        
-        // Только для главной страницы, где хедер виден и скроллится
-        if (contentArea.style.display !== 'none') {
-            let translateYValue = Math.min(0, Math.max(-headerContainer.offsetHeight + borderRadiusSize, currentScrollTop));
-            contentArea.style.transform = `translateY(${translateYValue}px)`;
-        }
-        lastScrollTop = currentScrollTop;
-    });
-
-    // --- Логика переключения темы ---
-    themeSwitch.addEventListener('change', () => {
-        const isDark = themeSwitch.checked;
-        applyTheme(isDark);
-        localStorage.setItem('theme', isDark ? 'dark' : 'light');
-        if (window.Telegram && window.Telegram.WebApp) {
-            // Telegram.WebApp.setHeaderColor(isDark ? Telegram.WebApp.themeParams.bg_color : Telegram.WebApp.themeParams.bg_color);
-            // setHeaderColor не изменяет цвет, если нет явной кнопки "Закрыть" и "Вернуться"
-            // Вместо этого WebApp сам адаптирует цвет
-        }
-    });
-
-    // Загрузка темы при старте
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') {
-        themeSwitch.checked = true;
-        applyTheme(true);
-    } else {
-        themeSwitch.checked = false;
-        applyTheme(false);
-    }
-
-    // --- Логика админ-контроля (тестового) ---
-    applyCompanyChangesBtn.addEventListener('click', () => {
-        const newLogoUrl = logoUrlInput.value.trim();
-        const newCompanyName = companyNameInput.value.trim();
-        if (newLogoUrl || newCompanyName) {
-            updateCompanyInfo(newLogoUrl, newCompanyName);
-            if (window.Telegram && window.Telegram.WebApp) {
-                Telegram.WebApp.sendData(JSON.stringify({
-                    type: 'update_company_info',
-                    companyLogo: newLogoUrl || undefined,
-                    companyName: newCompanyName || undefined
-                }));
-                Telegram.WebApp.showAlert('Информация о компании отправлена боту!');
-            } else {
-                alert('Информация компании обновлена (только в браузере)!');
-            }
+        // Блок для главного админа
+        if (currentUserRole === 'main_admin') {
+            mainAdminControls.style.display = 'flex';
         } else {
-            if (window.Telegram && window.Telegram.WebApp) {
-                Telegram.WebApp.showAlert('Пожалуйста, введите данные для обновления информации о компании.');
-            } else {
-                alert('Пожалуйста, введите данные для обновления информации о компании.');
-            }
+            mainAdminControls.style.display = 'none';
         }
-    });
 
-    applyBotLogoChangesBtn.addEventListener('click', () => {
-        const newBotLogoUrl = botLogoUrlInput.value.trim();
-        if (newBotLogoUrl) {
-            updateBotLogo(newBotLogoUrl);
-            if (window.Telegram && window.Telegram.WebApp) {
-                Telegram.WebApp.sendData(JSON.stringify({
-                    type: 'update_bot_logo',
-                    botLogo: newBotLogoUrl
-                }));
-                Telegram.WebApp.showAlert('Логотип бота отправлен боту!');
-            } else {
-                alert('Пожалуйста, введите URL логотипа бота.');
-            }
+        // Кнопка создания раздела доступна для младших и главных админов
+        if (currentUserRole === 'main_admin' || currentUserRole === 'junior_admin') {
+            createSectionBtn.style.display = 'inline-block';
         } else {
-            if (window.Telegram && window.Telegram.WebApp) {
-                Telegram.WebApp.showAlert('Пожалуйста, введите URL логотипа бота.');
-            } else {
-                alert('Пожалуйста, введите URL логотипа бота.');
-            }
-        }
-    });
-
-    // --- Логика переключения страниц ---
-    function showPage(pageElement) {
-        // Скрываем все "страницы"
-        contentArea.style.display = 'none';
-        sectionsPage.style.display = 'none';
-        tasksPage.style.display = 'none'; // Скрываем новую страницу задач
-        chatsPage.style.display = 'none'; // Скрываем новую страницу чатов
-
-        // Показываем нужную страницу
-        pageElement.style.display = 'block';
-
-        // Управление видимостью хедера и отступом content-wrapper
-        if (pageElement === contentArea) {
-            headerContainer.classList.remove('hidden');
-            contentWrapper.classList.remove('header-hidden');
-        } else { // Для всех остальных страниц (разделы, задачи, чаты) хедер скрыт
-            headerContainer.classList.add('hidden');
-            contentWrapper.classList.add('header-hidden');
+            createSectionBtn.style.display = 'none';
         }
 
-        // Обновляем активную кнопку навигации
-        navButtons.forEach(btn => btn.classList.remove('active'));
-        // Находим кнопку по data-target-page и добавляем active класс
-        const activeButton = document.querySelector(`.nav-button[data-target-page="${pageElement.id}"]`);
-        if (activeButton) {
-            activeButton.classList.add('active');
+        // Кнопка создания заметки
+        if (currentUserRole === 'main_admin' || currentUserRole === 'junior_admin') {
+            createNoteBtn.style.display = 'inline-block';
+        } else {
+            createNoteBtn.style.display = 'none';
+        }
+
+        // Кнопка создания задания
+        if (currentUserRole === 'main_admin' || currentUserRole === 'junior_admin') {
+            createTaskBtn.style.display = 'inline-block';
+        } else {
+            createTaskBtn.style.display = 'none';
+        }
+
+        // Кнопка скачивания отчетов
+        if (currentUserRole === 'main_admin' || currentUserRole === 'junior_admin') {
+            downloadReportsBtn.style.display = 'block';
+        } else {
+            downloadReportsBtn.style.display = 'none';
+        }
+
+        // Кнопки редактирования/удаления разделов и заметок
+        // Их видимость будет управляться в renderSections и renderNotes
+    }
+
+
+    // --- Управление страницами ---
+    function showPage(pageId) {
+        pages.forEach(page => page.classList.remove('active'));
+        navItems.forEach(item => item.classList.remove('active'));
+
+        document.getElementById(pageId).classList.add('active');
+        document.querySelector(`.nav-item[data-page="${pageId}"]`).classList.add('active');
+
+        // Обновляем заголовок
+        switch (pageId) {
+            case 'main-page':
+                headerTitle.textContent = 'Главная';
+                break;
+            case 'sections-page':
+                headerTitle.textContent = 'Разделы';
+                renderSections(true); // Принудительный ререндер для секции
+                break;
+            case 'tasks-page':
+                headerTitle.textContent = 'Задачи';
+                renderTasks(document.querySelector('#tasks-page .filter-tab.active')?.dataset.filter || 'all');
+                break;
+            default:
+                headerTitle.textContent = 'WMS Web App';
+        }
+        if (window.Telegram && window.Telegram.WebApp) {
+            Telegram.WebApp.HapticFeedback.selectionChanged();
         }
     }
 
-    // Обработчики кликов по кнопкам нижней навигации
-    homeNavButton.addEventListener('click', () => {
-        showPage(contentArea);
-        if (window.Telegram && window.Telegram.WebApp) {
-            Telegram.WebApp.HapticFeedback.impactOccurred('light');
-        }
-    });
-
-    sectionsNavButton.addEventListener('click', () => {
-        showPage(sectionsPage);
-        renderSections(currentParentId); // Убедимся, что разделы отрисованы
-        if (window.Telegram && window.Telegram.WebApp) {
-            Telegram.WebApp.HapticFeedback.impactOccurred('light');
-        }
-    });
-
-    // НОВЫЕ ОБРАБОТЧИКИ ДЛЯ КНОПОК "ЗАДАЧИ" И "ЧАТЫ"
-    tasksNavButton.addEventListener('click', () => {
-        showPage(tasksPage);
-        renderTasks('all'); // Показываем все задачи при переходе на страницу задач
-        if (window.Telegram && window.Telegram.WebApp) {
-            Telegram.WebApp.HapticFeedback.impactOccurred('light');
-        }
-    });
-
-    chatsNavButton.addEventListener('click', () => {
-        showPage(chatsPage);
-        renderChats(); // Отрисовываем чаты
-        if (window.Telegram && window.Telegram.WebApp) {
-            Telegram.WebApp.HapticFeedback.impactOccurred('light');
-        }
-    });
-
-    // Активируем кнопку "Главная" по умолчанию при загрузке
-    showPage(contentArea);
-
-    // --- Функции для управления разделами (Древовидная структура) ---
-
-    function generateUniqueId() {
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-            return v.toString(16);
+    navItems.forEach(item => {
+        item.addEventListener('click', (e) => {
+            e.preventDefault();
+            showPage(item.dataset.page);
         });
+    });
+
+    // --- Управление модальными окнами ---
+    function showModal(modalElement) {
+        document.body.classList.add('modal-open');
+        modalElement.classList.remove('hidden');
+        modalElement.style.display = 'flex';
+        // Остановка распространения события клика на контент модального окна
+        modalElement.querySelector('.modal-content').addEventListener('click', (e) => e.stopPropagation());
     }
 
-    function updateBreadcrumbs() {
-        sectionsBreadcrumbs.innerHTML = '';
-        currentPath.forEach((item, index) => {
-            const span = document.createElement('span');
-            span.classList.add('breadcrumb-item');
-            if (index === currentPath.length - 1) {
-                span.classList.add('active');
-            } else {
-                span.addEventListener('click', () => navigateToPath(item.id));
+    function hideModal(modalElement) {
+        document.body.classList.remove('modal-open');
+        modalElement.classList.add('hidden');
+        setTimeout(() => {
+            modalElement.style.display = 'none';
+        }, 300); // Соответствует времени перехода в CSS
+    }
+
+    // Закрытие модального окна по клику вне контента
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                hideModal(modal);
+                if (window.Telegram && window.Telegram.WebApp) {
+                    Telegram.WebApp.HapticFeedback.impactOccurred('light');
+                }
             }
-            span.textContent = item.name;
-            span.dataset.id = item.id;
-            sectionsBreadcrumbs.appendChild(span);
         });
-        goBackSectionBtn.style.display = currentParentId === 'root' ? 'none' : 'inline-block';
-    }
+    });
 
-    function renderSections(parentId) {
-        currentSectionsList.innerHTML = '';
-        const children = sectionsData.filter(section => {
-            // Фильтруем разделы, которые скрыты от текущего пользователя
-            const isHiddenFromCurrentUser = section.hidden_from_users && section.hidden_from_users.includes(currentUserId);
-            return section.parentId === parentId && !isHiddenFromCurrentUser;
+
+    // --- Функции для работы с разделами ---
+    function renderSections(isSectionsPage = false) {
+        const targetContainer = isSectionsPage ? sectionsList : sectionsContainer;
+        targetContainer.innerHTML = '';
+        const visibleSections = allSections.filter(section => {
+            // Если секция скрыта глобально или скрыта от текущего пользователя
+            return !section.isHidden && !section.hiddenFromUsers.includes(currentUserId);
         });
 
-        if (children.length === 0) {
-            noSectionsMessage.style.display = 'block';
+        if (visibleSections.length === 0) {
+            (isSectionsPage ? noSectionsMessage : null)?.style.display = 'block';
         } else {
-            noSectionsMessage.style.display = 'none';
-            children.forEach(section => {
-                const sectionDiv = document.createElement('div');
-                sectionDiv.classList.add('section-item');
-                sectionDiv.dataset.id = section.id;
-                
-                sectionDiv.addEventListener('mousedown', (e) => startLongPress(e, section.id));
-                sectionDiv.addEventListener('mouseup', cancelLongPress);
-                sectionDiv.addEventListener('mouseleave', cancelLongPress);
-                sectionDiv.addEventListener('touchstart', (e) => startLongPress(e, section.id), { passive: true });
-                sectionDiv.addEventListener('touchend', cancelLongPress);
-                sectionDiv.addEventListener('touchcancel', cancelLongPress);
+            (isSectionsPage ? noSectionsMessage : null)?.style.display = 'none';
+            visibleSections.forEach(section => {
+                const sectionItem = document.createElement('div');
+                sectionItem.classList.add('section-item');
+                sectionItem.dataset.id = section.id;
 
-                sectionDiv.addEventListener('click', (e) => {
-                    if (e.target.closest('.section-action-button') || e.target.closest('.context-menu-item')) {
-                        return;
+                let itemCount = 0;
+                let criticalCount = 0;
+                if (section.items) {
+                    itemCount = section.items.length;
+                    criticalCount = section.items.filter(item => item.quantity <= item.minQuantity).length;
+                }
+
+                sectionItem.innerHTML = `
+                    <div class="section-title">${section.name}</div>
+                    <div class="section-item-info">
+                        Товаров: ${itemCount}
+                        ${criticalCount > 0 ? `<span style="color: var(--error-color);"> (Критический минимум: ${criticalCount})</span>` : ''}
+                    </div>
+                `;
+
+                // Кнопки управления разделом (только для админов)
+                if (currentUserRole === 'main_admin' || currentUserRole === 'junior_admin') {
+                    const controlsHtml = `
+                        <div class="section-controls" style="position: absolute; top: 10px; right: 10px;">
+                            <i class="fas fa-cog edit-section-btn" data-id="${section.id}" style="cursor: pointer; margin-right: 10px; color: var(--secondary-text-color);"></i>
+                            <i class="fas fa-eye-slash hide-section-btn" data-id="${section.id}" style="cursor: pointer; margin-right: 10px; color: var(--secondary-text-color);"></i>
+                            <i class="fas fa-bell notify-section-btn" data-id="${section.id}" style="cursor: pointer; margin-right: 10px; color: var(--secondary-text-color);"></i>
+                            <i class="fas fa-trash-alt delete-section-btn" data-id="${section.id}" style="cursor: pointer; color: var(--error-color);"></i>
+                        </div>
+                    `;
+                    sectionItem.insertAdjacentHTML('beforeend', controlsHtml);
+                }
+
+                sectionItem.addEventListener('click', (e) => {
+                    // Проверяем, был ли клик по иконке управления разделом
+                    if (e.target.closest('.section-controls')) {
+                        return; // Не открываем детали, если кликнули на кнопку управления
                     }
-                    if (longPressTimer) {
-                        return;
-                    }
+
                     if (window.Telegram && window.Telegram.WebApp) {
                         Telegram.WebApp.HapticFeedback.impactOccurred('light');
                     }
-                    navigateToSection(section.id, section.name);
+                    currentSectionId = section.id;
+                    currentSectionName = section.name;
+
+                    // Проверка прав на редактирование остатков
+                    // Если текущий пользователь - главный админ ИЛИ младший админ ИЛИ (обычный сотрудник И его ID совпадает с stockManagerId раздела)
+                    const canEditStock = currentUserRole === 'main_admin' || 
+                                        currentUserRole === 'junior_admin' ||
+                                        (currentUserRole === 'employee' && section.stockManagerId === currentUserId);
+
+                    showSectionDetailModal(canEditStock);
                 });
 
-                const sectionNameSpan = document.createElement('span');
-                sectionNameSpan.classList.add('section-item-name');
-                sectionNameSpan.textContent = section.name;
-                
-                if (typeof section.quantity === 'number' && section.quantity > 0) {
-                    const quantitySpan = document.createElement('span');
-                    quantitySpan.classList.add('section-item-quantity');
-                    quantitySpan.textContent = `${section.quantity.toFixed(1).replace(/\.0$/, '')} шт.`;
-                    sectionNameSpan.appendChild(quantitySpan);
+                // Обработчики для кнопок управления разделом
+                if (currentUserRole === 'main_admin' || currentUserRole === 'junior_admin') {
+                    sectionItem.querySelector('.edit-section-btn')?.addEventListener('click', (e) => {
+                        e.stopPropagation(); // Предотвращаем срабатывание обработчика sectionItem
+                        if (window.Telegram && window.Telegram.WebApp) {
+                            Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+                        }
+                        const id = e.target.dataset.id;
+                        currentSectionId = id;
+                        showSectionSettingsModal(id);
+                    });
+
+                    sectionItem.querySelector('.hide-section-btn')?.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        if (window.Telegram && window.Telegram.WebApp) {
+                            Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+                        }
+                        const id = e.target.dataset.id;
+                        currentSectionId = id; // Устанавливаем текущий раздел
+                        currentRecipientsType = 'hidden_from_users';
+                        showNotificationRecipientsModal(id, 'Выберите пользователей, от которых скрыть раздел', allSections.find(s => s.id === id)?.hiddenFromUsers || []);
+                    });
+
+                    sectionItem.querySelector('.notify-section-btn')?.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        if (window.Telegram && window.Telegram.WebApp) {
+                            Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+                        }
+                        const id = e.target.dataset.id;
+                        currentSectionId = id; // Устанавливаем текущий раздел
+
+                        // Создаем контекстное меню или модальное окно для выбора типа уведомления
+                        // Для простоты, пока будем показывать модалку для обычных уведомлений
+                        // В реальном приложении здесь может быть меню с "Оповещения" и "Критический минимум"
+                        if (window.Telegram && window.Telegram.WebApp) {
+                            Telegram.WebApp.showConfirm('Какой тип оповещения настроить?\n\n- Да: Оповещения об изменениях\n- Нет: Оповещения о критическом минимуме', (confirmed) => {
+                                if (confirmed) {
+                                    currentRecipientsType = 'notifications';
+                                    showNotificationRecipientsModal(id, 'Получатели оповещений об изменениях', allSections.find(s => s.id === id)?.notificationRecipients || []);
+                                } else {
+                                    currentRecipientsType = 'critical_minimum';
+                                    showNotificationRecipientsModal(id, 'Получатели оповещений о критическом минимуме', allSections.find(s => s.id === id)?.criticalMinRecipients || []);
+                                }
+                            });
+                        } else {
+                            const choice = prompt('Какой тип оповещения настроить? (1: Обычные, 2: Критический минимум)');
+                            if (choice === '1') {
+                                currentRecipientsType = 'notifications';
+                                showNotificationRecipientsModal(id, 'Получатели оповещений об изменениях', allSections.find(s => s.id === id)?.notificationRecipients || []);
+                            } else if (choice === '2') {
+                                currentRecipientsType = 'critical_minimum';
+                                showNotificationRecipientsModal(id, 'Получатели оповещений о критическом минимуме', allSections.find(s => s.id === id)?.criticalMinRecipients || []);
+                            } else {
+                                alert('Некорректный выбор.');
+                            }
+                        }
+                    });
+
+                    sectionItem.querySelector('.delete-section-btn')?.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        if (window.Telegram && window.Telegram.WebApp) {
+                            Telegram.WebApp.HapticFeedback.notificationOccurred('warning');
+                            Telegram.WebApp.showConfirm(`Вы уверены, что хотите удалить раздел "${section.name}"?`, (confirmed) => {
+                                if (confirmed) {
+                                    deleteSection(e.target.dataset.id);
+                                    Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+                                } else {
+                                    Telegram.WebApp.HapticFeedback.notificationOccurred('light');
+                                }
+                            });
+                        } else {
+                            if (confirm(`Вы уверены, что хотите удалить раздел "${section.name}"?`)) {
+                                deleteSection(e.target.dataset.id);
+                            }
+                        }
+                    });
                 }
-                
-                sectionDiv.appendChild(sectionNameSpan);
 
-                const sectionActionsDiv = document.createElement('div');
-                sectionActionsDiv.classList.add('section-item-actions');
-
-                const editButton = document.createElement('button');
-                editButton.classList.add('section-action-button');
-                editButton.innerHTML = '&#9998;';
-                editButton.title = 'Редактировать раздел';
-                editButton.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    editSection(section.id, section.name);
-                });
-                sectionActionsDiv.appendChild(editButton);
-
-                const deleteButton = document.createElement('button');
-                deleteButton.classList.add('section-action-button');
-                deleteButton.innerHTML = '&#10006;';
-                deleteButton.title = 'Удалить раздел';
-                deleteButton.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    deleteSection(section.id);
-                });
-                sectionActionsDiv.appendChild(deleteButton);
-
-                sectionDiv.appendChild(sectionActionsDiv);
-                currentSectionsList.appendChild(sectionDiv);
+                targetContainer.appendChild(sectionItem);
             });
         }
-        updateBreadcrumbs();
+        saveData('sections', allSections);
     }
 
-    function navigateToSection(id, name) {
-        currentParentId = id;
-        currentPath.push({ id: id, name: name });
-        renderSections(id);
-    }
-
-    function navigateToPath(id) {
-        const index = currentPath.findIndex(item => item.id === id);
-        if (index !== -1) {
-            currentPath = currentPath.slice(0, index + 1);
-            currentParentId = id;
-            renderSections(id);
-            if (window.Telegram && window.Telegram.WebApp) {
-                Telegram.WebApp.HapticFeedback.impactOccurred('light');
-            }
-        }
-    }
-
-    createSectionBtn.addEventListener('click', async () => {
+    createSectionBtn.addEventListener('click', () => {
         if (window.Telegram && window.Telegram.WebApp) {
             Telegram.WebApp.HapticFeedback.impactOccurred('medium');
-            const sectionName = prompt('Введите название нового раздела:'); 
-            if (sectionName && sectionName.trim() !== '') {
-                const newId = generateUniqueId();
-                const newSection = {
-                    id: newId,
-                    name: sectionName.trim(),
-                    parentId: currentParentId,
-                    quantity: 0,
-                    min_quantity: null,
-                    hidden_from_users: []
-                };
-                sectionsData.push(newSection);
-                renderSections(currentParentId);
+        }
+        currentSectionId = null; // Для создания нового раздела
+        showSectionSettingsModal();
+    });
 
+    function showSectionSettingsModal(sectionId = null) {
+        sectionSettingsTitle.textContent = sectionId ? 'Редактировать раздел' : 'Новый раздел';
+        currentSectionId = sectionId;
+        const currentSection = sectionId ? allSections.find(s => s.id === sectionId) : null;
+
+        // Заполняем список ответственных за остатки
+        stockManagerSelect.innerHTML = '<option value="">Не назначен</option>'; // Опция по умолчанию
+        allUsers.forEach(user => {
+            const option = document.createElement('option');
+            option.value = user.id;
+            option.textContent = user.name;
+            stockManagerSelect.appendChild(option);
+        });
+
+        if (currentSection) {
+            sectionNameInput.value = currentSection.name;
+            // Выбираем назначенного менеджера
+            if (currentSection.stockManagerId) {
+                stockManagerSelect.value = currentSection.stockManagerId;
+            } else {
+                stockManagerSelect.value = ''; // Сбрасываем выбор
+            }
+        } else {
+            sectionNameInput.value = '';
+            stockManagerSelect.value = '';
+        }
+        
+        // Показываем/скрываем поле выбора менеджера остатков в зависимости от роли
+        if (currentUserRole === 'main_admin' || currentUserRole === 'junior_admin') {
+            stockManagerSelect.closest('label').style.display = 'block'; // Показываем label
+            stockManagerSelect.style.display = 'block'; // Показываем select
+        } else {
+            stockManagerSelect.closest('label').style.display = 'none';
+            stockManagerSelect.style.display = 'none';
+        }
+
+        showModal(sectionSettingsModal);
+    }
+
+    function hideSectionSettingsModal() {
+        hideModal(sectionSettingsModal);
+    }
+
+    saveSectionSettingsBtn.addEventListener('click', () => {
+        const sectionName = sectionNameInput.value.trim();
+        const selectedStockManagerId = stockManagerSelect.value;
+        if (!sectionName) {
+            if (window.Telegram && window.Telegram.WebApp) {
+                Telegram.WebApp.showAlert('Название раздела не может быть пустым!');
+            } else {
+                alert('Название раздела не может быть пустым!');
+            }
+            return;
+        }
+
+        if (currentSectionId) { // Редактирование существующего раздела
+            const sectionIndex = allSections.findIndex(s => s.id === currentSectionId);
+            if (sectionIndex !== -1) {
+                allSections[sectionIndex].name = sectionName;
+                allSections[sectionIndex].stockManagerId = selectedStockManagerId || null;
+                // Все остальные настройки видимости и получателей оповещений будут обновлены через отдельные модальные окна
+                
+                if (window.Telegram && window.Telegram.WebApp) {
+                    Telegram.WebApp.sendData(JSON.stringify({
+                        type: 'update_section',
+                        payload: {
+                            id: currentSectionId,
+                            name: sectionName,
+                            stockManagerId: selectedStockManagerId || null
+                        }
+                    }));
+                    Telegram.WebApp.showAlert('Раздел обновлен.');
+                    Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+                } else {
+                    alert('Раздел обновлен.');
+                }
+            }
+        } else { // Создание нового раздела
+            const newSection = {
+                id: generateUniqueId('sec'),
+                name: sectionName,
+                items: [],
+                isHidden: false,
+                hiddenFromUsers: [],
+                notificationRecipients: [],
+                criticalMinRecipients: [],
+                stockManagerId: selectedStockManagerId || null
+            };
+            allSections.push(newSection);
+            if (window.Telegram && window.Telegram.WebApp) {
                 Telegram.WebApp.sendData(JSON.stringify({
                     type: 'create_section',
                     payload: newSection
                 }));
-                Telegram.WebApp.showAlert(`Раздел "${sectionName}" создан и данные отправлены боту.`);
-            } else if (sectionName !== null) {
-                Telegram.WebApp.showAlert('Название раздела не может быть пустым.');
-            }
-        } else {
-            const sectionName = prompt('Введите название раздела:');
-            if (sectionName && sectionName.trim() !== '') {
-                const newId = generateUniqueId();
-                const newSection = {
-                    id: newId,
-                    name: sectionName.trim(),
-                    parentId: currentParentId,
-                    quantity: 0,
-                    min_quantity: null,
-                    hidden_from_users: []
-                };
-                sectionsData.push(newSection);
-                renderSections(currentParentId);
-                alert(`Раздел "${sectionName}" создан (только в браузере).`);
-            } else if (sectionName !== null) {
-                alert('Название раздела не может быть пустым.');
+                Telegram.WebApp.showAlert('Раздел создан.');
+                Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+            } else {
+                alert('Раздел создан.');
             }
         }
+        renderSections();
+        hideSectionSettingsModal();
     });
 
-    function editSection(id, oldName) {
-        if (window.Telegram && window.Telegram.WebApp) {
-            Telegram.WebApp.HapticFeedback.impactOccurred('medium');
-            const newName = prompt(`Введите новое название для раздела "${oldName}":`, oldName);
-            if (newName && newName.trim() !== '') {
-                const sectionIndex = sectionsData.findIndex(s => s.id === id);
-                if (sectionIndex !== -1) {
-                    sectionsData[sectionIndex].name = newName.trim();
-                    const pathIndex = currentPath.findIndex(p => p.id === id);
-                    if (pathIndex !== -1) {
-                        currentPath[pathIndex].name = newName.trim();
-                    }
-                    renderSections(currentParentId);
-
-                    Telegram.WebApp.sendData(JSON.stringify({
-                        type: 'update_section',
-                        payload: { id: id, name: newName.trim() }
-                    }));
-                    Telegram.WebApp.showAlert(`Раздел обновлен и данные отправлены боту.`);
-                }
-            } else if (newName !== null) {
-                Telegram.WebApp.showAlert('Название раздела не может быть пустым.');
-            }
-        } else {
-            const newName = prompt(`Введите новое название для раздела "${oldName}":`, oldName);
-            if (newName && newName.trim() !== '') {
-                const sectionIndex = sectionsData.findIndex(s => s.id === id);
-                if (sectionIndex !== -1) {
-                    sectionsData[sectionIndex].name = newName.trim();
-                     const pathIndex = currentPath.findIndex(p => p.id === id);
-                    if (pathIndex !== -1) {
-                        currentPath[pathIndex].name = newName.trim();
-                    }
-                    renderSections(currentParentId);
-                    alert(`Раздел обновлен (только в браузере).`);
-                }
-            } else if (newName !== null) {
-                alert('Название раздела не может быть пустым.');
-            }
-        }
-    }
-
-    function deleteSection(id) {
-        if (window.Telegram && window.Telegram.WebApp) {
-            Telegram.WebApp.HapticFeedback.notificationOccurred('warning');
-            Telegram.WebApp.showConfirm('Вы уверены, что хотите удалить этот раздел и все его подразделы?', (confirmed) => {
-                if (confirmed) {
-                    const idsToDelete = [id];
-                    function collectChildrenIds(parentId) {
-                        const children = sectionsData.filter(s => s.parentId === parentId);
-                        children.forEach(child => {
-                            idsToDelete.push(child.id);
-                            collectChildrenIds(child.id);
-                        });
-                    }
-                    collectChildrenIds(id);
-
-                    sectionsData = sectionsData.filter(s => !idsToDelete.includes(s.id));
-                    renderSections(currentParentId);
-
-                    Telegram.WebApp.sendData(JSON.stringify({
-                        type: 'delete_section',
-                        payload: { ids: idsToDelete }
-                    }));
-                    Telegram.WebApp.showAlert('Раздел и его подразделы удалены. Данные отправлены боту.');
-                }
-            });
-        } else {
-            if (confirm('Вы уверены, что хотите удалить этот раздел и все его подразделы?')) {
-                const idsToDelete = [id];
-                function collectChildrenIds(parentId) {
-                    const children = sectionsData.filter(s => s.parentId === parentId);
-                    children.forEach(child => {
-                        idsToDelete.push(child.id);
-                        collectChildrenIds(child.id);
-                    });
-                }
-                collectChildrenIds(id);
-
-                sectionsData = sectionsData.filter(s => !idsToDelete.includes(s.id));
-                renderSections(currentParentId);
-                alert('Раздел и его подразделы удалены (только в браузере).');
-            }
-        }
-    }
-
-    goBackSectionBtn.addEventListener('click', () => {
-        if (currentPath.length > 1) {
-            currentPath.pop();
-            currentParentId = currentPath[currentPath.length - 1].id;
-            renderSections(currentParentId);
-            if (window.Telegram && window.Telegram.WebApp) {
-                Telegram.WebApp.HapticFeedback.impactOccurred('light');
-            }
-        }
-    });
-
-    // --- Логика долгого нажатия и контекстного меню ---
-    const LONG_PRESS_THRESHOLD = 500;
-
-    function startLongPress(e, sectionId) {
-        if (e.touches && e.touches.length > 1) {
-            cancelLongPress();
-            return;
-        }
-
-        if (e.type === 'mousedown' && e.button === 2) {
-             e.preventDefault(); 
-             currentSectionForMenu = sectionId;
-             showContextMenu();
-             return;
-        }
-
-        clearTimeout(longPressTimer);
-
-        longPressTimer = setTimeout(() => {
-            currentSectionForMenu = sectionId;
-            showContextMenu();
-        }, LONG_PRESS_THRESHOLD);
-    }
-
-    function cancelLongPress() {
-        clearTimeout(longPressTimer);
-        longPressTimer = null;
-    }
-
-    function showContextMenu() {
-        if (window.Telegram && window.Telegram.WebApp) {
-            Telegram.WebApp.HapticFeedback.impactOccurred('heavy');
-        }
-        document.body.classList.add('modal-open');
-        contextMenuModal.classList.remove('hidden');
-        contextMenuModal.style.display = 'flex';
-        contextMenuModal.querySelector('.modal-content').addEventListener('click', (e) => e.stopPropagation());
-    }
-
-    function hideContextMenu() {
-        document.body.classList.remove('modal-open');
-        contextMenuModal.classList.add('hidden');
-        setTimeout(() => {
-            contextMenuModal.style.display = 'none';
-        }, 300); 
-    }
-
-    closeContextMenuBtn.addEventListener('click', hideContextMenu);
-    contextMenuModal.addEventListener('click', (e) => {
-        if (e.target === contextMenuModal) {
-            hideContextMenu();
-        }
-    });
-
-    // --- Обработчики кнопок контекстного меню ---
-    const CONTEXT_MENU_CLOSE_DELAY = 350;
-
-    async function askForQuantityAndConfirm(type) {
-        const section = sectionsData.find(s => s.id === currentSectionForMenu);
-        if (!section) return;
-
-        let amountInput;
-        let currentQty = section.quantity || 0;
-        let promptMessage;
-        let confirmMessage;
-
-        if (type === 'add') {
-            promptMessage = 'Введите количество для добавления (можно дробное):';
-        } else { // 'remove'
-            promptMessage = 'Введите количество для списания (можно дробное):';
-        }
-
-        while (true) {
-            if (window.Telegram && window.Telegram.WebApp) {
-                Telegram.WebApp.HapticFeedback.impactOccurred('light');
-                amountInput = prompt(promptMessage);
-            } else {
-                amountInput = prompt(promptMessage);
-            }
-            
-            if (amountInput === null) {
-                currentSectionForMenu = null;
-                return;
-            }
-
-            const amount = parseFloat(amountInput);
-
-            if (isNaN(amount) || amount <= 0) {
-                if (window.Telegram && window.Telegram.WebApp) {
-                    Telegram.WebApp.showAlert('Некорректное количество. Пожалуйста, введите положительное число.');
-                } else {
-                    alert('Некорректное количество. Пожалуйста, введите положительное число.');
-                }
-                continue;
-            }
-
-            let newQty;
-            if (type === 'add') {
-                newQty = currentQty + amount;
-                confirmMessage = `Вы уверены, что хотите добавить ${amount.toFixed(1).replace(/\.0$/, '')} шт.? После добавления получится ${newQty.toFixed(1).replace(/\.0$/, '')} шт.`;
-            } else { // 'remove'
-                if (amount > currentQty) {
-                    if (window.Telegram && window.Telegram.WebApp) {
-                        Telegram.WebApp.showAlert(`Недостаточное количество. Доступно: ${currentQty.toFixed(1).replace(/\.0$/, '')} шт.`);
-                    } else {
-                        alert(`Недостаточное количество. Доступно: ${currentQty.toFixed(1).replace(/\.0$/, '')} шт.`);
-                    }
-                    continue;
-                }
-                newQty = currentQty - amount;
-                confirmMessage = `Вы уверены, что хотите списать ${amount.toFixed(1).replace(/\.0$/, '')} шт.? После списания останется ${newQty.toFixed(1).replace(/\.0$/, '')} шт.`;
-            }
-
-            let confirmed;
-            if (window.Telegram && window.Telegram.WebApp) {
-                confirmed = await new Promise(resolve => {
-                    Telegram.WebApp.showConfirm(confirmMessage, (result) => resolve(result));
-                });
-            } else {
-                confirmed = confirm(confirmMessage);
-            }
-
-            if (confirmed) {
-                section.quantity = newQty;
-                renderSections(currentParentId);
-
-                if (window.Telegram && window.Telegram.WebApp) {
-                    Telegram.WebApp.sendData(JSON.stringify({
-                        type: `${type}_quantity`,
-                        payload: { id: section.id, amount: amount }
-                    }));
-                    Telegram.WebApp.showAlert(`${type === 'add' ? 'Добавлено' : 'Списано'} ${amount.toFixed(1).replace(/\.0$/, '')} ${type === 'add' ? 'к' : 'из'} "${section.name}".`);
-                } else {
-                    alert(`${type === 'add' ? 'Добавлено' : 'Списано'} ${amount.toFixed(1).replace(/\.0$/, '')} ${type === 'add' ? 'к' : 'из'} "${section.name}".`);
-                }
-                currentSectionForMenu = null;
-                return;
-            } else {
-                if (window.Telegram && window.Telegram.WebApp) {
-                    Telegram.WebApp.HapticFeedback.notificationOccurred('light');
-                }
-            }
-        }
-    }
-
-
-    addQuantityBtn.addEventListener('click', (e) => {
-        e.stopPropagation(); 
-        hideContextMenu();
-        if (!currentSectionForMenu) return;
-
-        setTimeout(() => {
-            askForQuantityAndConfirm('add');
-        }, CONTEXT_MENU_CLOSE_DELAY);
-    });
-
-    removeQuantityBtn.addEventListener('click', (e) => {
-        e.stopPropagation(); 
-        hideContextMenu();
-        if (!currentSectionForMenu) return;
-
-        setTimeout(() => {
-            askForQuantityAndConfirm('remove');
-        }, CONTEXT_MENU_CLOSE_DELAY);
-    });
-
-    criticalMinBtn.addEventListener('click', (e) => {
-        e.stopPropagation(); 
-        hideContextMenu();
-        if (!currentSectionForMenu) return;
-        
-        setTimeout(() => {
-            currentRecipientsSelectionType = 'critical_minimum';
-            let minQuantityInput;
-            if (window.Telegram && window.Telegram.WebApp) {
-                Telegram.WebApp.HapticFeedback.impactOccurred('light');
-                minQuantityInput = prompt('Введите критический минимум для этого раздела (можно дробное):');
-            } else {
-                minQuantityInput = prompt('Введите критический минимум для этого раздела (можно дробное):');
-            }
-            const minQuantity = parseFloat(minQuantityInput);
-
-            if (!isNaN(minQuantity) && minQuantity >= 0) {
-                const section = sectionsData.find(s => s.id === currentSectionForMenu);
-                if (section) {
-                    section.min_quantity = minQuantity;
-                    showRecipientsModal();
-                }
-            } else {
-                if (minQuantityInput !== null) {
-                    if (window.Telegram && window.Telegram.WebApp) {
-                        Telegram.WebApp.showAlert('Некорректное значение для критического минимума.');
-                    } else {
-                        alert('Некорректное значение для критического минимума.');
-                    }
-                }
-            }
-        }, CONTEXT_MENU_CLOSE_DELAY);
-    });
-
-    setReminderBtn.addEventListener('click', (e) => {
-        e.stopPropagation(); 
-        hideContextMenu();
-        if (!currentSectionForMenu) return;
-        
-        setTimeout(() => {
-            currentRecipientsSelectionType = 'reminder';
-
-            let reminderMessage = '';
-            let reminderDateTime = '';
-
-            if (window.Telegram && window.Telegram.WebApp) {
-                Telegram.WebApp.HapticFeedback.impactOccurred('light');
-                reminderMessage = prompt('Введите сообщение для напоминания:');
-                reminderDateTime = prompt('Введите дату и время напоминания (пример: 01.01.2025 12:30):');
-            } else {
-                reminderMessage = prompt('Введите сообщение для напоминания:');
-                reminderDateTime = prompt('Введите дату и время напоминания (пример: 01.01.2025 12:30):');
-            }
-
-            if (reminderMessage && reminderMessage.trim() !== '' && reminderDateTime && reminderDateTime.trim() !== '') {
-                const section = sectionsData.find(s => s.id === currentSectionForMenu);
-                if (section) {
-                    section.reminder_message = reminderMessage.trim();
-                    section.reminder_datetime = reminderDateTime.trim();
-                    showRecipientsModal();
-                }
-            } else {
-                if (reminderMessage !== null && reminderDateTime !== null) {
-                    if (window.Telegram && window.Telegram.WebApp) {
-                        Telegram.WebApp.showAlert('Сообщение или дата/время напоминания не могут быть пустыми.');
-                    } else {
-                        alert('Сообщение или дата/время напоминания не могут быть пустыми.');
-                    }
-                }
-            }
-        }, CONTEXT_MENU_CLOSE_DELAY);
-    });
-
-    hideFromBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        hideContextMenu();
-        if (!currentSectionForMenu) return;
-
-        setTimeout(() => {
-            currentRecipientsSelectionType = 'hide_from';
-            showRecipientsModal();
-        }, CONTEXT_MENU_CLOSE_DELAY);
-    });
-
-    // --- Логика выбора получателей ---
-    function showRecipientsModal() {
-        document.body.classList.add('modal-open');
-        recipientsModal.classList.remove('hidden');
-        recipientsModal.style.display = 'flex';
-        const activeTab = document.querySelector('.recipient-filter-tabs .filter-tab.active');
-        const filter = activeTab ? activeTab.dataset.filter : 'all';
-        renderUsersForSelection(filter); 
-        selectAllRecipientsCheckbox.checked = false;
-        
-        const section = sectionsData.find(s => s.id === currentSectionForMenu);
-        if (section && currentRecipientsSelectionType === 'hide_from' && section.hidden_from_users) {
-            setTimeout(() => {
-                section.hidden_from_users.forEach(userId => {
-                    const checkbox = recipientsList.querySelector(`input[value="${userId}"]`);
-                    if (checkbox) {
-                        checkbox.checked = true;
-                    }
-                });
-            }, 50);
-        }
-
-        recipientsModal.querySelector('.modal-content').addEventListener('click', (e) => e.stopPropagation());
-    }
-
-    function hideRecipientsModal() {
-        document.body.classList.remove('modal-open');
-        recipientsModal.classList.add('hidden');
-        setTimeout(() => {
-            recipientsModal.style.display = 'none';
-        }, 300);
-        currentSectionForMenu = null;
-    }
-
-    function renderUsersForSelection(filter) {
-        recipientsList.innerHTML = '';
-        let filteredUsers = [];
-        if (filter === 'all') {
-            filteredUsers = allUsers;
-        } else if (filter === 'admins') {
-            filteredUsers = allUsers.filter(user => user.role === 'admin');
-        } else if (filter === 'employees') { 
-            filteredUsers = allUsers.filter(user => user.role === 'employee');
-        }
-
-        filteredUsers.forEach(user => {
-            const userDiv = document.createElement('div');
-            userDiv.classList.add('recipient-item');
-            userDiv.dataset.id = user.id;
-
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.id = `user-${user.id}`;
-            checkbox.value = user.id;
-            userDiv.appendChild(checkbox);
-
-            const label = document.createElement('label');
-            label.htmlFor = `user-${user.id}`;
-            label.classList.add('recipient-item-name');
-            label.textContent = `${user.name} (${user.role === 'admin' ? 'Админ' : 'Сотрудник'})`;
-            userDiv.appendChild(label);
-
-            recipientsList.appendChild(userDiv);
-        });
-    }
-
-    recipientFilterTabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            recipientFilterTabs.forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-            renderUsersForSelection(tab.dataset.filter);
-            selectAllRecipientsCheckbox.checked = false;
-        });
-    });
-
-    selectAllRecipientsCheckbox.addEventListener('change', (e) => {
-        recipientsList.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-            checkbox.checked = e.target.checked;
-        });
-    });
-
-    confirmRecipientsBtn.addEventListener('click', () => {
-        const selectedUserIds = Array.from(recipientsList.querySelectorAll('input[type="checkbox"]:checked'))
-                                     .map(checkbox => checkbox.value);
-        
-        const section = sectionsData.find(s => s.id === currentSectionForMenu);
-        if (!section) {
-            hideRecipientsModal();
-            return;
-        }
-
-        if (selectedUserIds.length === 0 && currentRecipientsSelectionType !== 'hide_from') {
-            if (window.Telegram && window.Telegram.WebApp) {
-                Telegram.WebApp.showAlert('Пожалуйста, выберите хотя бы одного получателя.');
-            } else {
-                alert('Пожалуйста, выберите хотя бы одного получателя.');
-            }
-            return;
-        }
-
-        if (currentRecipientsSelectionType === 'critical_minimum') {
-            if (window.Telegram && window.Telegram.WebApp) {
-                 Telegram.WebApp.sendData(JSON.stringify({
-                    type: 'set_critical_minimum',
-                    payload: {
-                        id: section.id,
-                        min_quantity: section.min_quantity,
-                        recipients: selectedUserIds
-                    }
-                }));
-                Telegram.WebApp.showAlert(`Критический минимум ${section.min_quantity.toFixed(1).replace(/\.0$/, '')} для "${section.name}" установлен. Оповещения будут приходить выбранным пользователям.`);
-            } else {
-                alert(`Критический минимум ${section.min_quantity.toFixed(1).replace(/\.0$/, '')} для "${section.name}" установлен. Оповещения будут приходить выбранным пользователям.`);
-            }
-           
-        } else if (currentRecipientsSelectionType === 'reminder') {
-            if (window.Telegram && window.Telegram.WebApp) {
-                Telegram.WebApp.sendData(JSON.stringify({
-                    type: 'set_reminder',
-                    payload: {
-                        id: section.id,
-                        message: section.reminder_message,
-                        datetime: section.reminder_datetime,
-                        recipients: selectedUserIds
-                    }
-                }));
-                Telegram.WebApp.showAlert(`Напоминание для "${section.name}" запланировано. Сообщение "${section.reminder_message}" будет отправлено выбранным пользователям в ${section.reminder_datetime}.`);
-            } else {
-                alert(`Напоминание для "${section.name}" запланировано. Сообщение "${section.reminder_message}" будет отправлено выбранным пользователям в ${section.reminder_datetime}.`);
-            }
-        } else if (currentRecipientsSelectionType === 'hide_from') {
-            section.hidden_from_users = selectedUserIds;
-            if (window.Telegram && window.Telegram.WebApp) {
-                Telegram.WebApp.sendData(JSON.stringify({
-                    type: 'set_hidden_from_users',
-                    payload: {
-                        id: section.id,
-                        hidden_from_users: selectedUserIds
-                    }
-                }));
-                if (selectedUserIds.length > 0) {
-                    Telegram.WebApp.showAlert(`Раздел "${section.name}" теперь скрыт от выбранных пользователей.`);
-                } else {
-                    Telegram.WebApp.showAlert(`Раздел "${section.name}" теперь виден всем.`);
-                }
-            } else {
-                if (selectedUserIds.length > 0) {
-                    alert(`Раздел "${section.name}" теперь скрыт от выбранных пользователей (только в браузере).`);
-                } else {
-                    alert(`Раздел "${section.name}" теперь виден всем (только в браузере).`);
-                }
-            }
-            renderSections(currentParentId);
-        }
-        hideRecipientsModal();
-    });
-
-    cancelRecipientsBtn.addEventListener('click', () => {
-        hideRecipientsModal();
+    cancelSectionSettingsBtn.addEventListener('click', () => {
+        hideSectionSettingsModal();
         if (window.Telegram && window.Telegram.WebApp) {
             Telegram.WebApp.HapticFeedback.impactOccurred('light');
         }
     });
 
-    recipientsModal.addEventListener('click', (e) => {
-        if (e.target === recipientsModal) {
-            hideRecipientsModal();
+    function deleteSection(id) {
+        allSections = allSections.filter(section => section.id !== id);
+        renderSections();
+        if (window.Telegram && window.Telegram.WebApp) {
+            Telegram.WebApp.sendData(JSON.stringify({
+                type: 'delete_section',
+                payload: { id: id }
+            }));
+        }
+    }
+
+
+    // --- Функции для работы с элементами раздела (товарами) ---
+    function showSectionDetailModal(canEdit) {
+        const section = allSections.find(s => s.id === currentSectionId);
+        if (!section) {
+            if (window.Telegram && window.Telegram.WebApp) {
+                Telegram.WebApp.showAlert('Раздел не найден.');
+            } else {
+                alert('Раздел не найден.');
+            }
+            return;
+        }
+        sectionDetailTitle.textContent = section.name;
+        sectionItemsList.innerHTML = '';
+
+        if (section.items.length === 0) {
+            noItemsMessage.style.display = 'block';
+        } else {
+            noItemsMessage.style.display = 'none';
+            section.items.forEach(item => {
+                const itemDiv = document.createElement('div');
+                itemDiv.classList.add('item-detail');
+                
+                let quantityClass = '';
+                if (item.quantity <= item.minQuantity) {
+                    quantityClass = 'critical-quantity'; // Красный или предупреждающий цвет
+                }
+
+                itemDiv.innerHTML = `
+                    <span>${item.name}: <span class="${quantityClass}">${item.quantity} шт.</span></span>
+                    <div class="item-detail-actions">
+                        ${canEdit ? `<button class="edit-item-action-btn" data-item-id="${item.id}"><i class="fas fa-edit"></i></button>` : ''}
+                        ${canEdit ? `<button class="delete-item-action-btn" data-item-id="${item.id}"><i class="fas fa-trash-alt" style="color: var(--error-color);"></i></button>` : ''}
+                    </div>
+                `;
+                sectionItemsList.appendChild(itemDiv);
+
+                itemDiv.querySelector('.edit-item-action-btn')?.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (window.Telegram && window.Telegram.WebApp) {
+                        Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+                    }
+                    currentItemId = e.target.dataset.itemId;
+                    showEditItemModal();
+                });
+
+                itemDiv.querySelector('.delete-item-action-btn')?.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (window.Telegram && window.Telegram.WebApp) {
+                        Telegram.WebApp.HapticFeedback.notificationOccurred('warning');
+                        Telegram.WebApp.showConfirm(`Вы уверены, что хотите удалить товар "${item.name}"?`, (confirmed) => {
+                            if (confirmed) {
+                                deleteItem(item.id);
+                                Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+                            } else {
+                                Telegram.WebApp.HapticFeedback.notificationOccurred('light');
+                            }
+                        });
+                    } else {
+                        if (confirm(`Вы уверены, что хотите удалить товар "${item.name}"?`)) {
+                            deleteItem(item.id);
+                        }
+                    }
+                });
+            });
+        }
+
+        // Находим кнопки добавления/списания и скрываем/показываем их
+        if (canEdit) {
+            addItemsBtn.style.display = 'inline-block';
+            subtractItemsBtn.style.display = 'inline-block';
+        } else {
+            addItemsBtn.style.display = 'none';
+            subtractItemsBtn.style.display = 'none';
+        }
+
+        showModal(sectionDetailModal);
+    }
+
+    function hideSectionDetailModal() {
+        hideModal(sectionDetailModal);
+    }
+
+    addItemsBtn.addEventListener('click', () => {
+        if (window.Telegram && window.Telegram.WebApp) {
+            Telegram.WebApp.HapticFeedback.impactOccurred('light');
+        }
+        currentItemAction = 'add';
+        itemQuantityTitle.textContent = 'Добавить товар';
+        itemNameInput.value = '';
+        itemQuantityInput.value = 1;
+        showModal(itemQuantityModal);
+    });
+
+    subtractItemsBtn.addEventListener('click', () => {
+        if (window.Telegram && window.Telegram.WebApp) {
+            Telegram.WebApp.HapticFeedback.impactOccurred('light');
+        }
+        currentItemAction = 'subtract';
+        itemQuantityTitle.textContent = 'Списать товар';
+        itemNameInput.value = '';
+        itemQuantityInput.value = 1;
+        showModal(itemQuantityModal);
+    });
+
+    closeSectionDetailModalBtn.addEventListener('click', () => {
+        hideSectionDetailModal();
+        if (window.Telegram && window.Telegram.WebApp) {
+            Telegram.WebApp.HapticFeedback.impactOccurred('light');
         }
     });
 
-    // --- ФУНКЦИОНАЛ СОТРУДНИКОВ (из employeeFeatures.js) ---
+    confirmItemQuantityBtn.addEventListener('click', () => {
+        const itemName = itemNameInput.value.trim();
+        const quantity = parseInt(itemQuantityInput.value);
 
-    // 1. Заметки от Администратора
-    function updateAdminNotes(notes) {
-        adminNotesContent.innerHTML = '';
-        if (notes && notes.length > 0) {
-            adminNotesContainer.style.display = 'block';
-            notes.forEach(note => {
-                const p = document.createElement('p');
-                p.textContent = note;
-                adminNotesContent.appendChild(p);
-            });
-        } else {
-            adminNotesContainer.style.display = 'none';
-        }
-    }
-
-    // 2. Кнопка "Пришел/Ушел"
-    function initClockInOutButton() {
-        let isClockedIn = localStorage.getItem('isClockedIn') === 'true'; // Состояние сохраняется
-
-        function updateClockButton() {
-            if (isClockedIn) {
-                clockInOutBtn.textContent = 'Ушел/Ушла';
-                clockInOutBtn.classList.add('clock-out');
-                clockInOutBtn.classList.remove('clock-in');
+        if (!itemName || isNaN(quantity) || quantity <= 0) {
+            if (window.Telegram && window.Telegram.WebApp) {
+                Telegram.WebApp.showAlert('Пожалуйста, введите корректное название и количество.');
             } else {
-                clockInOutBtn.textContent = 'Пришел/Пришла';
-                clockInOutBtn.classList.add('clock-in');
-                clockInOutBtn.classList.remove('clock-out');
+                alert('Пожалуйста, введите корректное название и количество.');
+            }
+            return;
+        }
+
+        const section = allSections.find(s => s.id === currentSectionId);
+        if (!section) return;
+
+        let item = section.items.find(i => i.name.toLowerCase() === itemName.toLowerCase());
+
+        if (currentItemAction === 'add') {
+            if (item) {
+                item.quantity += quantity;
+            } else {
+                item = { id: generateUniqueId('item'), name: itemName, quantity: quantity, minQuantity: 0 };
+                section.items.push(item);
+            }
+            if (window.Telegram && window.Telegram.WebApp) {
+                Telegram.WebApp.sendData(JSON.stringify({
+                    type: 'add_item',
+                    payload: { sectionId: currentSectionId, item: item, quantityAdded: quantity }
+                }));
+                Telegram.WebApp.showAlert(`Добавлено ${quantity} шт. ${itemName} в "${section.name}".`);
+                Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+            } else {
+                alert(`Добавлено ${quantity} шт. ${itemName} в "${section.name}".`);
+            }
+        } else if (currentItemAction === 'subtract') {
+            if (item) {
+                if (item.quantity >= quantity) {
+                    item.quantity -= quantity;
+                    if (window.Telegram && window.Telegram.WebApp) {
+                        Telegram.WebApp.sendData(JSON.stringify({
+                            type: 'subtract_item',
+                            payload: { sectionId: currentSectionId, itemId: item.id, quantitySubtracted: quantity, newQuantity: item.quantity }
+                        }));
+                        Telegram.WebApp.showAlert(`Списано ${quantity} шт. ${itemName} из "${section.name}".`);
+                        Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+                    } else {
+                        alert(`Списано ${quantity} шт. ${itemName} из "${section.name}".`);
+                    }
+                } else {
+                    if (window.Telegram && window.Telegram.WebApp) {
+                        Telegram.WebApp.showAlert('Недостаточно товара на складе.');
+                        Telegram.WebApp.HapticFeedback.notificationOccurred('error');
+                    } else {
+                        alert('Недостаточно товара на складе.');
+                    }
+                    return;
+                }
+            } else {
+                if (window.Telegram && window.Telegram.WebApp) {
+                    Telegram.WebApp.showAlert('Товар не найден в этом разделе.');
+                    Telegram.WebApp.HapticFeedback.notificationOccurred('error');
+                } else {
+                    alert('Товар не найден в этом разделе.');
+                }
+                return;
             }
         }
+        
+        saveData('sections', allSections);
+        hideModal(itemQuantityModal);
+        // Переоткрываем модальное окно деталей раздела с обновленными данными
+        const canEditStockAfterAction = currentUserRole === 'main_admin' || 
+                                        currentUserRole === 'junior_admin' ||
+                                        (currentUserRole === 'employee' && section.stockManagerId === currentUserId);
+        showSectionDetailModal(canEditStockAfterAction);
 
-        clockInOutBtn.addEventListener('click', () => {
-            isClockedIn = !isClockedIn;
-            localStorage.setItem('isClockedIn', isClockedIn);
-            updateClockButton();
+        // Проверяем критический минимум после изменения
+        if (item && item.quantity <= item.minQuantity && item.minQuantity > 0) {
+            sendCriticalMinimumNotification(section, item);
+        }
+    });
 
-            const command = isClockedIn ? 'employee_clock_in' : 'employee_clock_out';
-            const message = isClockedIn ? 'Отмечен приход.' : 'Отмечен уход.';
+    cancelItemQuantityBtn.addEventListener('click', () => {
+        hideModal(itemQuantityModal);
+        if (window.Telegram && window.Telegram.WebApp) {
+            Telegram.WebApp.HapticFeedback.impactOccurred('light');
+        }
+    });
+
+    function showEditItemModal() {
+        const section = allSections.find(s => s.id === currentSectionId);
+        const item = section?.items.find(i => i.id === currentItemId);
+        if (!item) {
+            if (window.Telegram && window.Telegram.WebApp) {
+                Telegram.WebApp.showAlert('Товар не найден.');
+            } else {
+                alert('Товар не найден.');
+            }
+            return;
+        }
+
+        editItemNameInput.value = item.name;
+        editItemQuantityInput.value = item.quantity;
+        editItemMinInput.value = item.minQuantity;
+        showModal(editItemModal);
+    }
+
+    saveItemChangesBtn.addEventListener('click', () => {
+        const newName = editItemNameInput.value.trim();
+        const newQuantity = parseInt(editItemQuantityInput.value);
+        const newMin = parseInt(editItemMinInput.value);
+
+        if (!newName || isNaN(newQuantity) || newQuantity < 0 || isNaN(newMin) || newMin < 0) {
+            if (window.Telegram && window.Telegram.WebApp) {
+                Telegram.WebApp.showAlert('Пожалуйста, введите корректные данные.');
+            } else {
+                alert('Пожалуйста, введите корректные данные.');
+            }
+            return;
+        }
+
+        const section = allSections.find(s => s.id === currentSectionId);
+        const item = section?.items.find(i => i.id === currentItemId);
+
+        if (item) {
+            item.name = newName;
+            item.quantity = newQuantity;
+            item.minQuantity = newMin;
+
+            saveData('sections', allSections);
+            hideModal(editItemModal);
+            const canEditStockAfterAction = currentUserRole === 'main_admin' || 
+                                            currentUserRole === 'junior_admin' ||
+                                            (currentUserRole === 'employee' && section.stockManagerId === currentUserId);
+            showSectionDetailModal(canEditStockAfterAction); // Обновить UI
 
             if (window.Telegram && window.Telegram.WebApp) {
                 Telegram.WebApp.sendData(JSON.stringify({
-                    command: command,
-                    timestamp: new Date().toISOString()
+                    type: 'update_item',
+                    payload: { sectionId: currentSectionId, item: item }
                 }));
-                Telegram.WebApp.showAlert(message);
-                Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+                Telegram.WebApp.showAlert('Изменения сохранены.');
+                Telegram.WebApp.HapticFeedback.notificationOccurred('success');
             } else {
-                alert(message + ' (Только в браузере)');
+                alert('Изменения сохранены.');
             }
-        });
+             // Проверяем критический минимум после изменения
+            if (item.quantity <= item.minQuantity && item.minQuantity > 0) {
+                sendCriticalMinimumNotification(section, item);
+            }
+        }
+    });
 
-        updateClockButton(); // Инициализация состояния кнопки при загрузке
+    deleteItemBtn.addEventListener('click', () => {
+        if (window.Telegram && window.Telegram.WebApp) {
+            Telegram.WebApp.HapticFeedback.notificationOccurred('warning');
+            Telegram.WebApp.showConfirm('Вы уверены, что хотите удалить этот товар?', (confirmed) => {
+                if (confirmed) {
+                    deleteItem(currentItemId);
+                    Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+                } else {
+                    Telegram.WebApp.HapticFeedback.notificationOccurred('light');
+                }
+            });
+        } else {
+            if (confirm('Вы уверены, что хотите удалить этот товар?')) {
+                deleteItem(currentItemId);
+            }
+        }
+    });
+
+    function deleteItem(itemId) {
+        const section = allSections.find(s => s.id === currentSectionId);
+        if (section) {
+            section.items = section.items.filter(item => item.id !== itemId);
+            saveData('sections', allSections);
+            hideModal(editItemModal);
+            const canEditStockAfterAction = currentUserRole === 'main_admin' || 
+                                            currentUserRole === 'junior_admin' ||
+                                            (currentUserRole === 'employee' && section.stockManagerId === currentUserId);
+            showSectionDetailModal(canEditStockAfterAction); // Обновить UI
+            if (window.Telegram && window.Telegram.WebApp) {
+                Telegram.WebApp.sendData(JSON.stringify({
+                    type: 'delete_item',
+                    payload: { sectionId: currentSectionId, itemId: itemId }
+                }));
+                Telegram.WebApp.showAlert('Товар удален.');
+            } else {
+                alert('Товар удален.');
+            }
+        }
     }
 
-    // 3. Страница "Задачи"
+    cancelEditItemBtn.addEventListener('click', () => {
+        hideModal(editItemModal);
+        if (window.Telegram && window.Telegram.WebApp) {
+            Telegram.WebApp.HapticFeedback.impactOccurred('light');
+        }
+    });
+
+    // --- Функции для работы с заметками ---
+    function renderNotes() {
+        notesContainer.innerHTML = '';
+        if (allNotes.length === 0) {
+            notesContainer.innerHTML = '<p class="no-data-message">Заметок пока нет. Создайте первую!</p>';
+        } else {
+            allNotes.forEach(note => {
+                const noteItem = document.createElement('div');
+                noteItem.classList.add('note-item');
+                noteItem.dataset.id = note.id;
+                noteItem.innerHTML = `
+                    <div class="note-title">${note.title}</div>
+                    <div class="note-content">${note.content}</div>
+                `;
+                
+                // Кнопки управления заметкой (только для админов)
+                if (currentUserRole === 'main_admin' || currentUserRole === 'junior_admin') {
+                    const controlsHtml = `
+                        <div class="note-controls" style="position: absolute; top: 10px; right: 10px;">
+                            <i class="fas fa-edit edit-note-btn" data-id="${note.id}" style="cursor: pointer; margin-right: 10px; color: var(--secondary-text-color);"></i>
+                            <i class="fas fa-trash-alt delete-note-btn" data-id="${note.id}" style="cursor: pointer; color: var(--error-color);"></i>
+                        </div>
+                    `;
+                    noteItem.insertAdjacentHTML('beforeend', controlsHtml);
+                }
+
+                noteItem.addEventListener('click', () => {
+                     // Проверяем, был ли клик по иконке управления заметкой
+                    if (event.target.closest('.note-controls')) {
+                        return; // Не открываем модалку, если кликнули на кнопку управления
+                    }
+                    if (window.Telegram && window.Telegram.WebApp) {
+                        Telegram.WebApp.HapticFeedback.impactOccurred('light');
+                    }
+                    // Показать заметку в модальном окне только для просмотра
+                    noteModalTitle.textContent = note.title;
+                    noteTitleInput.value = note.title;
+                    noteContentInput.value = note.content;
+                    saveNoteBtn.style.display = 'none'; // Скрыть кнопку сохранения при просмотре
+                    cancelNoteBtn.textContent = 'Закрыть';
+                    noteTitleInput.readOnly = true;
+                    noteContentInput.readOnly = true;
+                    showModal(noteModal);
+                });
+
+                if (currentUserRole === 'main_admin' || currentUserRole === 'junior_admin') {
+                    noteItem.querySelector('.edit-note-btn')?.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        if (window.Telegram && window.Telegram.WebApp) {
+                            Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+                        }
+                        const id = e.target.dataset.id;
+                        currentNoteId = id;
+                        showNoteModal(id);
+                    });
+
+                    noteItem.querySelector('.delete-note-btn')?.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        if (window.Telegram && window.Telegram.WebApp) {
+                            Telegram.WebApp.HapticFeedback.notificationOccurred('warning');
+                            Telegram.WebApp.showConfirm(`Вы уверены, что хотите удалить заметку "${note.title}"?`, (confirmed) => {
+                                if (confirmed) {
+                                    deleteNote(e.target.dataset.id);
+                                    Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+                                } else {
+                                    Telegram.WebApp.HapticFeedback.notificationOccurred('light');
+                                }
+                            });
+                        } else {
+                            if (confirm(`Вы уверены, что хотите удалить заметку "${note.title}"?`)) {
+                                deleteNote(e.target.dataset.id);
+                            }
+                        }
+                    });
+                }
+                notesContainer.appendChild(noteItem);
+            });
+        }
+        saveData('notes', allNotes);
+    }
+
+    createNoteBtn.addEventListener('click', () => {
+        if (window.Telegram && window.Telegram.WebApp) {
+            Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+        }
+        currentNoteId = null;
+        showNoteModal();
+    });
+
+    function showNoteModal(noteId = null) {
+        noteModalTitle.textContent = noteId ? 'Редактировать заметку' : 'Новая заметка';
+        currentNoteId = noteId;
+        const note = noteId ? allNotes.find(n => n.id === noteId) : null;
+
+        if (note) {
+            noteTitleInput.value = note.title;
+            noteContentInput.value = note.content;
+        } else {
+            noteTitleInput.value = '';
+            noteContentInput.value = '';
+        }
+        // Сбросить режим просмотра
+        saveNoteBtn.style.display = 'inline-block';
+        cancelNoteBtn.textContent = 'Отмена';
+        noteTitleInput.readOnly = false;
+        noteContentInput.readOnly = false;
+        showModal(noteModal);
+    }
+
+    function hideNoteModal() {
+        hideModal(noteModal);
+    }
+
+    saveNoteBtn.addEventListener('click', () => {
+        const title = noteTitleInput.value.trim();
+        const content = noteContentInput.value.trim();
+        if (!title || !content) {
+            if (window.Telegram && window.Telegram.WebApp) {
+                Telegram.WebApp.showAlert('Заголовок и содержание заметки не могут быть пустыми!');
+            } else {
+                alert('Заголовок и содержание заметки не могут быть пустыми!');
+            }
+            return;
+        }
+
+        if (currentNoteId) { // Редактирование
+            const noteIndex = allNotes.findIndex(n => n.id === currentNoteId);
+            if (noteIndex !== -1) {
+                allNotes[noteIndex].title = title;
+                allNotes[noteIndex].content = content;
+                if (window.Telegram && window.Telegram.WebApp) {
+                    Telegram.WebApp.sendData(JSON.stringify({
+                        type: 'update_note',
+                        payload: allNotes[noteIndex]
+                    }));
+                    Telegram.WebApp.showAlert('Заметка обновлена.');
+                    Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+                } else {
+                    alert('Заметка обновлена.');
+                }
+            }
+        } else { // Создание
+            const newNote = { id: generateUniqueId('note'), title: title, content: content };
+            allNotes.push(newNote);
+            if (window.Telegram && window.Telegram.WebApp) {
+                Telegram.WebApp.sendData(JSON.stringify({
+                    type: 'create_note',
+                    payload: newNote
+                }));
+                Telegram.WebApp.showAlert('Заметка создана.');
+                Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+            } else {
+                alert('Заметка создана.');
+            }
+        }
+        renderNotes();
+        hideNoteModal();
+    });
+
+    cancelNoteBtn.addEventListener('click', () => {
+        hideNoteModal();
+        if (window.Telegram && window.Telegram.WebApp) {
+            Telegram.WebApp.HapticFeedback.impactOccurred('light');
+        }
+    });
+
+    function deleteNote(id) {
+        allNotes = allNotes.filter(note => note.id !== id);
+        renderNotes();
+        if (window.Telegram && window.Telegram.WebApp) {
+            Telegram.WebApp.sendData(JSON.stringify({
+                type: 'delete_note',
+                payload: { id: id }
+            }));
+        }
+    }
+
+    // --- Функции для работы с задачами ---
     function renderTasks(filter) {
         tasksList.innerHTML = '';
         const filteredTasks = allTasks.filter(task => {
             if (filter === 'all') return true;
             if (filter === 'my') return task.assignedTo === currentUserId;
+            // Новый фильтр: доступные задачи (без назначенного сотрудника)
+            if (filter === 'available') return !task.assignedTo;
             return false;
         });
 
@@ -1141,31 +1179,137 @@ document.addEventListener('DOMContentLoaded', () => {
                         statusText = 'Неизвестно';
                 }
 
+                // Определяем, должен ли быть виден текст "Назначено" или кнопка "Взять задание"
+                let assignedToHtml = '';
+                let takeTaskButtonHtml = '';
+                const assignedUserName = allUsers.find(u => u.id === task.assignedTo)?.name;
+
+                if (task.assignedTo && assignedUserName) {
+                    assignedToHtml = `<span class="task-assigned-to">Назначено: ${assignedUserName}</span>`;
+                } else {
+                    // Если задача не назначена, показываем кнопку "Взять задание"
+                    takeTaskButtonHtml = `
+                        <button class="action-button take-task-button" data-task-id="${task.id}">Взять задание</button>
+                    `;
+                }
+
                 taskItem.innerHTML = `
                     <div class="task-title">${task.title}</div>
                     <div class="task-info">
                         <span class="task-status ${statusClass}">${statusText}</span>
-                        <span class="task-assigned-to">Назначено: ${allUsers.find(u => u.id === task.assignedTo)?.name || 'Неизвестно'}</span>
+                        ${assignedToHtml}
                     </div>
+                    ${task.description ? `<p class="task-description">${task.description}</p>` : ''}
+                    ${takeTaskButtonHtml}
                 `;
-                // Добавляем обработчик клика для каждой задачи (можно добавить модалку с деталями задачи)
-                taskItem.addEventListener('click', () => {
+                
+                // Добавляем обработчик клика для каждой задачи (открывает модалку статуса)
+                taskItem.addEventListener('click', (e) => {
+                    // Исключаем клик по кнопке "Взять задание" или по кнопкам админа
+                    if (e.target.classList.contains('take-task-button') || e.target.closest('.task-controls')) {
+                        return;
+                    }
                     if (window.Telegram && window.Telegram.WebApp) {
                         Telegram.WebApp.HapticFeedback.impactOccurred('light');
-                        Telegram.WebApp.showAlert(`Задача: "${task.title}"\nСтатус: ${task.status}\nНазначена: ${allUsers.find(u => u.id === task.assignedTo)?.name || 'Неизвестно'}`);
-                    } else {
-                        alert(`Задача: "${task.title}"\nСтатус: ${task.status}\nНазначена: ${allUsers.find(u => u.id === task.assignedTo)?.name || 'Неизвестно'}`);
                     }
+                    currentTaskForStatusChange = task.id; 
+                    showTaskStatusModal(); 
                 });
+
+                // Кнопки управления заданием (только для админов)
+                if (currentUserRole === 'main_admin' || currentUserRole === 'junior_admin') {
+                    const controlsHtml = `
+                        <div class="task-controls" style="position: absolute; top: 10px; right: 10px;">
+                            <i class="fas fa-edit edit-task-btn" data-id="${task.id}" style="cursor: pointer; margin-right: 10px; color: var(--secondary-text-color);"></i>
+                            <i class="fas fa-trash-alt delete-task-btn" data-id="${task.id}" style="cursor: pointer; color: var(--error-color);"></i>
+                        </div>
+                    `;
+                    taskItem.insertAdjacentHTML('beforeend', controlsHtml);
+
+                    taskItem.querySelector('.edit-task-btn')?.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        if (window.Telegram && window.Telegram.WebApp) {
+                            Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+                        }
+                        const id = e.target.dataset.id;
+                        currentTaskId = id;
+                        showTaskModal(id);
+                    });
+
+                    taskItem.querySelector('.delete-task-btn')?.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        if (window.Telegram && window.Telegram.WebApp) {
+                            Telegram.WebApp.HapticFeedback.notificationOccurred('warning');
+                            Telegram.WebApp.showConfirm(`Вы уверены, что хотите удалить задание "${task.title}"?`, (confirmed) => {
+                                if (confirmed) {
+                                    deleteTask(e.target.dataset.id);
+                                    Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+                                } else {
+                                    Telegram.WebApp.HapticFeedback.notificationOccurred('light');
+                                }
+                            });
+                        } else {
+                            if (confirm(`Вы уверены, что хотите удалить задание "${task.title}"?`)) {
+                                deleteTask(e.target.dataset.id);
+                            }
+                        }
+                    });
+                }
+
+
+                // Обработчик для кнопки "Взять задание"
+                if (!task.assignedTo) {
+                    const takeButton = taskItem.querySelector('.take-task-button');
+                    if (takeButton) {
+                        takeButton.addEventListener('click', (e) => {
+                            e.stopPropagation(); // Предотвращаем срабатывание обработчика taskItem
+                            if (window.Telegram && window.Telegram.WebApp) {
+                                Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+                                Telegram.WebApp.showConfirm(`Вы уверены, что хотите взять задание "${task.title}"?`, (confirmed) => {
+                                    if (confirmed) {
+                                        const taskToUpdate = allTasks.find(t => t.id === task.id);
+                                        if (taskToUpdate) {
+                                            taskToUpdate.assignedTo = currentUserId; // Назначаем задачу текущему пользователю
+                                            taskToUpdate.status = 'В работе'; // Автоматически переводим в "В работе"
+                                            renderTasks(document.querySelector('#tasks-page .filter-tab.active').dataset.filter); // Перерисовываем
+
+                                            Telegram.WebApp.sendData(JSON.stringify({
+                                                type: 'take_task',
+                                                payload: {
+                                                    taskId: task.id,
+                                                    assignedTo: currentUserId,
+                                                    status: 'В работе'
+                                                }
+                                            }));
+                                            Telegram.WebApp.showAlert(`Вы взяли задание "${task.title}".`);
+                                        }
+                                    } else {
+                                        Telegram.WebApp.HapticFeedback.notificationOccurred('light');
+                                    }
+                                });
+                            } else {
+                                if (confirm(`Вы уверены, что хотите взять задание "${task.title}"?`)) {
+                                    const taskToUpdate = allTasks.find(t => t.id === task.id);
+                                    if (taskToUpdate) {
+                                        taskToUpdate.assignedTo = currentUserId;
+                                        taskToUpdate.status = 'В работе';
+                                        renderTasks(document.querySelector('#tasks-page .filter-tab.active').dataset.filter);
+                                        alert(`Вы взяли задание "${task.title}".`);
+                                    }
+                                }
+                            }
+                        });
+                    }
+                }
                 tasksList.appendChild(taskItem);
             });
         }
+        saveData('tasks', allTasks);
     }
 
-    // Обработчики для табов фильтра задач
-    taskFilterTabs.forEach(tab => {
+    taskFilterTabs.querySelectorAll('.filter-tab').forEach(tab => {
         tab.addEventListener('click', () => {
-            taskFilterTabs.forEach(t => t.classList.remove('active'));
+            taskFilterTabs.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
             tab.classList.add('active');
             renderTasks(tab.dataset.filter);
             if (window.Telegram && window.Telegram.WebApp) {
@@ -1174,42 +1318,743 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // 4. Страница "Чаты"
-    function renderChats() {
-        chatsList.innerHTML = '';
-        if (availableChats.length === 0) {
-            noChatsMessage.style.display = 'block';
-        } else {
-            noChatsMessage.style.display = 'none';
-            availableChats.forEach(chat => {
-                const chatItem = document.createElement('a');
-                chatItem.classList.add('chat-item');
-                chatItem.href = chat.link;
-                chatItem.target = '_blank'; // Открывать в новой вкладке (или внешнем приложении)
+    createTaskBtn.addEventListener('click', () => {
+        if (window.Telegram && window.Telegram.WebApp) {
+            Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+        }
+        currentTaskId = null;
+        showTaskModal();
+    });
 
-                chatItem.innerHTML = `
-                    <img class="chat-icon" src="${chat.icon || 'https://via.placeholder.com/40/CCCCCC/FFFFFF?text=C'}" alt="Иконка чата">
-                    <span class="chat-name">${chat.name}</span>
-                    <svg class="chat-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="9 18 15 12 9 6"></polyline>
-                    </svg>
-                `;
-                chatItem.addEventListener('click', (e) => {
-                    if (window.Telegram && window.Telegram.WebApp) {
-                        // Для открытия внешних ссылок лучше использовать Telegram.WebApp.openLink
-                        e.preventDefault(); // Предотвращаем стандартное действие
-                        Telegram.WebApp.openLink(chat.link);
-                        Telegram.WebApp.HapticFeedback.impactOccurred('light');
-                    }
-                });
-                chatsList.appendChild(chatItem);
-            });
+    function populateUserSelect(selectElement, selectedUserId = null) {
+        selectElement.innerHTML = '<option value="">Не назначен</option>';
+        allUsers.filter(u => u.role === 'employee').forEach(user => { // Только сотрудники для назначения
+            const option = document.createElement('option');
+            option.value = user.id;
+            option.textContent = user.name;
+            selectElement.appendChild(option);
+        });
+        if (selectedUserId) {
+            selectElement.value = selectedUserId;
         }
     }
 
-    // --- Инициализация при загрузке страницы (если не в TWA) ---
-    if (!(window.Telegram && window.Telegram.WebApp)) {
-        renderSections(currentParentId);
-        // Заметки, кнопка прихода/ухода, задачи и чаты уже инициализируются в блоке else выше.
+    function showTaskModal(taskId = null) {
+        taskModalTitle.textContent = taskId ? 'Редактировать задание' : 'Новое задание';
+        currentTaskId = taskId;
+        const task = taskId ? allTasks.find(t => t.id === taskId) : null;
+
+        if (task) {
+            taskTitleInput.value = task.title;
+            taskDescriptionInput.value = task.description || '';
+            populateUserSelect(taskAssignedToSelect, task.assignedTo);
+        } else {
+            taskTitleInput.value = '';
+            taskDescriptionInput.value = '';
+            populateUserSelect(taskAssignedToSelect);
+        }
+        showModal(taskModal);
     }
+
+    function hideTaskModal() {
+        hideModal(taskModal);
+    }
+
+    saveTaskBtn.addEventListener('click', () => {
+        const title = taskTitleInput.value.trim();
+        const description = taskDescriptionInput.value.trim();
+        const assignedTo = taskAssignedToSelect.value || null;
+
+        if (!title) {
+            if (window.Telegram && window.Telegram.WebApp) {
+                Telegram.WebApp.showAlert('Название задания не может быть пустым!');
+            } else {
+                alert('Название задания не может быть пустым!');
+            }
+            return;
+        }
+
+        if (currentTaskId) { // Редактирование
+            const taskIndex = allTasks.findIndex(t => t.id === currentTaskId);
+            if (taskIndex !== -1) {
+                allTasks[taskIndex].title = title;
+                allTasks[taskIndex].description = description;
+                allTasks[taskIndex].assignedTo = assignedTo;
+                // Статус не меняем при редактировании, только через отдельное меню
+                
+                if (window.Telegram && window.Telegram.WebApp) {
+                    Telegram.WebApp.sendData(JSON.stringify({
+                        type: 'update_task',
+                        payload: allTasks[taskIndex]
+                    }));
+                    Telegram.WebApp.showAlert('Задание обновлено.');
+                    Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+                } else {
+                    alert('Задание обновлено.');
+                }
+            }
+        } else { // Создание
+            const newTask = { 
+                id: generateUniqueId('task'), 
+                title: title, 
+                description: description, 
+                assignedTo: assignedTo, 
+                status: 'Новая' // Новое задание всегда "Новая"
+            };
+            allTasks.push(newTask);
+            if (window.Telegram && window.Telegram.WebApp) {
+                Telegram.WebApp.sendData(JSON.stringify({
+                    type: 'create_task',
+                    payload: newTask
+                }));
+                Telegram.WebApp.showAlert('Задание создано.');
+                Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+            } else {
+                alert('Задание создано.');
+            }
+        }
+        renderTasks(document.querySelector('#tasks-page .filter-tab.active')?.dataset.filter || 'all');
+        hideTaskModal();
+    });
+
+    cancelTaskBtn.addEventListener('click', () => {
+        hideTaskModal();
+        if (window.Telegram && window.Telegram.WebApp) {
+            Telegram.WebApp.HapticFeedback.impactOccurred('light');
+        }
+    });
+
+    function deleteTask(id) {
+        allTasks = allTasks.filter(task => task.id !== id);
+        renderTasks(document.querySelector('#tasks-page .filter-tab.active')?.dataset.filter || 'all');
+        if (window.Telegram && window.Telegram.WebApp) {
+            Telegram.WebApp.sendData(JSON.stringify({
+                type: 'delete_task',
+                payload: { id: id }
+            }));
+        }
+    }
+
+    // --- Функции для модального окна статусов задач ---
+    function showTaskStatusModal() {
+        showModal(taskStatusModal);
+    }
+
+    function hideTaskStatusModal() {
+        hideModal(taskStatusModal);
+        currentTaskForStatusChange = null; // Сбрасываем ID задачи
+    }
+
+    taskStatusOptionButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const newStatus = button.dataset.status;
+            if (currentTaskForStatusChange && newStatus) {
+                const taskIndex = allTasks.findIndex(t => t.id === currentTaskForStatusChange);
+                if (taskIndex !== -1) {
+                    allTasks[taskIndex].status = newStatus;
+                    renderTasks(document.querySelector('#tasks-page .filter-tab.active').dataset.filter); // Перерисовываем задачи с учетом текущего фильтра
+
+                    if (window.Telegram && window.Telegram.WebApp) {
+                        Telegram.WebApp.sendData(JSON.stringify({
+                            type: 'update_task_status',
+                            payload: {
+                                taskId: currentTaskForStatusChange,
+                                status: newStatus
+                            }
+                        }));
+                        Telegram.WebApp.showAlert(`Статус задачи "${allTasks[taskIndex].title}" изменен на "${newStatus}".`);
+                        Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+                    } else {
+                        alert(`Статус задачи "${allTasks[taskIndex].title}" изменен на "${newStatus}".`);
+                    }
+                }
+            }
+            hideTaskStatusModal();
+        });
+    });
+
+    closeTaskStatusModalBtn.addEventListener('click', hideTaskStatusModal);
+
+
+    // --- Функции для работы с получателями оповещений (видимость, критический минимум) ---
+    let currentRecipientFilter = 'all';
+
+    function showNotificationRecipientsModal(sectionId, title, currentSelectedUserIds) {
+        recipientsModalTitle.textContent = title;
+        currentSectionId = sectionId;
+        currentRecipients = currentSelectedUserIds; // Запоминаем текущие выбранные ID
+        
+        // Сброс фильтра и перерисовка списка при открытии модалки
+        recipientFilterTabs.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+        recipientFilterTabs.querySelector('.filter-tab[data-filter="all"]').classList.add('active');
+        currentRecipientFilter = 'all';
+
+        renderRecipientsList(allUsers, currentRecipients);
+        showModal(notificationRecipientsModal);
+    }
+
+    function hideNotificationRecipientsModal() {
+        hideModal(notificationRecipientsModal);
+    }
+
+    recipientFilterTabs.querySelectorAll('.filter-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            recipientFilterTabs.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            currentRecipientFilter = tab.dataset.filter;
+            renderRecipientsList(allUsers, currentRecipients); // Рендерим с учетом выбранных
+            selectAllRecipientsCheckbox.checked = false;
+            if (window.Telegram && window.Telegram.WebApp) {
+                Telegram.WebApp.HapticFeedback.impactOccurred('light');
+            }
+        });
+    });
+
+    selectAllRecipientsCheckbox.addEventListener('change', (e) => {
+        recipientList.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.checked = e.target.checked;
+        });
+    });
+
+    function renderRecipientsList(usersToRender, selectedUserIds = []) {
+        recipientList.innerHTML = '';
+        selectAllRecipientsCheckbox.checked = false; // Сброс при каждом рендере
+
+        let filteredUsers = [];
+        if (currentRecipientFilter === 'all') {
+            filteredUsers = usersToRender;
+        } else if (currentRecipientFilter === 'admins') {
+            filteredUsers = usersToRender.filter(user => user.role === 'main_admin' || user.role === 'junior_admin');
+        } else if (currentRecipientFilter === 'employees') {
+            filteredUsers = usersToRender.filter(user => user.role === 'employee');
+        }
+
+        filteredUsers.forEach(user => {
+            // Если младший админ и пользователь - другой админ, не показываем его в списке для скрытия
+            if (currentRecipientsType === 'hidden_from_users' && currentUserRole === 'junior_admin' && (user.role === 'main_admin' || user.role === 'junior_admin')) {
+                return;
+            }
+
+            const recipientItem = document.createElement('div');
+            recipientItem.classList.add('recipient-item');
+            recipientItem.dataset.id = user.id;
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.id = `recipient-${user.id}`;
+            checkbox.value = user.id;
+            // Проверяем, если пользователь уже был выбран
+            if (selectedUserIds.includes(user.id)) {
+                checkbox.checked = true;
+            }
+            recipientItem.appendChild(checkbox);
+
+            const label = document.createElement('label');
+            label.htmlFor = `recipient-${user.id}`;
+            label.classList.add('recipient-item-name');
+            label.textContent = user.name;
+            recipientItem.appendChild(label);
+
+            recipientList.appendChild(recipientItem);
+        });
+    }
+
+    saveRecipientsBtn.addEventListener('click', () => {
+        const selectedUserIds = Array.from(recipientList.querySelectorAll('input[type="checkbox"]:checked'))
+                                     .map(checkbox => checkbox.value);
+        const section = allSections.find(s => s.id === currentSectionId);
+        if (!section) return;
+
+        if (currentRecipientsType === 'notifications') {
+            section.notificationRecipients = selectedUserIds;
+            if (window.Telegram && window.Telegram.WebApp) {
+                Telegram.WebApp.sendData(JSON.stringify({
+                    type: 'set_notification_recipients',
+                    payload: {
+                        sectionId: currentSectionId,
+                        recipients: selectedUserIds
+                    }
+                }));
+                Telegram.WebApp.showAlert('Получатели оповещений об изменениях обновлены.');
+                Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+            } else {
+                alert('Получатели оповещений об изменениях обновлены.');
+            }
+        } else if (currentRecipientsType === 'critical_minimum') {
+            section.criticalMinRecipients = selectedUserIds;
+            if (window.Telegram && window.Telegram.WebApp) {
+                Telegram.WebApp.sendData(JSON.stringify({
+                    type: 'set_critical_minimum_recipients',
+                    payload: {
+                        sectionId: currentSectionId,
+                        recipients: selectedUserIds
+                    }
+                }));
+                Telegram.WebApp.showAlert('Получатели оповещений о критическом минимуме обновлены.');
+                Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+            } else {
+                alert('Получатели оповещений о критическом минимуме обновлены.');
+            }
+        } else if (currentRecipientsType === 'hidden_from_users') {
+             // Если текущий пользователь младший админ, фильтруем список, оставляя только сотрудников
+            if (currentUserRole === 'junior_admin') {
+                const juniorAdminFilteredIds = selectedUserIds.filter(userId => {
+                    const user = allUsers.find(u => u.id === userId);
+                    return user && user.role === 'employee'; // Младший админ может скрывать только от сотрудников
+                });
+
+                // Проверяем, если младший админ пытался выбрать админов
+                const triedToHideFromAdmins = selectedUserIds.some(userId => {
+                    const user = allUsers.find(u => u.id === userId);
+                    return user && (user.role === 'main_admin' || user.role === 'junior_admin');
+                });
+
+                if (triedToHideFromAdmins) {
+                    if (window.Telegram && window.Telegram.WebApp) {
+                        Telegram.WebApp.showAlert('Младший администратор может скрывать разделы только от сотрудников.');
+                        Telegram.WebApp.HapticFeedback.notificationOccurred('error');
+                    } else {
+                        alert('Младший администратор может скрывать разделы только от сотрудников.');
+                    }
+                    // В этом случае мы все равно отправляем только разрешенные ID, но предупреждаем пользователя
+                }
+                section.hiddenFromUsers = juniorAdminFilteredIds;
+                if (window.Telegram && window.Telegram.WebApp) {
+                    Telegram.WebApp.sendData(JSON.stringify({
+                        type: 'set_hidden_from_users',
+                        payload: {
+                            sectionId: currentSectionId,
+                            hiddenFromUserIds: juniorAdminFilteredIds
+                        }
+                    }));
+                    if (!triedToHideFromAdmins) { // Если не было попыток скрыть от админов, показываем успех
+                        Telegram.WebApp.showAlert('Видимость раздела обновлена.');
+                        Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+                    }
+                } else {
+                    alert('Видимость раздела обновлена.');
+                }
+
+            } else {
+                // Главный админ может скрывать от всех
+                section.hiddenFromUsers = selectedUserIds;
+                if (window.Telegram && window.Telegram.WebApp) {
+                    Telegram.WebApp.sendData(JSON.stringify({
+                        type: 'set_hidden_from_users',
+                        payload: {
+                            sectionId: currentSectionId,
+                            hiddenFromUserIds: selectedUserIds
+                        }
+                    }));
+                    Telegram.WebApp.showAlert('Видимость раздела обновлена.');
+                    Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+                } else {
+                    alert('Видимость раздела обновлена.');
+                }
+            }
+            // Обновляем isHidden на основе наличия скрытых пользователей
+            section.isHidden = section.hiddenFromUsers.length > 0;
+        }
+
+        saveData('sections', allSections);
+        renderSections(); // Перерисовать разделы, чтобы обновить видимость
+        hideNotificationRecipientsModal();
+    });
+
+    cancelRecipientsBtn.addEventListener('click', () => {
+        hideNotificationRecipientsModal();
+        if (window.Telegram && window.Telegram.WebApp) {
+            Telegram.WebApp.HapticFeedback.impactOccurred('light');
+        }
+    });
+
+    function sendCriticalMinimumNotification(section, item) {
+        if (section.criticalMinRecipients.length > 0) {
+            if (window.Telegram && window.Telegram.WebApp) {
+                Telegram.WebApp.sendData(JSON.stringify({
+                    type: 'critical_minimum_alert',
+                    payload: {
+                        sectionId: section.id,
+                        sectionName: section.name,
+                        itemId: item.id,
+                        itemName: item.name,
+                        currentQuantity: item.quantity,
+                        minQuantity: item.minQuantity,
+                        recipients: section.criticalMinRecipients
+                    }
+                }));
+                Telegram.WebApp.showAlert(`Внимание! Товар "${item.name}" в разделе "${section.name}" достиг критического минимума (${item.quantity} шт.).`);
+            }
+        }
+    }
+
+
+    // --- Управление пользователями (только для Главного админа) ---
+    let currentUserManagementFilter = 'all';
+
+    function showUserManagementModal() {
+        showModal(userManagementModal);
+        renderUsersForUserManagement(currentUserManagementFilter);
+        selectAllManageUsersCheckbox.checked = false;
+    }
+
+    function hideUserManagementModal() {
+        hideModal(userManagementModal);
+    }
+
+    manageUsersBtn.addEventListener('click', () => {
+        if (window.Telegram && window.Telegram.WebApp) {
+            Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+        }
+        showUserManagementModal();
+    });
+
+    userManagementModal.querySelectorAll('.recipient-filter-tabs .filter-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            userManagementModal.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            currentUserManagementFilter = tab.dataset.filter;
+            renderUsersForUserManagement(currentUserManagementFilter);
+            selectAllManageUsersCheckbox.checked = false;
+            if (window.Telegram && window.Telegram.WebApp) {
+                Telegram.WebApp.HapticFeedback.impactOccurred('light');
+            }
+        });
+    });
+
+    selectAllManageUsersCheckbox.addEventListener('change', (e) => {
+        manageUsersList.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.checked = e.target.checked;
+        });
+    });
+
+    function renderUsersForUserManagement(filter) {
+        manageUsersList.innerHTML = '';
+        let filteredUsers = [];
+        if (filter === 'all') {
+            filteredUsers = allUsers;
+        } else if (filter === 'admins') {
+            filteredUsers = allUsers.filter(user => user.role === 'main_admin' || user.role === 'junior_admin');
+        } else if (filter === 'employees') {
+            filteredUsers = allUsers.filter(user => user.role === 'employee');
+        }
+
+        filteredUsers.forEach(user => {
+            const userDiv = document.createElement('div');
+            userDiv.classList.add('recipient-item'); // Переиспользуем стиль recipient-item
+            userDiv.dataset.id = user.id;
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.id = `manage-user-${user.id}`;
+            checkbox.value = user.id;
+            // Нельзя удалить или изменить роль самому себе
+            if (user.id === currentUserId) {
+                checkbox.disabled = true;
+            }
+            userDiv.appendChild(checkbox);
+
+            const label = document.createElement('label');
+            label.htmlFor = `manage-user-${user.id}`;
+            label.classList.add('recipient-item-name');
+            label.textContent = `${user.name} (${user.role === 'main_admin' ? 'Главный админ' : user.role === 'junior_admin' ? 'Младший админ' : 'Сотрудник'})`;
+            userDiv.appendChild(label);
+
+            manageUsersList.appendChild(userDiv);
+        });
+    }
+
+    // Обработчик кнопки "Назначить роль"
+    assignRoleBtn.addEventListener('click', async () => {
+        const selectedUserIds = Array.from(manageUsersList.querySelectorAll('input[type="checkbox"]:checked:not(:disabled)'))
+                                     .map(checkbox => checkbox.value);
+        if (selectedUserIds.length === 0) {
+            if (window.Telegram && window.Telegram.WebApp) {
+                Telegram.WebApp.showAlert('Пожалуйста, выберите хотя бы одного пользователя (кроме себя).');
+            } else {
+                alert('Пожалуйста, выберите хотя бы одного пользователя (кроме себя).');
+            }
+            return;
+        }
+
+        let roleInput;
+        if (window.Telegram && window.Telegram.WebApp) {
+            Telegram.WebApp.HapticFeedback.impactOccurred('light');
+            roleInput = prompt('Введите новую роль (employee, junior_admin, main_admin):');
+        } else {
+            roleInput = prompt('Введите новую роль (employee, junior_admin, main_admin):');
+        }
+
+        if (roleInput && ['employee', 'junior_admin', 'main_admin'].includes(roleInput.trim().toLowerCase())) {
+            const newRole = roleInput.trim().toLowerCase();
+            let confirmed;
+            if (window.Telegram && window.Telegram.WebApp) {
+                confirmed = await new Promise(resolve => {
+                    Telegram.WebApp.showConfirm(`Вы уверены, что хотите назначить роль "${newRole}" выбранным пользователям?`, (result) => resolve(result));
+                });
+            } else {
+                confirmed = confirm(`Вы уверены, что хотите назначить роль "${newRole}" выбранным пользователям?`);
+            }
+
+            if (confirmed) {
+                selectedUserIds.forEach(userId => {
+                    const user = allUsers.find(u => u.id === userId);
+                    if (user) {
+                        user.role = newRole;
+                    }
+                });
+                renderUsersForUserManagement(currentUserManagementFilter); // Перерисовать список
+                saveData('users', allUsers); // Сохраняем измененные роли (для имитации)
+
+                if (window.Telegram && window.Telegram.WebApp) {
+                    Telegram.WebApp.sendData(JSON.stringify({
+                        type: 'assign_role',
+                        payload: {
+                            userIds: selectedUserIds,
+                            role: newRole
+                        }
+                    }));
+                    Telegram.WebApp.showAlert('Роли пользователей обновлены. Бот оповещен.');
+                    Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+                } else {
+                    alert('Роли пользователей обновлены.');
+                }
+            } else {
+                if (window.Telegram && window.Telegram.WebApp) {
+                    Telegram.WebApp.HapticFeedback.notificationOccurred('light');
+                }
+            }
+        } else if (roleInput !== null) {
+            if (window.Telegram && window.Telegram.WebApp) {
+                Telegram.WebApp.showAlert('Некорректная роль. Допустимые значения: employee, junior_admin, main_admin.');
+            } else {
+                alert('Некорректная роль. Допустимые значения: employee, junior_admin, main_admin.');
+            }
+        }
+    });
+
+    // Обработчик кнопки "Удалить пользователя" (исключает из чатов - бот)
+    removeUserBtn.addEventListener('click', async () => {
+        const selectedUserIds = Array.from(manageUsersList.querySelectorAll('input[type="checkbox"]:checked:not(:disabled)'))
+                                     .map(checkbox => checkbox.value);
+        if (selectedUserIds.length === 0) {
+            if (window.Telegram && window.Telegram.WebApp) {
+                Telegram.WebApp.showAlert('Пожалуйста, выберите хотя бы одного пользователя для удаления (кроме себя).');
+            } else {
+                alert('Пожалуйста, выберите хотя бы одного пользователя для удаления (кроме себя).');
+            }
+            return;
+        }
+
+        let confirmed;
+        if (window.Telegram && window.Telegram.WebApp) {
+            Telegram.WebApp.HapticFeedback.notificationOccurred('warning');
+            confirmed = await new Promise(resolve => {
+                Telegram.WebApp.showConfirm('Вы уверены, что хотите удалить выбранных пользователей? Это также исключит их из всех рабочих чатов.', (result) => resolve(result));
+            });
+        } else {
+            confirmed = confirm('Вы уверены, что хотите удалить выбранных пользователей? Это также исключит их из всех рабочих чатов.');
+        }
+
+        if (confirmed) {
+            // Отправляем команду боту на удаление из чатов и из базы
+            if (window.Telegram && window.Telegram.WebApp) {
+                Telegram.WebApp.sendData(JSON.stringify({
+                    type: 'remove_users',
+                    payload: {
+                        userIds: selectedUserIds
+                    }
+                }));
+                Telegram.WebApp.showAlert('Запрос на удаление пользователей и их исключение из чатов отправлен боту.');
+                // На клиенте просто удаляем их из списка (имитация)
+                allUsers = allUsers.filter(user => !selectedUserIds.includes(user.id));
+                saveData('users', allUsers); // Сохраняем изменения (для имитации)
+                renderUsersForUserManagement(currentUserManagementFilter);
+                Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+            } else {
+                alert('Запрос на удаление пользователей и их исключение из чатов отправлен (имитация).');
+                allUsers = allUsers.filter(user => !selectedUserIds.includes(user.id));
+                saveData('users', allUsers);
+                renderUsersForUserManagement(currentUserManagementFilter);
+            }
+        } else {
+            if (window.Telegram && window.Telegram.WebApp) {
+                Telegram.WebApp.HapticFeedback.notificationOccurred('light');
+            }
+        }
+    });
+
+    cancelUserManagementBtn.addEventListener('click', () => {
+        hideUserManagementModal();
+        if (window.Telegram && window.Telegram.WebApp) {
+            Telegram.WebApp.HapticFeedback.impactOccurred('light');
+        }
+    });
+
+    subscribeBtn.addEventListener('click', () => {
+        if (window.Telegram && window.Telegram.WebApp) {
+            Telegram.WebApp.HapticFeedback.impactOccurred('heavy');
+            // В реальном приложении здесь будет запрос к боту для инициирования платежа
+            Telegram.WebApp.sendData(JSON.stringify({
+                type: 'initiate_payment',
+                payload: {
+                    amount: 1000, // Пример: 1000 рублей
+                    description: 'Подписка на WMS WebApp',
+                    currency: 'RUB'
+                }
+            }));
+            Telegram.WebApp.showAlert('Запрос на оплату подписки отправлен боту. Следуйте инструкциям бота.');
+        } else {
+            alert('Функционал оплаты доступен только в Telegram Web App. Имитация запроса на оплату.');
+        }
+    });
+
+
+    // --- Скачивание отчетов ---
+    downloadReportsBtn.addEventListener('click', () => {
+        if (window.Telegram && window.Telegram.WebApp) {
+            Telegram.WebApp.HapticFeedback.impactOccurred('heavy');
+            // Отправляем запрос боту на генерацию и отправку отчетов
+            Telegram.WebApp.sendData(JSON.stringify({
+                type: 'download_reports',
+                payload: {
+                    reportType: 'all_data_summary', // Можно добавить выбор типа отчета
+                    format: 'csv' // Или 'pdf', 'excel'
+                }
+            }));
+            Telegram.WebApp.showAlert('Запрос на скачивание отчетов отправлен боту. Ожидайте файл в Telegram.');
+        } else {
+            alert('Функционал скачивания отчетов доступен только в Telegram Web App. Имитация запроса.');
+        }
+    });
+
+
+    // --- Функции для тестовых кнопок (браузерный режим) ---
+    addTestDataBtn.addEventListener('click', () => {
+        if (window.Telegram && window.Telegram.WebApp) {
+            Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+            Telegram.WebApp.showAlert('Эта функция доступна только в режиме отладки в браузере.');
+            return;
+        }
+        allSections = [
+            { id: 'sec_1', name: 'Склад А (тест)', items: [{id: 'item_1', name: 'Ручки', quantity: 50, minQuantity: 10}, {id: 'item_3', name: 'Степлер', quantity: 5, minQuantity: 5}], isHidden: false, hiddenFromUsers: [], notificationRecipients: [], criticalMinRecipients: ['987654321'], stockManagerId: '123456789' },
+            { id: 'sec_2', name: 'Офис Б (тест)', items: [{id: 'item_2', name: 'Бумага А4', quantity: 10, minQuantity: 5}], isHidden: false, hiddenFromUsers: [], notificationRecipients: [], criticalMinRecipients: [], stockManagerId: '987654321' }
+        ];
+        allNotes = [
+            { id: 'note_1', title: 'Важное объявление', content: 'Совещание в пятницу в 10:00.' },
+            { id: 'note_2', title: 'График отпусков', content: 'Просьба согласовать отпуска до конца месяца.' }
+        ];
+        allTasks = [
+            { id: 'task_1', title: 'Заказать канцтовары', description: 'Заказать ручки, бумагу и блокноты.', assignedTo: '123456789', status: 'Новая' },
+            { id: 'task_2', title: 'Проверить инвентаризацию', description: 'Сверить фактическое наличие с данными в системе.', assignedTo: '987654321', status: 'В работе' },
+            { id: 'task_3', title: 'Организовать корпоратив', description: 'Выбрать место и меню.', assignedTo: null, status: 'Новая' }
+        ];
+        allUsers = [
+            { id: '123456789', name: 'Иван Иванов', role: 'employee' }, 
+            { id: '987654321', name: 'Петр Петров', role: 'main_admin' }, // Главный админ
+            { id: '112233445', name: 'Анна Сидорова', role: 'employee' },
+            { id: '556677889', name: 'Мария Кузнецова', role: 'junior_admin' }, // Младший админ
+            { id: '998877665', name: 'Дмитрий Смирнов', role: 'employee' }
+        ];
+        saveData('sections', allSections);
+        saveData('notes', allNotes);
+        saveData('tasks', allTasks);
+        saveData('users', allUsers);
+        renderSections();
+        renderNotes();
+        renderTasks('all');
+        updateAdminUIVisibility();
+        alert('Тестовые данные добавлены!');
+    });
+
+    clearAllDataBtn.addEventListener('click', () => {
+        if (window.Telegram && window.Telegram.WebApp) {
+            Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+            Telegram.WebApp.showAlert('Эта функция доступна только в режиме отладки в браузере.');
+            return;
+        }
+        if (confirm('Вы уверены, что хотите удалить ВСЕ данные?')) {
+            allSections = [];
+            allNotes = [];
+            allTasks = [];
+            allUsers = [
+                { id: '123456789', name: 'Иван Иванов', role: 'employee' }, 
+                { id: '987654321', name: 'Петр Петров', role: 'main_admin' },
+                { id: '112233445', name: 'Анна Сидорова', role: 'employee' },
+                { id: '556677889', name: 'Мария Кузнецова', role: 'junior_admin' },
+                { id: '998877665', name: 'Дмитрий Смирнов', role: 'employee' }
+            ];
+            localStorage.clear();
+            saveData('sections', allSections);
+            saveData('notes', allNotes);
+            saveData('tasks', allTasks);
+            saveData('users', allUsers);
+            renderSections();
+            renderNotes();
+            renderTasks('all');
+            updateAdminUIVisibility();
+            alert('Все данные удалены!');
+        }
+    });
+
+    toggleAdminModeBtn.addEventListener('click', () => {
+        if (window.Telegram && window.Telegram.WebApp) {
+            Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+            Telegram.WebApp.showAlert('Эта функция доступна только в режиме отладки в браузере.');
+            return;
+        }
+        if (currentUserRole === 'employee') {
+            currentUserRole = 'main_admin';
+            currentUserId = '987654321'; // Имитируем вход админа
+            alert('Режим админа включен (Главный админ).');
+        } else if (currentUserRole === 'main_admin') {
+            currentUserRole = 'junior_admin';
+            currentUserId = '556677889'; // Имитируем вход младшего админа
+            alert('Режим админа включен (Младший админ).');
+        } else {
+            currentUserRole = 'employee';
+            currentUserId = '123456789'; // Имитируем вход сотрудника
+            alert('Режим сотрудника включен.');
+        }
+        updateAdminUIVisibility();
+        renderSections(); // Перерисовать, чтобы обновить кнопки админа
+        renderNotes(); // Перерисовать заметки
+        renderTasks(document.querySelector('#tasks-page .filter-tab.active')?.dataset.filter || 'all'); // Перерисовать задачи
+    });
+
+
+    // --- Переключение темы ---
+    const themeToggle = document.getElementById('checkbox');
+    const savedTheme = localStorage.getItem('theme');
+
+    if (savedTheme) {
+        document.body.classList.add(savedTheme + '-mode');
+        themeToggle.checked = savedTheme === 'dark';
+    } else if (window.Telegram && window.Telegram.WebApp) {
+        // Если тема не сохранена локально, используем тему из Telegram
+        document.body.classList.add(Telegram.WebApp.colorScheme + '-mode');
+        themeToggle.checked = Telegram.WebApp.colorScheme === 'dark';
+    } else {
+        // По умолчанию светлая тема, если нет ни локальных данных, ни Telegram
+        document.body.classList.add('light-mode');
+        themeToggle.checked = false;
+    }
+
+    themeToggle.addEventListener('change', () => {
+        if (themeToggle.checked) {
+            document.body.classList.remove('light-mode');
+            document.body.classList.add('dark-mode');
+            localStorage.setItem('theme', 'dark');
+        } else {
+            document.body.classList.remove('dark-mode');
+            document.body.classList.add('light-mode');
+            localStorage.setItem('theme', 'light');
+        }
+        if (window.Telegram && window.Telegram.WebApp) {
+            Telegram.WebApp.HapticFeedback.impactOccurred('light');
+        }
+    });
+
+    // Инициализация отображения
+    showPage('main-page'); // Показываем главную страницу при загрузке
 });
