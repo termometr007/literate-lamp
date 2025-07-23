@@ -1,369 +1,819 @@
 :root {
-    --text-color: #333;
-    --background-color: #f0f2f5;
-    --header-bg: #fff;
-    --header-text-color: #333;
+    --primary-color: #007bff; /* Синий */
+    --secondary-color: #6c757d; /* Серый */
+    --accent-color: #28a745; /* Зеленый */
+    --background-color: #f8f9fa; /* Светлый фон */
+    --card-background-color: #ffffff; /* Белый фон карточек */
+    --text-color: #343a40; /* Темный текст */
+    --light-text-color: #6c757d; /* Светлый текст */
+    --border-color: #dee2e6; /* Цвет границ */
+    --shadow-color: rgba(0, 0, 0, 0.08); /* Цвет тени */
+    --header-bg: #ffffff;
+    --header-text: #343a40;
+    --bottom-nav-bg: #ffffff;
+    --bottom-nav-text-color: #6c757d;
+    --bottom-nav-active-color: #007bff;
+    --status-new-bg: #e0f7fa;
+    --status-new-text: #007bff;
+    --status-in-progress-bg: #fffde7;
+    --status-in-progress-text: #fbc02d;
+    --status-completed-bg: #e8f5e9;
+    --status-completed-text: #388e3c;
+    --status-deferred-bg: #ffebee;
+    --status-deferred-text: #d32f2f;
     --button-bg: #007bff;
-    --button-text: #fff;
-    --border-color: #ddd;
-    --shadow-color: rgba(0, 0, 0, 0.1);
-    --slider-bg: #ccc;
-    --slider-handle: white;
-    --slider-checked-bg: #2196F3;
-    --icon-color-light: #FFD700; 
-    --icon-color-dark: #A9A9A9;
-
-    /* Новые переменные для анимации панели */
-    --header-height: 120px;
-    --header-transition-duration: 0.3s;
-    --border-radius-size: 15px;
-
-    /* Цвета для обводки текста */
-    --text-stroke-color-light: #fff;
-    --text-stroke-color-dark: #333;
-
-    /* НОВЫЕ ПЕРЕМЕННЫЕ ДЛЯ НИЖНЕЙ НАВИГАЦИИ */
-    --bottom-nav-height: 60px;
-    --bottom-nav-bg: #fff;
-    --bottom-nav-text-color: #666;
-    --bottom-nav-icon-color: #666;
-    --bottom-nav-active-color: #007bff; /* Цвет активной кнопки */
-    --bottom-nav-shadow: rgba(0, 0, 0, 0.15);
-
-    /* Модальное окно и блюр */
-    --modal-backdrop-color: rgba(0, 0, 0, 0.4);
-    --modal-bg-color: #fff;
-    --modal-border-radius: 12px;
-
-    /* Цвета для статусов задач */
-    --status-new-bg: #e0f2f7; /* Light Blue */
-    --status-new-text: #2196F3;
-    --status-in-progress-bg: #fffde7; /* Light Yellow */
-    --status-in-progress-text: #FFC107;
-    --status-completed-bg: #e8f5e9; /* Light Green */
-    --status-completed-text: #4CAF50;
-    --status-deferred-bg: #fbe9e7; /* Light Red/Orange */
-    --status-deferred-text: #FF5722;
+    --button-text: #ffffff;
+    --secondary-button-bg: #6c757d;
+    --secondary-button-text: #ffffff;
 }
 
 body.dark-mode {
-    --text-color: #f0f2f5;
-    --background-color: #1a1a1a;
-    --header-bg: #2d2d2d;
-    --header-text-color: #f0f2f5;
-    --button-bg: #6a0dad;
-    --button-text: #fff;
-    --border-color: #444;
+    --primary-color: #64b5f6;
+    --secondary-color: #90a4ae;
+    --accent-color: #81c784;
+    --background-color: #212121;
+    --card-background-color: #303030;
+    --text-color: #e0e0e0;
+    --light-text-color: #b0b0b0;
+    --border-color: #424242;
     --shadow-color: rgba(0, 0, 0, 0.3);
-    --slider-bg: #555;
-    --slider-handle: #ccc;
-    --slider-checked-bg: #9C27B0;
-    --icon-color-light: #A9A9A9;
-    --icon-color-dark: #ADD8E6;
-
-    /* Цвета для обводки текста в темной теме */
-    --text-stroke-color-light: #333;
-    --text-stroke-color-dark: #fff;
-
-    /* НОВЫЕ ПЕРЕМЕННЫЕ ДЛЯ НИЖНЕЙ НАВИГАЦИИ В ТЕМНОЙ ТЕМЕ */
-    --bottom-nav-bg: #2d2d2d;
-    --bottom-nav-text-color: #bbb;
-    --bottom-nav-icon-color: #bbb;
-    --bottom-nav-active-color: #9C27B0;
-    --bottom-nav-shadow: rgba(0, 0, 0, 0.5);
-
-    /* Модальное окно и блюр в темной теме */
-    --modal-backdrop-color: rgba(0, 0, 0, 0.6);
-    --modal-bg-color: #333;
-
-    /* Цвета для статусов задач в темной теме */
-    --status-new-bg: #1a2a3a;
-    --status-new-text: #64B5F6;
-    --status-in-progress-bg: #3a3a1a;
-    --status-in-progress-text: #FFEE58;
-    --status-completed-bg: #1a3a1a;
-    --status-completed-text: #81C784;
-    --status-deferred-bg: #3a1a1a;
-    --status-deferred-text: #FF8A65;
+    --header-bg: #303030;
+    --header-text: #e0e0e0;
+    --bottom-nav-bg: #303030;
+    --bottom-nav-text-color: #b0b0b0;
+    --bottom-nav-active-color: #64b5f6;
+    --status-new-bg: #004d40;
+    --status-new-text: #80cbc4;
+    --status-in-progress-bg: #424200;
+    --status-in-progress-text: #ffee58;
+    --status-completed-bg: #1b5e20;
+    --status-completed-text: #a5d6a7;
+    --status-deferred-bg: #b71c1c;
+    --status-deferred-text: #ef9a9a;
+    --button-bg: #64b5f6;
+    --button-text: #212121;
+    --secondary-button-bg: #90a4ae;
+    --secondary-button-text: #212121;
 }
 
 body {
     font-family: 'Roboto', sans-serif;
     margin: 0;
+    padding: 0;
     background-color: var(--background-color);
     color: var(--text-color);
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    padding-bottom: var(--bottom-nav-height);
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    transition: background-color 0.3s, color 0.3s;
+    -webkit-tap-highlight-color: transparent; /* Отключаем синее выделение при тапе на iOS */
 }
 
-/* Header Container */
-.header-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: var(--header-height);
-    overflow: hidden; 
-    background-color: var(--header-bg);
-    box-shadow: 0 2px 4px var(--shadow-color);
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    z-index: 10;
-    transition: transform 0.3s ease-out, height 0.3s ease-out;
+.hidden {
+    display: none !important;
 }
 
-/* Скрытый хедер */
-.header-container.hidden {
-    transform: translateY(-100%);
-    height: 0;
-    box-shadow: none;
-}
-
-/* Обёртка для контента, чтобы управлять отступом сверху */
-.content-wrapper {
-    flex-grow: 1;
-    padding-top: var(--header-height);
-    transition: padding-top 0.3s ease-out;
-}
-
-.content-wrapper.header-hidden {
-    padding-top: 0;
-}
-
-/* Основная область контента */
-.content-area, .page-content {
-    position: relative;
-    z-index: 20;
-    padding: 20px;
-    text-align: center;
-    background-color: var(--background-color);
-    border-top-left-radius: var(--border-radius-size);
-    border-top-right-radius: var(--border-radius-size);
-    margin-top: calc(var(--border-radius-size) * -1);
-    padding-top: calc(20px + var(--border-radius-size));
-    box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
-    transition: transform var(--header-transition-duration) ease-out;
-    will-change: transform;
-    filter: none; 
-    transition: filter 0.3s ease-out;
-    min-height: calc(100vh - var(--bottom-nav-height) - 40px);
-    box-sizing: border-box;
-}
-
-/* Применяем блюр к основному контенту при открытии модального окна */
-body.modal-open .content-area,
-body.modal-open .page-content {
-    filter: blur(5px);
-    pointer-events: none; 
-    user-select: none;
-}
-
-/* Background Blur */
-.background-blur {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-size: cover;
-    background-position: center;
-    filter: blur(15px);
-    opacity: 0.7;
-}
-
-.header-content {
-    position: relative;
-    z-index: 1;
-    width: 100%;
+/* Header */
+.header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
-    padding: 15px 20px 0; 
-    box-sizing: border-box;
+    align-items: center;
+    padding: 15px 20px;
+    background-color: var(--header-bg);
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: var(--shadow-color) 0px 2px 4px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s;
 }
 
-.left-section {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-}
-
-.company-info {
+.header-left, .header-right {
     display: flex;
     align-items: center;
-    gap: 15px;
-    color: var(--header-text-color);
 }
 
-.round-logo {
-    width: 60px;
-    height: 60px;
+.company-logo {
+    height: 40px;
+    width: 40px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid var(--header-text-color);
-    box-shadow: 0 0 6px var(--shadow-color);
-    flex-shrink: 0;
+    margin-right: 10px;
+    transition: transform 0.2s;
 }
 
-.text-info {
+.company-logo:active {
+    transform: scale(0.95);
+}
+
+.company-info h1 {
+    font-size: 1.4em;
+    margin: 0;
+    color: var(--header-text);
+}
+
+.company-info p {
+    font-size: 0.8em;
+    margin: 0;
+    color: var(--light-text-color);
+}
+
+.settings-button {
+    background: none;
+    border: none;
+    font-size: 1.5em;
+    color: var(--header-text);
+    cursor: pointer;
+    padding: 5px;
+    transition: transform 0.2s;
+}
+
+.settings-button:active {
+    transform: scale(0.9);
+}
+
+/* Main Content Area */
+.content-area {
+    flex-grow: 1;
+    padding: 20px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Page Content */
+.page-content {
+    background-color: var(--card-background-color);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-color) 0px 4px 12px;
+    transition: background-color 0.3s, box-shadow 0.3s;
+}
+
+.page-content h2 {
+    color: var(--primary-color);
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 1.8em;
+    text-align: center;
+}
+
+/* Home Page Specifics */
+.admin-notes-container {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: var(--background-color);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    transition: background-color 0.3s, border-color 0.3s;
+}
+
+.admin-notes-container h3 {
+    margin-top: 0;
+    color: var(--text-color);
+    font-size: 1.2em;
+    margin-bottom: 10px;
+}
+
+.admin-notes-container p {
+    margin: 5px 0;
+    font-size: 0.95em;
+    color: var(--light-text-color);
+}
+
+.sections-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.section-item {
+    background-color: var(--background-color);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 15px;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    flex-grow: 1;
-    overflow: hidden;
-}
-
-#company-name {
-    margin: 0;
-    font-size: 1.3em;
-    font-weight: bold;
-    white-space: nowrap;
-    overflow: hidden;
-    max-width: 180px;
-    text-shadow: 
-        -1px -1px 0 var(--text-stroke-color-light),  
-         1px -1px 0 var(--text-stroke-color-light),
-        -1px  1px 0 var(--text-stroke-color-light),
-         1px  1px 0 var(--text-stroke-color-light);
-    transition: text-shadow 0.3s ease;
-}
-
-/* Bot Logo */
-.bot-logo {
-    width: 60px; 
-    height: 60px; 
-    object-fit: contain;
-    border-radius: 0;
-    border: none;
-    box-shadow: none;
-    flex-shrink: 0;
-}
-
-/* Theme Toggle Container */
-.theme-toggle-container {
-    position: relative;
-    z-index: 2;
-    display: flex;
     align-items: center;
-    justify-content: flex-start; 
-    margin-top: 5px; 
-    box-sizing: border-box;
-    width: auto; 
-}
-
-/* Стили для иконок солнца и луны */
-.theme-icon {
-    font-size: 0.9em;
-    margin: 0 2px;
-    transition: color 0.3s;
-    line-height: 1;
-}
-
-.sun-icon {
-    color: var(--icon-color-light);
-}
-
-.moon-icon {
-    color: var(--icon-color-dark);
-}
-
-/* Стили для ползунка (слайдера) */
-.switch {
-    position: relative;
-    display: inline-block;
-    width: 25px;
-    height: 14px;
-    margin: 0 3px;
-    flex-shrink: 0;
-}
-
-.switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-.slider {
-    position: absolute;
+    justify-content: center;
+    text-align: center;
     cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: var(--slider-bg);
-    -webkit-transition: .4s;
-    transition: .4s;
+    transition: background-color 0.2s, transform 0.2s, box-shadow 0.2s;
+    position: relative;
+    min-height: 120px;
 }
 
-.slider:before {
+.section-item:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-color) 0px 6px 16px;
+}
+
+.section-item-icon {
+    font-size: 2.5em;
+    margin-bottom: 10px;
+    color: var(--primary-color);
+}
+
+.section-item h3 {
+    margin: 0;
+    font-size: 1.1em;
+    color: var(--text-color);
+}
+
+.section-item-actions {
     position: absolute;
-    content: "";
-    height: 10px;
-    width: 10px;
-    left: 2px;
-    bottom: 2px;
-    background-color: var(--slider-handle);
-    -webkit-transition: .4s;
-    transition: .4s;
+    top: 5px;
+    right: 5px;
+    display: flex;
+    gap: 5px;
 }
 
-input:checked + .slider {
-    background-color: var(--slider-checked-bg);
+.section-action-button {
+    background: none;
+    border: none;
+    color: var(--light-text-color);
+    font-size: 1em;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 5px;
+    transition: background-color 0.2s, color 0.2s;
 }
 
-input:focus + .slider {
-    box-shadow: 0 0 1px var(--slider-checked-bg);
+.section-action-button:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+body.dark-mode .section-action-button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
-input:checked + .slider:before {
-    -webkit-transform: translateX(11px);
-    -ms-transform: translateX(11px);
-    transform: translateX(11px);
-}
-
-/* Rounded sliders */
-.slider.round {
-    border-radius: 14px;
-}
-
-.slider.round:before {
-    border-radius: 50%;
-}
-
-
-.admin-test-controls {
+/* Sections Actions (for admin) */
+.sections-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
     margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+/* Sub-sections and Items List */
+.sub-sections-list, .items-list {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    align-items: center;
-    border: 1px dashed var(--border-color);
-    padding: 15px;
+    margin-top: 20px;
+}
+
+.sub-section-item, .item-card {
+    background-color: var(--background-color);
+    border: 1px solid var(--border-color);
     border-radius: 10px;
-    margin-bottom: 20px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: relative;
+    transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+.sub-section-item:hover, .item-card:hover {
+    box-shadow: var(--shadow-color) 0px 4px 8px;
+}
+
+.sub-section-item h3, .item-card h3 {
+    margin: 0;
+    font-size: 1.1em;
+    color: var(--text-color);
+}
+
+.sub-section-item p, .item-card p {
+    margin: 0;
+    font-size: 0.9em;
+    color: var(--light-text-color);
+}
+
+.item-card .item-quantity {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.item-card .item-min-quantity {
+    font-size: 0.85em;
+    color: var(--secondary-color);
+}
+
+.item-card.critical .item-quantity {
+    color: var(--status-deferred-text); /* Красный для критического */
+}
+
+.item-card.low-stock .item-quantity {
+    color: var(--status-in-progress-text); /* Желтый для низкого запаса */
+}
+
+
+/* Admin Controls Panel (for testing) */
+.admin-test-controls {
+    background-color: var(--card-background-color);
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 20px;
+    box-shadow: var(--shadow-color) 0px 4px 12px;
+    transition: background-color 0.3s, box-shadow 0.3s;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.admin-test-controls h3 {
+    color: var(--primary-color);
+    margin-top: 0;
+    margin-bottom: 10px;
+    text-align: center;
 }
 
 .admin-test-controls input[type="text"],
 .admin-test-controls textarea {
-    width: 80%;
-    max-width: 300px;
+    width: calc(100% - 20px);
     padding: 10px;
     border: 1px solid var(--border-color);
     border-radius: 8px;
-    background-color: var(--header-bg);
+    background-color: var(--background-color);
     color: var(--text-color);
     box-sizing: border-box;
-    resize: vertical;
-    min-height: 40px;
 }
 
-.admin-test-controls button,
-.action-button {
+.admin-test-controls button {
+    padding: 10px 15px;
+    background-color: var(--button-bg);
+    color: var(--button-text);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.2s;
+}
+
+.admin-test-controls button:hover {
+    transform: translateY(-1px);
+    opacity: 0.9;
+}
+
+.admin-test-controls .secondary-button {
+    background-color: var(--secondary-button-bg);
+    color: var(--secondary-button-text);
+}
+
+.admin-test-controls .secondary-button:hover {
+    background-color: #5a6268;
+}
+body.dark-mode .admin-test-controls .secondary-button:hover {
+    background-color: #6a747a;
+}
+
+/* Tasks Page */
+.task-filter-tabs {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+    gap: 10px;
+}
+
+.task-filter-tabs .filter-tab {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    padding: 10px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.task-filter-tabs .filter-tab.active {
+    background-color: var(--primary-color);
+    color: var(--button-text);
+    border-color: var(--primary-color);
+}
+
+.tasks-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.task-item {
+    background-color: var(--background-color);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+.task-item:hover {
+    box-shadow: var(--shadow-color) 0px 4px 8px;
+}
+
+.task-item .task-title {
+    font-weight: bold;
+    font-size: 1.1em;
+    color: var(--text-color);
+}
+
+.task-item .task-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9em;
+    color: var(--light-text-color);
+}
+
+.task-item .task-status {
+    padding: 4px 8px;
+    border-radius: 5px;
+    font-weight: 500;
+}
+
+.task-item .task-status.new {
+    background-color: var(--status-new-bg);
+    color: var(--status-new-text);
+}
+
+.task-item .task-status.in-progress {
+    background-color: var(--status-in-progress-bg);
+    color: var(--status-in-progress-text);
+}
+
+.task-item .task-status.completed {
+    background-color: var(--status-completed-bg);
+    color: var(--status-completed-text);
+}
+
+.task-item .task-status.deferred {
+    background-color: var(--status-deferred-bg);
+    color: var(--status-deferred-text);
+}
+
+.no-tasks-message {
+    text-align: center;
+    color: var(--light-text-color);
+    margin-top: 20px;
+}
+
+/* Bottom Navigation */
+.bottom-nav {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background-color: var(--bottom-nav-bg);
+    border-top: 1px solid var(--border-color);
+    padding: 10px 0;
+    box-shadow: var(--shadow-color) 0px -2px 4px;
+    position: sticky;
+    bottom: 0;
+    width: 100%;
+    z-index: 1000;
+    transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s;
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: var(--bottom-nav-text-color);
+    text-decoration: none;
+    font-size: 0.8em;
+    transition: color 0.2s;
+    padding: 5px 10px;
+    border-radius: 8px;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.nav-item.active {
+    color: var(--bottom-nav-active-color);
+}
+
+.nav-item-icon {
+    font-size: 1.8em;
+    margin-bottom: 3px;
+}
+
+/* Modal Styles */
+.modal {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 2000;
+    opacity: 1;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.modal.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.modal-content {
+    background-color: var(--card-background-color);
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: var(--shadow-color) 0px 8px 24px;
+    width: 90%;
+    max-width: 400px;
+    transform: translateY(0);
+    transition: transform 0.3s ease-in-out, background-color 0.3s;
+    position: relative;
+    box-sizing: border-box;
+}
+
+.modal.hidden .modal-content {
+    transform: translateY(20px);
+}
+
+.modal-content h3 {
+    margin-top: 0;
+    color: var(--primary-color);
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.modal-content label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: var(--text-color);
+}
+
+.modal-content input[type="text"],
+.modal-content input[type="number"],
+.modal-content select {
+    width: calc(100% - 20px);
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    box-sizing: border-box;
+}
+
+.modal-content .modal-actions {
+    display: flex;
+    justify-content: space-around;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.modal-content .action-button {
+    flex: 1;
+    padding: 12px 15px;
+    background-color: var(--button-bg);
+    color: var(--button-text);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.2s, transform 0.2s;
+}
+
+.modal-content .action-button:hover {
+    transform: translateY(-1px);
+    opacity: 0.9;
+}
+
+.modal-content .action-button.secondary-button {
+    background-color: var(--secondary-button-bg);
+    color: var(--secondary-button-text);
+}
+
+.modal-content .action-button.secondary-button:hover {
+    background-color: #5a6268;
+}
+body.dark-mode .modal-content .action-button.secondary-button:hover {
+    background-color: #6a747a;
+}
+
+/* Context Menu */
+.context-menu {
+    position: fixed; /* Изменено на fixed для позиционирования относительно viewport */
+    background-color: var(--card-background-color);
+    border-radius: 10px;
+    box-shadow: var(--shadow-color) 0px 8px 24px;
+    overflow: hidden;
+    z-index: 2001;
+    opacity: 1;
+    transform: scale(1);
+    transform-origin: top left;
+    transition: opacity 0.2s ease-out, transform 0.2s ease-out, background-color 0.3s;
+}
+
+.context-menu.hidden {
+    opacity: 0;
+    transform: scale(0.95);
+    pointer-events: none;
+}
+
+.context-menu-item {
+    padding: 12px 20px;
+    cursor: pointer;
+    color: var(--text-color);
+    white-space: nowrap;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.context-menu-item:hover {
+    background-color: var(--background-color);
+}
+body.dark-mode .context-menu-item:hover {
+    background-color: #424242;
+}
+
+.context-menu-item:not(:last-child) {
+    border-bottom: 1px solid var(--border-color);
+}
+
+.modal-open {
+    overflow: hidden; /* Предотвращает прокрутку фона при открытом модальном окне */
+}
+
+/* Recipients Modal Specifics */
+.recipients-modal .recipient-filter-tabs {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+    gap: 10px;
+}
+
+.recipients-modal .filter-tab {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+    font-size: 0.9em;
+}
+
+.recipients-modal .filter-tab.active {
+    background-color: var(--primary-color);
+    color: var(--button-text);
+    border-color: var(--primary-color);
+}
+
+.recipients-modal .recipients-list {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 15px;
+}
+
+.recipients-modal .recipient-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-color);
+    cursor: pointer;
+}
+
+.recipients-modal .recipient-item:last-child {
+    border-bottom: none;
+}
+
+.recipients-modal .recipient-item input[type="checkbox"] {
+    margin-right: 10px;
+    transform: scale(1.2);
+}
+
+.recipients-modal .recipient-item label {
+    margin: 0;
+    font-weight: normal;
+    cursor: pointer;
+}
+
+/* New Section Modal Specifics */
+.new-section-modal .modal-content {
+    padding: 25px;
+}
+.new-section-modal input[type="text"] {
+    margin-bottom: 15px;
+}
+
+/* Task Status Modal */
+.task-status-modal .modal-content {
+    padding: 20px;
+}
+
+.task-status-modal .status-option-button {
+    display: block;
+    width: 100%;
+    padding: 12px 15px;
+    margin-bottom: 10px;
+    font-size: 1.05em;
+    font-weight: 500;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.task-status-modal .status-option-button:last-child {
+    margin-bottom: 0;
+}
+
+.task-status-modal .status-option-button.new {
+    background-color: var(--status-new-bg);
+    color: var(--status-new-text);
+}
+.task-status-modal .status-option-button.new:hover {
+    background-color: #d0eff7; /* Более темный оттенок */
+}
+body.dark-mode .task-status-modal .status-option-button.new:hover {
+    background-color: #15202a;
+}
+
+.task-status-modal .status-option-button.in-progress {
+    background-color: var(--status-in-progress-bg);
+    color: var(--status-in-progress-text);
+}
+.task-status-modal .status-option-button.in-progress:hover {
+    background-color: #fffac8;
+}
+body.dark-mode .task-status-modal .status-option-button.in-progress:hover {
+    background-color: #303010;
+}
+
+.task-status-modal .status-option-button.completed {
+    background-color: var(--status-completed-bg);
+    color: var(--status-completed-text);
+}
+.task-status-modal .status-option-button.completed:hover {
+    background-color: #d8ead8;
+}
+body.dark-mode .task-status-modal .status-option-button.completed:hover {
+    background-color: #102a10;
+}
+
+.task-status-modal .status-option-button.deferred {
+    background-color: var(--status-deferred-bg);
+    color: var(--status-deferred-text);
+}
+.task-status-modal .status-option-button.deferred:hover {
+    background-color: #fce1dd;
+}
+body.dark-mode .task-status-modal .status-option-button.deferred:hover {
+    background-color: #2a1010;
+}
+
+.task-status-modal .close-button {
+    background-color: var(--border-color);
+    color: var(--text-color);
+    margin-top: 15px;
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.task-status-modal .close-button:hover {
+    background-color: #ccc;
+}
+body.dark-mode .task-status-modal .close-button:hover {
+    background-color: #555;
+}
+
+/* Take Task Button */
+.task-item .take-task-button {
+    background-color: var(--button-bg);
+    color: var(--button-text);
+    border: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85em;
+    margin-top: 8px;
+    align-self: flex-end; /* Выравнивание по правому краю */
+    transition: background-color 0.2s, transform 0.2s;
+}
+
+.task-item .take-task-button:hover {
+    transform: translateY(-1px);
+    opacity: 0.9;
+}
+
+/* Create Task Button */
+.create-task-button {
     padding: 10px 20px;
     font-size: 1em;
     cursor: pointer;
@@ -372,238 +822,20 @@ input:checked + .slider:before {
     border: none;
     border-radius: 8px;
     transition: background-color 0.3s, transform 0.2s;
+    margin-top: 20px;
 }
 
-.admin-test-controls button:hover,
-.action-button:hover {
+.create-task-button:hover {
     transform: translateY(-2px);
     opacity: 0.9;
 }
-
-/* НОВАЯ НИЖНЯЯ ПАНЕЛЬ НАВИГАЦИИ */
-.bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: var(--bottom-nav-height);
-    background-color: var(--bottom-nav-bg);
-    box-shadow: 0 -2px 8px var(--bottom-nav-shadow);
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    border-top-left-radius: var(--border-radius-size);
-    border-top-right-radius: var(--border-radius-size);
-    padding-bottom: env(safe-area-inset-bottom);
-    box-sizing: border-box;
-    z-index: 100;
-}
-
-.nav-button {
-    background: none;
-    border: none;
-    color: var(--bottom-nav-text-color);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    font-size: 0.75em;
-    font-weight: 500;
-    cursor: pointer;
-    padding: 8px 0;
-    flex: 1;
-    transition: color 0.2s ease-in-out;
-    -webkit-tap-highlight-color: transparent;
-}
-
-.nav-button:hover,
-.nav-button.active {
-    color: var(--bottom-nav-active-color);
-}
-
-.nav-icon {
-    width: 24px;
-    height: 24px;
-    stroke: var(--bottom-nav-icon-color);
-    transition: stroke 0.2s ease-in-out;
-}
-
-.nav-button:hover .nav-icon,
-.nav-button.active .nav-icon {
-    stroke: var(--bottom-nav-active-color);
-}
-
-/* Стили для хлебных крошек */
-.breadcrumbs {
-    text-align: left;
-    margin-bottom: 20px;
-    font-size: 0.9em;
-    color: var(--bottom-nav-text-color);
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-}
-
-.breadcrumb-item {
-    cursor: pointer;
-    padding: 2px 5px;
-    border-radius: 5px;
-    transition: background-color 0.2s ease;
-}
-
-.breadcrumb-item:not(.active):hover {
-    background-color: var(--border-color);
-}
-
-.breadcrumb-item:not(:last-child)::after {
-    content: ' > ';
-    margin-left: 5px;
-    color: var(--bottom-nav-text-color);
-}
-
-.breadcrumb-item.active {
-    font-weight: bold;
-    color: var(--text-color);
-}
-
-/* Стили для списка разделов */
-.sections-list {
-    margin-top: 20px;
-    margin-bottom: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    width: 100%;
-    max-width: 500px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.section-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 15px;
-    background-color: var(--header-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 10px;
-    box-shadow: 0 2px 5px var(--shadow-color);
-    transition: background-color 0.2s ease, transform 0.1s ease;
-    -webkit-tap-highlight-color: transparent;
-}
-
-.section-item:hover {
-    background-color: var(--background-color);
-    transform: translateY(-2px);
-}
-
-.section-item-name {
-    font-weight: 500;
-    color: var(--header-text-color);
-    flex-grow: 1;
-    text-align: left;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 10px;
-}
-
-.section-item-quantity {
-    font-size: 0.9em;
-    color: var(--bottom-nav-text-color);
-    background-color: var(--border-color);
-    padding: 3px 8px;
-    border-radius: 5px;
-    white-space: nowrap;
-}
-
-.section-item-actions {
-    display: flex;
-    gap: 5px;
-    flex-shrink: 0;
-}
-
-.section-action-button {
-    background: none;
-    border: none;
-    color: var(--button-bg);
-    cursor: pointer;
-    font-size: 1.1em;
-    padding: 5px;
-    border-radius: 5px;
-    transition: background-color 0.2s ease, color 0.2s ease;
-}
-
-.section-action-button:hover {
-    background-color: rgba(0, 0, 0, 0.05);
-    color: var(--bottom-nav-active-color);
-}
-
-body.dark-mode .section-action-button:hover {
-    background-color: rgba(255, 255, 255, 0.05);
-}
-
-.sections-actions {
-    margin-top: 30px;
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-}
-
-.no-sections-message {
-    color: var(--bottom-nav-text-color);
-    margin-top: 40px;
-}
-
-/* Стили для модальных окон */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: var(--modal-backdrop-color);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-}
-
-.modal-content {
-    background-color: var(--modal-bg-color);
-    margin: auto;
-    padding: 25px;
-    border-radius: var(--modal-border-radius);
-    box-shadow: 0 5px 15px var(--shadow-color);
-    max-width: 85%;
-    min-width: 280px;
-    text-align: center;
-    transform: translateY(0);
-    opacity: 1;
-    transition: transform 0.3s ease-out, opacity 0.3s ease-out;
-}
-
-/* Анимация появления модального окна */
-.modal.hidden .modal-content {
-    transform: translateY(-50px);
-    opacity: 0;
-}
-
-.modal h3 {
-    color: var(--header-text-color);
-    margin-top: 0;
+/* Create Task Modal */
+.create-task-modal h3 {
     margin-bottom: 20px;
 }
-
-.modal input[type="text"],
-.modal input[type="number"],
-.modal input[type="datetime-local"],
-.modal textarea {
+.create-task-modal select,
+.create-task-modal input[type="text"],
+.create-task-modal textarea {
     width: calc(100% - 20px);
     padding: 10px;
     margin-bottom: 15px;
@@ -616,344 +848,116 @@ body.dark-mode .section-action-button:hover {
     min-height: 40px;
 }
 
-.modal-actions {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-top: 20px;
-}
 
-.secondary-button {
-    background-color: var(--border-color);
-    color: var(--text-color);
-}
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .header {
+        padding: 10px 15px;
+    }
 
-.secondary-button:hover {
-    background-color: #ccc;
-}
+    .company-logo {
+        height: 35px;
+        width: 35px;
+    }
 
-/* Стили для контекстного меню (доп. меню) */
-.context-menu {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    padding: 15px;
-    min-width: 200px;
-}
+    .company-info h1 {
+        font-size: 1.2em;
+    }
 
-.context-menu-item {
-    padding: 12px 15px;
-    text-align: left;
-    color: var(--text-color);
-    cursor: pointer;
-    border-radius: 8px;
-    transition: background-color 0.2s ease;
-}
+    .company-info p {
+        font-size: 0.7em;
+    }
 
-.context-menu-item:hover {
-    background-color: var(--border-color);
-}
+    .settings-button {
+        font-size: 1.3em;
+    }
 
-.close-context-menu {
-    margin-top: 10px;
-    font-weight: bold;
-    color: var(--button-bg);
-}
+    .content-area {
+        padding: 15px;
+    }
 
-.close-context-menu:hover {
-    background-color: var(--border-color);
-    color: var(--bottom-nav-active-color);
-}
+    .page-content {
+        padding: 15px;
+    }
 
-/* Стили для списка получателей */
-.recipient-filter-tabs {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 15px;
-    border-bottom: 1px solid var(--border-color);
-}
+    .page-content h2 {
+        font-size: 1.5em;
+    }
 
-.filter-tab {
-    background: none;
-    border: none;
-    padding: 10px 15px;
-    cursor: pointer;
-    font-size: 0.95em;
-    color: var(--bottom-nav-text-color);
-    border-bottom: 2px solid transparent;
-    transition: color 0.2s, border-bottom-color 0.2s;
-}
+    .sections-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 10px;
+    }
 
-.filter-tab.active {
-    color: var(--bottom-nav-active-color);
-    border-bottom-color: var(--bottom-nav-active-color);
-    font-weight: bold;
-}
+    .section-item {
+        padding: 10px;
+        min-height: 100px;
+    }
 
-.filter-tab:hover:not(.active) {
-    color: var(--text-color);
-}
+    .section-item-icon {
+        font-size: 2em;
+    }
 
-.select-all-container {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 15px;
-    padding: 5px;
-    border-bottom: 1px solid var(--border-color);
-}
+    .section-item h3 {
+        font-size: 1em;
+    }
 
-.select-all-container input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-    cursor: pointer;
-}
+    .sections-actions button {
+        padding: 8px 12px;
+        font-size: 0.9em;
+    }
 
-.select-all-container label {
-    font-weight: bold;
-    color: var(--header-text-color);
-}
+    .sub-section-item, .item-card {
+        padding: 12px;
+    }
 
-.recipients-list {
-    max-height: 250px;
-    overflow-y: auto;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 10px;
-    margin-bottom: 20px;
-    text-align: left;
-}
+    .task-filter-tabs .filter-tab {
+        padding: 8px 12px;
+        font-size: 0.8em;
+    }
 
-.recipient-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 5px;
-    border-bottom: 1px solid var(--border-color);
-}
+    .task-item {
+        padding: 12px;
+    }
 
-.recipient-item:last-child {
-    border-bottom: none;
-}
+    .task-item .task-title {
+        font-size: 1em;
+    }
 
-.recipient-item input[type="checkbox"] {
-    width: 16px;
-    height: 16px;
-    cursor: pointer;
-}
+    .task-item .task-info {
+        font-size: 0.8em;
+    }
 
-.recipient-item-name {
-    flex-grow: 1;
-    color: var(--text-color);
-}
+    .bottom-nav {
+        padding: 8px 0;
+    }
 
-/* --- НОВЫЕ СТИЛИ ДЛЯ ФУНКЦИОНАЛА СОТРУДНИКОВ --- */
+    .nav-item {
+        font-size: 0.7em;
+    }
 
-/* Блок заметок администратора */
-.admin-notes-container {
-    margin-top: 25px;
-    margin-bottom: 25px;
-    padding: 15px;
-    border: 1px solid var(--border-color);
-    border-radius: 10px;
-    background-color: var(--header-bg);
-    box-shadow: 0 2px 5px var(--shadow-color);
-    text-align: left;
-    max-width: 500px; /* Ограничиваем ширину для лучшего вида */
-    margin-left: auto;
-    margin-right: auto;
-}
+    .nav-item-icon {
+        font-size: 1.5em;
+    }
 
-.admin-notes-container h3 {
-    margin-top: 0;
-    color: var(--bottom-nav-active-color);
-    text-align: center;
-    margin-bottom: 15px;
-}
+    .modal-content {
+        width: 95%;
+        padding: 20px;
+    }
 
-.admin-notes-content p {
-    margin: 5px 0;
-    padding-left: 10px;
-    border-left: 3px solid var(--border-color);
-}
+    .modal-content input[type="text"],
+    .modal-content input[type="number"],
+    .modal-content select {
+        padding: 10px;
+    }
 
-/* Кнопка Пришел/Ушел */
-.clock-button {
-    width: 80%;
-    max-width: 300px;
-    padding: 12px 0;
-    margin-top: 20px;
-    font-size: 1.1em;
-    font-weight: bold;
-}
+    .modal-content .action-button {
+        padding: 10px 12px;
+        font-size: 0.9em;
+    }
 
-.clock-button.clock-in {
-    background-color: #4CAF50; /* Зеленый для "Пришел" */
-}
-
-.clock-button.clock-in:hover {
-    background-color: #45a049;
-}
-
-.clock-button.clock-out {
-    background-color: #f44336; /* Красный для "Ушел" */
-}
-
-.clock-button.clock-out:hover {
-    background-color: #da332a;
-}
-
-/* Стили для страницы ЗАДАЧ */
-#tasks-page {
-    /* Уже есть .page-content */
-}
-
-.task-filter-tabs {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 20px;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.task-filter-tabs .filter-tab { /* Переиспользуем стиль .filter-tab */
-    flex: 1; /* Распределяем кнопки равномерно */
-    text-align: center;
-}
-
-.tasks-list {
-    margin-top: 20px;
-    margin-bottom: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    width: 100%;
-    max-width: 500px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.no-tasks-message {
-    color: var(--bottom-nav-text-color);
-    margin-top: 40px;
-}
-
-.task-item {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    padding: 15px;
-    background-color: var(--header-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 10px;
-    box-shadow: 0 2px 5px var(--shadow-color);
-    transition: transform 0.1s ease;
-    text-align: left;
-    cursor: pointer;
-}
-
-.task-item:hover {
-    transform: translateY(-2px);
-}
-
-.task-title {
-    font-weight: bold;
-    font-size: 1.1em;
-    color: var(--header-text-color);
-}
-
-.task-info {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.85em;
-    color: var(--bottom-nav-text-color);
-}
-
-.task-status {
-    padding: 4px 8px;
-    border-radius: 5px;
-    font-weight: 500;
-    white-space: nowrap;
-}
-
-.task-status.status-new {
-    background-color: var(--status-new-bg);
-    color: var(--status-new-text);
-}
-
-.task-status.status-in-progress {
-    background-color: var(--status-in-progress-bg);
-    color: var(--status-in-progress-text);
-}
-
-.task-status.status-completed {
-    background-color: var(--status-completed-bg);
-    color: var(--status-completed-text);
-}
-
-.task-status.status-deferred {
-    background-color: var(--status-deferred-bg);
-    color: var(--status-deferred-text);
-}
-
-/* Стили для страницы ЧАТОВ */
-#chats-page {
-    /* Уже есть .page-content */
-}
-
-.chats-list {
-    margin-top: 20px;
-    margin-bottom: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    width: 100%;
-    max-width: 500px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.no-chats-message {
-    color: var(--bottom-nav-text-color);
-    margin-top: 40px;
-}
-
-.chat-item {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    padding: 12px 15px;
-    background-color: var(--header-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 10px;
-    box-shadow: 0 2px 5px var(--shadow-color);
-    transition: transform 0.1s ease;
-    text-align: left;
-    text-decoration: none; /* Убираем подчеркивание у ссылки */
-    color: var(--header-text-color); /* Наследуем цвет текста */
-    cursor: pointer;
-}
-
-.chat-item:hover {
-    transform: translateY(-2px);
-}
-
-.chat-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    object-fit: cover;
-    flex-shrink: 0;
-}
-
-.chat-name {
-    flex-grow: 1;
-    font-weight: 500;
-}
-
-.chat-arrow {
-    width: 24px;
-    height: 24px;
-    stroke: var(--bottom-nav-text-color);
-    flex-shrink: 0;
+    .context-menu-item {
+        padding: 10px 15px;
+        font-size: 0.9em;
+    }
 }
